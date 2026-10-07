@@ -1,0 +1,311 @@
+/* PiG 学习工作区 · 课程共享样式
+   风格取向：Tufte —— 衬线正文、克制用色、宽行距、可打印。
+   每课 <link rel="stylesheet" href="../assets/lesson.css"> 引入。 */
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #444;
+  --ink-faint: #777;
+  --paper: #fffff8;
+  --accent: #8a2be2;          /* PiG 品牌紫 */
+  --accent-soft: #f3ecfc;
+  --rule: #e5e2d8;
+  --ok: #1a7f37;
+  --ok-bg: #eef9f0;
+  --bad: #b3261e;
+  --bad-bg: #fdf0ef;
+  --mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", "Noto Serif CJK SC", "Songti SC", serif;
+  --sans: -apple-system, "Helvetica Neue", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 17px; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+}
+
+article {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+/* ─── 页眉 ─── */
+
+header.lesson-head {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1.2rem;
+  margin-bottom: 2.2rem;
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.6rem;
+}
+
+h1 {
+  font-size: 1.9rem;
+  line-height: 1.25;
+  margin: 0 0 0.7rem;
+  font-weight: 700;
+}
+
+.lede {
+  font-size: 1.08rem;
+  color: var(--ink-soft);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ─── 正文层级 ─── */
+
+h2 {
+  font-size: 1.32rem;
+  margin: 2.6rem 0 0.9rem;
+  padding-top: 0.4rem;
+  font-weight: 700;
+}
+
+h2 .sec-no {
+  color: var(--accent);
+  font-family: var(--sans);
+  font-size: 0.85em;
+  margin-right: 0.45em;
+}
+
+h3 { font-size: 1.05rem; margin: 1.8rem 0 0.5rem; }
+
+p { margin: 0.85rem 0; }
+
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid #d9c8f0; }
+a:hover { border-bottom-color: var(--accent); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: #f4f2ea;
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+}
+
+pre {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  background: #f7f5ee;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+}
+
+pre code { background: none; padding: 0; }
+
+/* ─── 表格 ─── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 1.2rem 0;
+  font-family: var(--sans);
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+td code { font-size: 0.82em; }
+
+/* ─── 旁注 / 提示框 ─── */
+
+.sidenote {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  border-left: 2px solid var(--rule);
+  padding-left: 0.9rem;
+  margin: 1rem 0;
+}
+
+.callout {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 0.9rem 1.1rem;
+  margin: 1.4rem 0;
+  font-size: 0.95rem;
+}
+
+.callout .callout-title {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+/* ─── 旅程步骤 ─── */
+
+.journey { counter-reset: step; list-style: none; padding: 0; margin: 1.4rem 0; }
+
+.journey > li {
+  counter-increment: step;
+  position: relative;
+  padding: 0 0 1.3rem 3.2rem;
+  border-left: 1px solid var(--rule);
+  margin-left: 1.1rem;
+}
+
+.journey > li::before {
+  content: counter(step);
+  position: absolute;
+  left: -1.1rem;
+  top: 0.1rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.journey > li:last-child { border-left-color: transparent; }
+
+.journey .step-name { font-weight: 700; }
+.journey .step-file { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-faint); }
+.journey p { margin: 0.3rem 0 0; font-size: 0.95rem; }
+
+/* ─── 测验 ─── */
+
+.quiz { margin: 1.5rem 0; }
+
+.quiz-q {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+  margin: 1.1rem 0;
+  background: #fff;
+}
+
+.quiz-stem { font-weight: 600; margin: 0 0 0.8rem; }
+
+.quiz-opts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+
+.quiz-opts button {
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  text-align: left;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.quiz-opts button:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.quiz-opts button:disabled { cursor: default; opacity: 0.9; }
+
+.quiz-opts button.correct { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); font-weight: 600; }
+.quiz-opts button.wrong { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+
+.quiz-explain {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin: 0.7rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--rule);
+}
+
+.quiz-score {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  text-align: center;
+  margin-top: 1.2rem;
+}
+
+/* ─── 动手任务框 ─── */
+
+.lab {
+  border: 1.5px dashed var(--accent);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+  margin: 1.4rem 0;
+}
+
+.lab .lab-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
+.lab ol, .lab ul { margin: 0.4rem 0; padding-left: 1.4rem; }
+.lab li { margin: 0.35rem 0; font-size: 0.95rem; }
+
+/* ─── 页脚 ─── */
+
+footer.lesson-foot {
+  margin-top: 3.5rem;
+  padding-top: 1.2rem;
+  border-top: 2px solid var(--ink);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+footer.lesson-foot .primary-source {
+  background: #f4f2ea;
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 0.8rem 0;
+}
+
+.lesson-nav { display: flex; justify-content: space-between; font-family: var(--sans); font-size: 0.85rem; margin-top: 1rem; }
+
+/* ─── 打印 ─── */
+
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  article { max-width: none; padding: 0; }
+  .quiz-opts button { border: 1px solid #999; }
+  .quiz-opts button.correct { background: #eee; }
+  .quiz-opts button.wrong { background: #fff; }
+  a { color: var(--ink); border-bottom: none; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+}

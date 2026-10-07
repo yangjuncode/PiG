@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · PiG 架构地图：一次 prompt 的旅程</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<article>
+
+<header class="lesson-head">
+  <p class="kicker">PiG 代码精读 · 第 1 课</p>
+  <h1>架构地图：一次 prompt 的旅程</h1>
+  <p class="lede">你的目标是写自己的 agent。这一课先回答一个问题：PiG 几十个子系统里，哪些是"任何 coding agent 都需要的骨架"，哪些只是"这个产品特有的表面"——以及你敲下回车后，代码到底沿着什么路径跑。</p>
+</header>
+
+<h2><span class="sec-no">1</span>先建立取舍的镜头</h2>
+
+<p>PiG 是移植项目，不是从零设计的 agent。这意味着代码里混着两种东西：</p>
+
+<table>
+  <tr><th>层</th><th>对你的价值</th><th>包</th></tr>
+  <tr>
+    <td><strong>骨架</strong>：agent 引擎 + 模型抽象</td>
+    <td>直接借鉴——这是每个 coding agent 的心脏</td>
+    <td><code>agent/</code>、<code>ai/</code></td>
+  </tr>
+  <tr>
+    <td><strong>外壳</strong>：把引擎包成产品</td>
+    <td>参考——会话管理、设置、CLI 模式、渲染</td>
+    <td><code>internal/codingagent</code>、<code>cmd/pig</code>、<code>tui/</code>、<code>durable/</code></td>
+  </tr>
+  <tr>
+    <td><strong>生态</strong>：扩展、包、Piglet</td>
+    <td>可选——看你自己的 agent 要不要插件机制</td>
+    <td><code>coding/extension/</code>、<code>extensions/sdk*</code>、<code>coding/piglet*</code></td>
+  </tr>
+  <tr>
+    <td><strong>移植地基</strong>：TS/Node 语义复刻</td>
+    <td>跳过——只有"移植"这个任务才需要它们</td>
+    <td><code>internal/nodepath</code>、<code>internal/jsstring</code>、<code>internal/jsonparse</code>…</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <span class="callout-title">核心洞察</span>
+  <code>internal/</code> 下一大半包不是"Go 工具库"，而是 <em>Node.js 运行时语义在 Go 里的复刻</em>——<code>nodepath</code> 复刻 <code>path.win32/posix</code>，<code>jsstring</code> 复刻 UTF-16 字符串行为，<code>jsonparse</code>/<code>jsonstringify</code> 复刻 JS 的 JSON 边界行为。写自己的 agent 时你完全不需要这一层；它存在的唯一理由是 parity（行为必须和 TS 上游逐字节一致）。
+</div>
+
+<h2><span class="sec-no">2</span>架构地图：包即上游镜像</h2>
+
+<p>PiG 的顶层包刻意与上游 Pi 的 npm 包一一对应（<code>docs/pig-architecture.md</code>）：</p>
+
+<pre><code>cmd/pig ── 入口：flags、app mode 分发、子命令
+   │        （交互 / --print / --mode rpc / pig package / pig piglet …）
+   ▼
+internal/codingagent ── 产品壳（924 个文件，最大的一块）
+   │        Session 生命周期、settings、交互模式编排、事件桥接
+   ▼
+┌─ agent/ ──────────── agent 引擎：Agent 类型 + runLoop + 工具执行
+│    mirrors packages/agent
+│    NewAgent(opts) → a.Send(ctx, text) → 事件流 → []AgentMessage
+│
+├─ ai/ ─────────────── 模型抽象：Provider 接口、Model、SSE 流、各 provider
+│    mirrors packages/ai       （anthropic.go / openai / google / bedrock …）
+│
+├─ tui/ ────────────── 终端 UI：编辑器、viewport、渲染器
+│    mirrors packages/tui
+│
+└─ durable/ ────────── 会话/任务/文档的持久化类型
+     mirrors packages/durable</code></pre>
+
+<p>生态层（你自己的 agent 可以之后再决定要不要）：</p>
+
+<pre><code>coding/extension/host/ ── 扩展宿主：子进程 wire 协议（protocol.go 是权威）
+extensions/sdk{,-rs,-py,-ts} ── 同一 wire 契约的四种语言 SDK
+coding/piglet{,build}/ ── 把"agent + 扩展 + 提示词"打包成可分发单元
+coding/mcpext/、mcp/ ── MCP（Model Context Protocol）接入
+test/parity/ + .upstream/current/ ── 移植专用的校验体系</code></pre>
+
+<div class="sidenote">
+  旁注：为什么 <code>internal/codingagent</code> 有 900+ 文件？因为它对应上游的 <code>packages/coding-agent</code>——一个完整产品：会话文件、斜杠命令、设置、认证、工具实现、交互编排全在里面。"引擎小、外壳大"是这类产品的常态。
+</div>
+
+<h2><span class="sec-no">3</span>一次 prompt 的旅程</h2>
+
+<p>你在 TUI 里敲下 <code>帮我修一下这个 bug</code> 然后回车。以下每一步都可以在代码里定位（给了文件名和函数名）：</p>
+
+<ol class="journey">
+  <li>
+    <span class="step-name">入口分发</span> <span class="step-file">cmd/pig/main.go</span>
+    <p><code>main()</code> 解析 flags，<code>processAppMode(flags)</code> 判定为交互模式，构造 <code>codingagent.NewInteractiveMode(iopts)</code> 并运行。启动期工作（settings、扩展加载、模型解析）都在这一步完成。</p>
+  </li>
+  <li>
+    <span class="step-name">输入捕获</span> <span class="step-file">tui/ → internal/codingagent/interactive_*.go</span>
+    <p>TUI 的编辑器组件拿到回车事件，InteractiveMode 把它变成一次 prompt，交给持有 <code>agent.Agent</code> 的会话。</p>
+  </li>
+  <li>
+    <span class="step-name">进入主循环</span> <span class="step-file">agent/agent.go:1005 → agent/agent_loop.go</span>
+    <p><code>a.Send(ctx, content)</code> 把用户消息追加进 transcript，然后 <code>runAgentLoopContinue → runLoop → r.loop()</code> 开始按 turn 迭代。<strong>这个文件（548 行）是整个 agent 的心脏。</strong></p>
+  </li>
+  <li>
+    <span class="step-name">组装请求</span> <span class="step-file">agent/agent_loop.go</span>
+    <p>每个 turn：<code>prepareRequest</code> 计算系统提示与上下文，<code>transformContext</code> 钩子允许扩展改写消息列表，然后 <code>streamAssistantResponse → requestStream → streamWithProvider</code>。</p>
+  </li>
+  <li>
+    <span class="step-name">调模型</span> <span class="step-file">ai/（如 ai/anthropic*.go）</span>
+    <p>provider 把标准化 transcript 转成自己的 wire 格式，发 HTTP/SSE 请求，产出统一的 <code>AssistantMessageEventStream</code>。<code>ai/types.go:687</code> 的 <code>Provider</code> 接口就是"换模型"的接缝。</p>
+  </li>
+  <li>
+    <span class="step-name">流式广播</span> <span class="step-file">agent/lifecycle.go → internal/codingagent/interactive_events.go</span>
+    <p>流事件逐步拼出 <code>AssistantMessage</code>；<code>a.Subscribe(listener)</code> 注册的监听者收到 <code>MessageStartEvent / MessageUpdateEvent / …</code>。<code>handleAgentEvent</code> 把事件一路桥接给 TUI 渲染和扩展宿主——<strong>这是"引擎不依赖 UI"的关键：UI 只是订阅者</strong>。</p>
+  </li>
+  <li>
+    <span class="step-name">工具回合</span> <span class="step-file">agent/run_tool_call.go</span>
+    <p>若 <code>stopReason == "toolUse"</code>：按 <code>ToolExecutionMode</code> 并发执行工具调用，结果包成 <code>ToolResultMessage</code> 追加进 transcript，<code>loop</code> 进入下一 turn——模型再次看到全部上下文。</p>
+  </li>
+  <li>
+    <span class="step-name">收尾落盘</span> <span class="step-file">internal/codingagent + durable/</span>
+    <p>直到 <code>stopReason == "stop"</code>：<code>AgentEndEvent</code> 广播，SessionManager 把新消息持久化到 session 存储。一轮结束，等下一次输入。</p>
+  </li>
+</ol>
+
+<div class="callout">
+  <span class="callout-title">带走的模型</span>
+  最小可用 agent 只需要三样：<strong>一个 transcript 循环</strong>（<code>agent/</code>）、<strong>一个 provider 接缝</strong>（<code>ai.Provider</code>）、<strong>一组工具</strong>（<code>agent.AgentTool</code> 接口）。UI、会话文件、扩展、包管理全是可插拔的外壳。你写自己的 agent 时，第一课要抄的就是这条边界。
+</div>
+
+<h2><span class="sec-no">4</span> retrieval practice：合上地图回答</h2>
+
+<div class="quiz" data-quiz>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q1 · 一次 prompt 的正确旅程顺序是？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">编辑器 → 主循环 → provider 流 → 工具回合 → 渲染落盘</button></li>
+      <li><button data-opt="b">编辑器 → provider 流 → 主循环 → 渲染落盘 → 工具回合</button></li>
+      <li><button data-opt="c">主循环 → 编辑器 → 工具回合 → provider 流 → 渲染落盘</button></li>
+      <li><button data-opt="d">provider 流 → 主循环 → 编辑器 → 渲染落盘 → 工具回合</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>主循环（agent/agent_loop.go）在 provider 之上——它决定何时调模型、何时执行工具。provider 只负责"把 transcript 变成事件流"，不知道工具循环的存在。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q2 · 你要给自己的 agent 接入一个新 LLM provider，最该精读哪两个接缝？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a"><code>ai.Provider</code> 接口 与 <code>agent.StreamFn</code></button></li>
+      <li><button data-opt="b"><code>tui</code> 渲染器 与 <code>durable.Session</code></button></li>
+      <li><button data-opt="c"><code>cmd/pig</code> flags 与 <code>codingagent.Settings</code></button></li>
+      <li><button data-opt="d"><code>sdk</code> 注册面 与 <code>host.Runner</code> 协议</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>Provider 接口（ai/types.go:687）定义"怎么调模型"；StreamFn 是 agent loop 实际调用的函数形状（agent/stream_fn.go）。替换模型 = 实现这组接口，其他层不动。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q3 · <code>internal/nodepath</code>、<code>internal/jsstring</code> 这类包存在的理由是？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">移植地基：在 Go 里复现 Node/TS 的运行时语义</button></li>
+      <li><button data-opt="b">性能优化：替换掉标准库里较慢的对应实现</button></li>
+      <li><button data-opt="c">产品能力：为 Piglet 提供额外的系统级功能</button></li>
+      <li><button data-opt="d">平台兼容：统一 Windows 与 Unix 的行为差异</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>这是"移植"任务特有的地基：TS 的 path、UTF-16 字符串、JSON 边界行为必须在 Go 里逐字节复现，parity 场景才过得去。从零写 agent 完全不需要它们。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q4 · PiG 把第三方扩展跑在哪里？（提示：AGENTS.md 明确禁止了几种替代方案）</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">独立子进程，socket 之上的 wire 协议通信</button></li>
+      <li><button data-opt="b">Go plugin 动态加载，与主进程共享内存</button></li>
+      <li><button data-opt="c">WASM 沙箱之内，经宿主函数回呼主进程</button></li>
+      <li><button data-opt="d">主进程协程里，channel 直接传递消息</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>子进程隔离让扩展可以用任何语言写（Go/Rust/Python/TS 四套 SDK 共享 protocol.go 这一个 wire 契约），崩溃不拖垮宿主。这是产品决策，不是移植要求——你自己的 agent 可以选别的。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q5 · 打开 <code>agent/agent_loop.go</code> 看一眼：<code>runTurn</code> 的返回签名是？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a"><code>(completedTurn, bool, error)</code></button></li>
+      <li><button data-opt="b"><code>(completedTurn, error)</code></button></li>
+      <li><button data-opt="c"><code>(*AssistantMessage, error)</code></button></li>
+      <li><button data-opt="d"><code>(bool, error)</code></button></li>
+    </ul>
+    <p class="quiz-explain" hidden>三个返回值各管一件事：本轮产出了什么、循环该不该继续、有没有出错。这是"一个 turn"与"整个 loop"之间的接缝——下一课精读 agent loop 时它就是入口。</p>
+  </div>
+
+</div>
+
+<h2><span class="sec-no">5</span>动手：十分钟实地定位</h2>
+
+<div class="lab">
+  <p class="lab-title">LAB · 在代码里走一遍</p>
+  <ol>
+    <li>跑 <code>go doc ./agent</code>——确认包注释写着 "Mirrors packages/agent"，找到 <code>Agent</code>、<code>AgentTool</code>、<code>AgentEvent</code> 三个核心类型。</li>
+    <li>打开 <code>agent/agent_loop.go</code>，找到 <code>func (r *loopRun) loop()</code>（约 151 行）——读它的循环条件，回答自己：loop 什么时候停？</li>
+    <li>打开 <code>ai/types.go:687</code> 的 <code>Provider</code> 接口——数一下它有哪几个方法，猜每个方法对应旅程的哪一站。</li>
+    <li>跑 <code>grep -rn "handleAgentEvent" internal/codingagent/interactive_events.go | head -5</code>——确认事件桥接点真实存在。</li>
+    <li>（选做）打开 <code>.upstream/current/packages/agent/src/agent.ts</code>，找到对应的 Agent class——感受一下"移植"的对应关系。</li>
+  </ol>
+  <p style="margin-bottom:0">做完后你应该能不看地图复述这条路径。复述不出来 = 正常，这正是下一课要定点深入的信号。</p>
+</div>
+
+<footer class="lesson-foot">
+  <div class="primary-source">
+    <strong>📖 课后主读：</strong>仓库自带的 <code>docs/pig-architecture.md</code>（约 170 行），它维护着分层图、包对照表和本地状态布局，比任何二手总结都权威。配套可读 <code>docs/README.md</code> 的文档路由表。
+  </div>
+  <p><strong>卡住就问我。</strong>我是你的助教：任何"这个类型为什么这样设计""这段代码对应上游哪里"的问题都可以直接提——我可以用工具现场查证，而不是凭印象回答。</p>
+  <p>参考速查：<a href="../reference/glossary.html">项目术语表（glossary）</a>——Piglet、parity、runtime cell 等黑话都在那里。</p>
+  <div class="lesson-nav">
+    <span>← 第一课</span>
+    <span>下一课：agent loop 精读（待生成）</span>
+  </div>
+</footer>
+
+</article>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

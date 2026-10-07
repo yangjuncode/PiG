@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PiG 术语表 · 速查</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+  /* 术语表专属：紧凑的定义列表 */
+  dl.glossary { margin: 1rem 0; }
+  dl.glossary dt {
+    font-weight: 700;
+    margin-top: 1.1rem;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+  }
+  dl.glossary dt code { font-size: 0.88em; }
+  dl.glossary dd { margin: 0.2rem 0 0; font-size: 0.95rem; }
+  dl.glossary dd .see { color: var(--ink-faint); font-size: 0.85rem; }
+  .term-en { color: var(--ink-faint); font-weight: 400; font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<article>
+
+<header class="lesson-head">
+  <p class="kicker">速查参考 · 持续更新</p>
+  <h1>PiG 术语表</h1>
+  <p class="lede">这个项目的词汇分两套：一套来自"移植"纪律（parity、divergence、upstream pin），一套来自产品生态（Resource、Package、Piglet）。读代码时遇到黑话回这里查。权威出处永远是 <code>docs/piglet-resource-ontology.md</code> 和 <code>AGENTS.md</code>。</p>
+</header>
+
+<h2>移植纪律词汇</h2>
+
+<dl class="glossary">
+  <dt>Pi / upstream</dt>
+  <dd>上游 TypeScript 参考实现（<code>github.com/earendil-works/pi</code>），镜像在 <code>.upstream/current/</code>。<strong>行为唯一权威</strong>：PiG 与 Pi 不一致 = bug 或记录在案的 divergence。</dd>
+
+  <dt>PiG / pig</dt>
+  <dd>本项目：Pi 的 Go 移植，单原生二进制，不需要 Node.js。二进制名 <code>pig</code>，配置根 <code>~/.pig</code>（<code>$PIG_HOME</code>）。</dd>
+
+  <dt>parity</dt>
+  <dd>"可观察行为与上游一致"。校验手段：<code>test/parity/scenarios/</code> 里的 TOML 场景成对跑 Pi 和 PiG 比较输出。</dd>
+
+  <dt>divergence <span class="term-en">/ D&lt;n&gt;</span></dt>
+  <dd>有意为之的行为差异，必须编号记录在 <code>docs/parity/DIVERGENCES.md</code>。静默漂移是这个项目最大的忌讳。</dd>
+
+  <dt>UpstreamVersion</dt>
+  <dd>当前对齐的上游版本，钉在 <code>internal/coding/pigversion/pigversion.go</code>，经 <code>coding.UpstreamVersion</code> 再导出。</dd>
+
+  <dt>PORT_MAP</dt>
+  <dd><code>docs/parity/PORT_MAP.md</code>：上游每个文件 → Go 文件 / deferred / designed-out 的对照表。定点深入时的导航。</dd>
+
+  <dt>scenario / family</dt>
+  <dd><code>test/parity/scenarios/&lt;family&gt;/*.toml</code>：一个可观察行为的成对断言。<code>family</code> 按上游功能域分组。</dd>
+
+  <dt>"Mirrors packages/…" 注释</dt>
+  <dd>Go 文件头的出处声明，指向对应上游源文件路径。看到它就知道了该去 <code>.upstream/current/</code> 哪个文件对照。</dd>
+
+  <dt>Stock PiG <span class="term-en">/ PiG Standard</span></dt>
+  <dd>Stock = 裸仓库版（只含上游行为 + 惰性通用机制）；PiG Standard = 一个显式 Piglet，承载品牌化/有主见的产品行为。Stock 绝不激活 Standard 行为。</dd>
+</dl>
+
+<h2>生态本体词汇</h2>
+
+<dl class="glossary">
+  <dt>Resource</dt>
+  <dd>最小能力单元：一个 extension、skill、prompt、theme、hook、MCP 定义、跨工具 agent 或 agent 环境。<em>是被分发/被选择的东西，不是进程。</em></dd>
+
+  <dt>Package</dt>
+  <dd>资源的"分发信封"：把若干 Resource 分组发布/安装。只能装资源，<strong>不能装 Piglet</strong>。</dd>
+
+  <dt>Piglet</dt>
+  <dd>一个"命名的 agent 定义"：选定并组合一组 Resource/Package/Plugin，加上自己的作用域与环境要求。类比："PiG 是烤箱，Piglet 是菜谱"。</dd>
+
+  <dt>Piglet Binary</dt>
+  <dd>把一个 Piglet 连同所需组件构建成目标平台的独立可执行文件。组件实现方式（realization）可以是 fused / subprocess / external。</dd>
+
+  <dt>Piglet Image</dt>
+  <dd>同一 Piglet 组合的 OCI 镜像形态。</dd>
+
+  <dt>realization <span class="term-en">vs materialization</span></dt>
+  <dd>两条独立轴：realization 回答"组件用什么方式跑"（fused=编译进二进制 / subprocess=独立进程 / external=外部服务）；materialization 回答"以什么载体交付"（binary / release / agentEnv / external）。不要把它们混成一个概念。</dd>
+
+  <dt>runtime cell</dt>
+  <dd>扩展宿主侧的优化：把多个兼容扩展"打包"进一个子进程（packed cell）。对扩展必须<em>观察上不可区分</em>——每个扩展仍独占一个 socket、一次 register 握手。</dd>
+
+  <dt>wire protocol</dt>
+  <dd>扩展子进程与宿主间的通信协议，唯一权威：<code>coding/extension/host/subprocess/protocol.go</code>。四套 SDK 共享同一契约，无版本协商。</dd>
+
+  <dt>SDK（sdk / sdk-rs / sdk-py / sdk-ts）</dt>
+  <dd>同一扩展 API 的四语言实现。接口与行为必须一致，实现可自由。sdk-ts 只是声明层适配，运行时仍走 Node 子进程。</dd>
+</dl>
+
+<h2>引擎内部词汇</h2>
+
+<dl class="glossary">
+  <dt>Agent / agent loop</dt>
+  <dd><code>agent/</code> 包的核心：<code>Agent</code> 类型持有 transcript + 工具 + 队列，<code>runLoop → runTurn</code> 驱动"调模型 → 执行工具 → 再调模型"循环。</dd>
+
+  <dt>turn</dt>
+  <dd>循环的一圈：一次模型流式调用 + 由此产生的工具执行。一次用户 prompt 可能产生多个 turn。</dd>
+
+  <dt>transcript / AgentMessage</dt>
+  <dd>会话消息序列。<code>AgentMessage</code> 是能装 user/assistant/toolResult/自定义角色的联合容器；JSON 形状与上游逐字段一致。</dd>
+
+  <dt>Provider</dt>
+  <dd><code>ai/types.go</code> 的接口：把标准化 transcript 变成某家模型的 wire 请求并产出统一事件流。换模型 = 换 Provider。</dd>
+
+  <dt>StreamFn</dt>
+  <dd>agent loop 实际调用的"发起一次模型流"的函数类型（<code>agent/stream_fn.go</code>）。Provider 会适配成 StreamFn。</dd>
+
+  <dt>steering / follow-up queue</dt>
+  <dd>Agent 的两条待投消息队列：steering = 运行中插进来的指令，follow-up = 排队等当前 run 结束的消息。</dd>
+
+  <dt>InteractiveMode</dt>
+  <dd><code>internal/codingagent</code> 里交互模式的编排者：持有 Session ↔ Agent ↔ TUI ↔ 扩展宿主的全部连线，<code>handleAgentEvent</code> 是事件总线。</dd>
+
+  <dt>app mode</dt>
+  <dd><code>cmd/pig</code> 的运行模式：interactive（默认 TUI）、print（<code>--print</code> 一次性输出）、rpc（<code>--mode rpc</code> 行 JSON 机器接口）。</dd>
+
+  <dt>SessionManager</dt>
+  <dd><code>internal/codingagent</code> 里管会话文件的组件：创建、追加、resume、分页加载。持久化类型来自 <code>durable/</code>。</dd>
+</dl>
+
+<footer class="lesson-foot">
+  <p><strong>用法：</strong>读代码碰到黑话先回这里；查不到就去 <code>docs/piglet-resource-ontology.md</code>（生态）或对应包的 <code>AGENTS.md</code>（引擎契约）。发现表里没有的术语，告诉我，我补进来。</p>
+  <div class="lesson-nav">
+    <a href="../lessons/0001-architecture-map.html">← 第 1 课：架构地图</a>
+    <span></span>
+  </div>
+</footer>
+
+</article>
+</body>
+</html>
