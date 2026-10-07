@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课 · agent loop 精读：一台事件驱动的状态机</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<article>
+
+<header class="lesson-head">
+  <p class="kicker">PiG 代码精读 · 第 2 课</p>
+  <h1>agent loop：一台事件驱动的状态机</h1>
+  <p class="lede"><code>agent/agent_loop.go</code> 只有 548 行，但它是整个 coding agent 的心脏。读懂这一页，你就拿到了写自己 agent 的完整模板：一个 turn 是什么、循环何时停、错误和取消怎么走、工具并发怎么保序。</p>
+</header>
+
+<h2><span class="sec-no">1</span>全景：run 的生命周期</h2>
+
+<p>一切从四个入口收敛到 <code>runLoop</code>：<code>Send</code> / <code>SendContent</code> / <code>SendMessages</code>（新 prompt）和 <code>Continue</code>（不重发 prompt 的续跑，比如压缩后重试）。调用链：</p>
+
+<pre><code>Send(ctx, text)
+  └─ BeginSendContent          ← beginRun: 占用 agent（streaming=true），
+     │                            挂上 runContext/runCancel/runDone
+     └─ PromptRun.Run()
+        └─ runLoop(ctx, cfg, prompts)
+           ├─ emit(AgentStartEvent) + TurnStartEvent
+           ├─ prompt 消息各发一对 MessageStart/MessageEnd
+           └─ run.loop()        ← 本课的主角
+        finishRun()            ← 释放占用，close(runDone)</code></pre>
+
+<p>三个不变量，记住它们后面所有细节都有处安放：</p>
+
+<ul>
+  <li><strong>一个 agent 同时只有一个 run。</strong><code>beginRun</code> 是占用锁，重入直接返回 <code>ErrAlreadyProcessing</code>。</li>
+  <li><strong>事件是唯一出口。</strong>引擎不认识 UI、持久化、扩展——它们都是 <code>emit()</code> 管线下游的订阅者。</li>
+  <li><strong><code>message_end</code> 才是提交点。</strong>消息在流式期间是"私有草稿"，只有 <code>MessageEndEvent</code> 会写进公开 transcript（<code>emit</code> 里 <code>appendMessages</code>）并触发 <code>OnMessagePersist</code> 落盘。</li>
+</ul>
+
+<h2><span class="sec-no">2</span>双层循环：<code>loop()</code> 逐段读</h2>
+
+<p><code>loopRun.loop()</code>（agent_loop.go:151）是两层循环：<strong>内层</strong>消化"还要继续干活"的信号（工具调用、steering 插话），<strong>外层</strong>消化"整轮结束后再来一轮"的信号（follow-up 队列、扩展请求的显式续跑）。</p>
+
+<pre><code>pendingMessages ← steeringQueue.Drain()        // 运行期间用户插的话
+for {                                          // ── 外层：follow-up / 显式续跑
+  hasMoreToolCalls := true
+  for hasMoreToolCalls || len(pendingMessages) > 0 {   // ── 内层：turn 循环
+    if turnIndex >= MaxTurns { endRun; return ErrMaxTurnsReached }
+    refreshModel()                             // SetModel 即时生效
+    if lastCompletedTurn != nil {
+      prepared ← prepareNextTurn(turn)         // 可换 context/model/thinking
+      pending  ← steeringQueue.Drain()         // 压缩可能很慢，顺手再收一次插话
+      emit(TurnStartEvent)
+    }
+    appendMessage(declareToolChanges(...))     // 工具集变化也落成消息
+    prepareRequest()                           // 每次请求前的改写钩子
+    turn, done, err ← runTurn()                // ← 下一节
+    if done { return err }                     // 硬退出：error/aborted
+    if decision == AgentTurnEnd { endRun; return nil }
+    hasMoreToolCalls ← turn.hasMoreToolCalls
+    pendingMessages ← steeringQueue.Drain()
+  }
+  if followUps ← followUpQueue.Drain(); 非空 { pending = followUps; continue }
+  if explicitContinuation { continue }         // FinishTurn 要的"再来一轮"
+  break
+}
+endRun()   // emit(AgentEndEvent{newMessages})</code></pre>
+
+<div class="callout">
+  <span class="callout-title">读法提示</span>
+  <code>loop()</code> 本质是状态机，<code>hasMoreToolCalls</code> 和 <code>pendingMessages</code> 是两个"继续条件"。想清楚每次迭代末尾这两个值怎么被重算，整个循环就没有秘密了。
+</div>
+
+<h2><span class="sec-no">3</span><code>runTurn</code>：一个 turn = 流式响应 + 工具批 + 决策钩子</h2>
+
+<p><code>runTurn()</code>（agent_loop.go:241）返回 <code>(completedTurn, done, error)</code>。三元组各管一件事：本轮产出、run 是否已终结、有无错误。流程：</p>
+
+<pre><code>assistant, toolCalls, err ← streamAssistantResponse()
+├─ err            → append + finishTurn + turnEnd + endRun → done=true
+├─ stopReason ∈ {error, aborted} → 同上，但 err=nil（决策钩子被跳过）
+└─ 正常：
+   ├─ len(toolCalls) > 0:
+   │   ├─ stopReason == length → failToolCallsFromTruncatedMessage
+   │   │     （输出被截断 ⇒ 参数可能不完整 ⇒ 整批拒绝执行）
+   │   └─ 否则 → executeToolCalls（见下节）
+   ├─ decision ← finishTurn(turnContext)   // 扩展可判 continue/end
+   └─ emitTurnEnd</code></pre>
+
+<p><code>stopReason</code> 是控制流的开关，四个值四种走法：</p>
+
+<table>
+  <tr><th>stopReason</th><th>含义</th><th>循环动作</th></tr>
+  <tr><td><code>stop</code></td><td>模型正常说完</td><td>无工具调用 → 内层循环自然退出</td></tr>
+  <tr><td><code>toolUse</code></td><td>响应里有工具调用</td><td>执行工具批 → <code>hasMoreToolCalls=true</code> → 再跑一 turn</td></tr>
+  <tr><td><code>aborted</code> / <code>error</code></td><td>取消或失败</td><td>硬退出：跳过决策钩子，直接 endRun</td></tr>
+  <tr><td><code>length</code></td><td>撞到输出上限</td><td>工具调用<strong>全部标记失败</strong>再进入下一 turn（防止执行截断参数）</td></tr>
+</table>
+
+<div class="sidenote">旁注：<code>length</code> 的处理是个值得抄的细节——流式协议下"截断的 JSON 参数"可能侥幸 parse 成功，静默执行半个参数比报错危险得多。</div>
+
+<h2><span class="sec-no">4</span>工具批：prepare 串行 / execute 并发 / result 保序</h2>
+
+<p>一条 assistant 消息可能带多个工具调用。<code>executeToolCalls</code>（tool_execution.go:51）默认并发，但分三段，每段的顺序语义不同：</p>
+
+<table>
+  <tr><th>阶段</th><th>顺序</th><th>为什么</th></tr>
+  <tr>
+    <td><strong>prepare</strong>（emit start、查工具、校验参数、BeforeToolCall 钩子）</td>
+    <td>严格按源序串行</td>
+    <td>复刻上游 <code>Promise.all(calls.map(...))</code> 的同步前缀：<code>tool_execution_start</code> 事件顺序、<code>QueueOrderable</code> 的文件变更票据，都必须按调用顺序签发——goroutine 自己保证不了</td>
+  </tr>
+  <tr>
+    <td><strong>execute</strong>（<code>tool.Execute(ctx, id, args, onUpdate)</code>）</td>
+    <td><code>wg.Go</code> 全并发</td>
+    <td>= <code>Promise.all</code>。刻意不加 CPU 数上限：工具是 IO 密集的</td>
+  </tr>
+  <tr>
+    <td><strong>finalize</strong>（emit end、写 toolResult 消息）</td>
+    <td>end 事件按<strong>完成序</strong>，transcript 按<strong>源序</strong></td>
+    <td>事件忠实反映谁先跑完；但消息历史必须稳定可重现</td>
+  </tr>
+</table>
+
+<p>单个调用内部还有一条钩子管线：<code>findTool → PrepareArguments → schema 校验 → BeforeToolCall（可拦截/改参数）→ Execute（onUpdate 流式进度）→ AfterToolCall（可改结果）→ PrepareToolResult → appendToolResult</code>。工具 panic 会被 <code>recover</code> 成 error result——一个坏工具炸不掉整个 run。</p>
+
+<h2><span class="sec-no">5</span><code>emit()</code> 管线：事件的单出口</h2>
+
+<p>所有事件（agent.go:1544）走同一条管线，顺序即契约：</p>
+
+<pre><code>emit(ev):
+  1. MessageEndEvent → appendMessages     ← 提交到公开 transcript（唯一提交点）
+  2. reduceEventState                     ← 更新 streamingMessage / pendingToolCalls
+  3. notifyListeners                      ← 按订阅序同步调用；返回 error → panic(runFailure)
+  4. OnEvent                              ← 可原地替换消息（扩展点）
+  5. MessageEndEvent → persistMessage     ← OnMessagePersist 落盘
+  6. EventCh / EventDone                  ← 非阻塞 channel 投递（EventDone 关闭后丢弃）
+  7. AfterEvent                           ← 返回 error → panic(runFailure)</code></pre>
+
+<div class="callout">
+  <span class="callout-title">两个移植味很浓的决策</span>
+  <strong>同步 listener：</strong>上游 TS 会 <code>await</code> 每个 listener，所以 Go 版也是同步调用——listener 的错误经 <code>panic(runFailure)</code> 传到 <code>catchRunFailure</code>，再走 <code>handleRunFailure</code> 合成一条完整的失败生命周期（error 消息 + turn_end + agent_end），而不是把 run 半截扔在那。<br><br>
+  <strong>provider 失败不 throw：</strong><code>requestStream</code> 把"请求没建起来"合成为一条 <code>stopReason=error</code> 的 assistant 消息走正常生命周期——这样上层重试逻辑收到的是可分类的数据（rate limit？网络？），不是一根炸断的调用栈。
+</div>
+
+<h2><span class="sec-no">6</span>三条"消息插队"通道</h2>
+
+<p>run 在跑的时候外界还能往里塞消息，三条通道语义不同：</p>
+
+<table>
+  <tr><th>通道</th><th>API</th><th>何时被消费</th><th>典型用途</th></tr>
+  <tr><td>steering queue</td><td><code>a.Steer(msg)</code></td><td>当前工具批结束后、下一次模型调用前</td><td>用户中途改主意："别改那个文件了"</td></tr>
+  <tr><td>follow-up queue</td><td><code>a.FollowUp(msg)</code></td><td>整轮 run 收尾时（外层循环）</td><td>"做完这个再帮我跑下测试"</td></tr>
+  <tr><td>next-turn 槽</td><td><code>a.QueueNextTurn(msg)</code></td><td>下一次 <code>Send</code> 时贴在用户消息旁</td><td>扩展想给<em>下一个</em> prompt 提供上下文</td></tr>
+</table>
+
+<p>两条队列各有 <code>QueueModeAll</code> / <code>QueueModeOneAtATime</code> 两种 drain 策略（默认一次一条）。<code>QueueNextTurn</code> 不是队列：run 闲着时没有 goroutine 会 drain 它，所以它跟着下一次 prompt 走。</p>
+
+<h2><span class="sec-no">7</span>retrieval practice</h2>
+
+<div class="quiz" data-quiz>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q1 · 仅当 <code>MessageEndEvent</code> 经过 <code>emit()</code> 时才发生的两件事是？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">提交公开 transcript ＋ 触发消息落盘回调</button></li>
+      <li><button data-opt="b">投递到事件 channel ＋ 执行收尾事件钩子</button></li>
+      <li><button data-opt="c">清空流式消息快照 ＋ 释放本轮运行占用</button></li>
+      <li><button data-opt="d">逐位同步通知订阅者 ＋ 允许原地替换消息</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>其余三件对所有事件都发生；占用释放只在 finishRun。message_end 是唯一的"提交点"——流式期间的草稿不进 transcript、不落盘。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q2 · 模型返回 <code>stopReason=length</code> 且消息里带工具调用，循环会？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">整批标记失败后照常进入下一轮</button></li>
+      <li><button data-opt="b">照常执行这批调用但截断其参数</button></li>
+      <li><button data-opt="c">丢弃这条消息并自动重试请求</button></li>
+      <li><button data-opt="d">只执行首个调用并忽略其余调用</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>截断的 JSON 可能侥幸解析成功——执行"半个参数"比报错危险。failToolCallsFromTruncatedMessage 给每个调用一条说明性错误结果，让模型下一轮自己重发完整调用。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q3 · 并行工具批里，prepare 阶段为什么仍按源序串行？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">保证 start 事件与变更票据按调用序签发</button></li>
+      <li><button data-opt="b">参数校验是 CPU 密集并发也没收益</button></li>
+      <li><button data-opt="c">让前置钩子能改写后续调用的参数</button></li>
+      <li><button data-opt="d">WaitGroup 无法保证 goroutine 启动序</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>复刻 Promise.all(map) 的同步前缀语义：tool_execution_start 顺序、QueueOrderable 文件票据都依赖调用顺序。goroutine 调度顺序是runtime说了算，必须用串行循环兜底。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q4 · <code>Steer</code> 和 <code>FollowUp</code> 的区别是？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">前者回合间插入；后者等整轮收尾接管</button></li>
+      <li><button data-opt="b">前者给用户输入；后者只给扩展使用</button></li>
+      <li><button data-opt="c">前者打断工具执行；后者等工具结束</button></li>
+      <li><button data-opt="d">前者每次取一条；后者一次清空全部</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>steering 在内层循环的每轮迭代开头被 drain，能改变"下一次模型调用"看到的东西；follow-up 只在外层循环、run 本来要结束时才被看。两条队列的 drain 策略都可配（all / one-at-a-time），所以 D 不对。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q5 · provider 在流式开始前就失败（如网络错误），run 会？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">合成 error 消息走完整生命周期后结束</button></li>
+      <li><button data-opt="b">把错误直接抛给调用方不产生消息</button></li>
+      <li><button data-opt="c">静默重试该请求直到成功或取消</button></li>
+      <li><button data-opt="d">写一条工具结果消息让下轮重试</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>requestStream 合成 stopReason=error 的 assistant 消息并走 message_start/end——上层（如 codingagent 的重试逻辑）拿到的是可分类的结构化结果；transcript 里也留下了一致的失败记录。</p>
+  </div>
+
+  <div class="quiz-q" data-answer="a">
+    <p class="quiz-stem">Q6 · 读一遍 <code>loop()</code>（agent_loop.go:151）：它一共有几种退出路径？</p>
+    <ul class="quiz-opts">
+      <li><button data-opt="a">三种：<code>break</code>、<code>return nil</code>、<code>return err</code></button></li>
+      <li><button data-opt="b">两种：<code>break</code> 或 <code>return err</code></button></li>
+      <li><button data-opt="c">一种：只有 <code>break</code>，错误走 panic</button></li>
+      <li><button data-opt="d">四种：另有 MaxTurns 的专用通道</button></li>
+    </ul>
+    <p class="quiz-explain" hidden>break=自然结束；return nil=决策钩子判 end 或 prepareNextTurn 失败已入账；return err=runTurn 硬退出或 MaxTurns 触顶（ErrMaxTurnsReached 是 error）。注意 prepareNextTurn 失败 return nil——失败已合成进消息，不算 run 的错误。</p>
+  </div>
+
+</div>
+
+<h2><span class="sec-no">8</span>动手：把状态机画出来</h2>
+
+<div class="lab">
+  <p class="lab-title">LAB · 十五分钟</p>
+  <ol>
+    <li><code>go doc ./agent AgentOptions</code>——数出全部钩子配置点（提示：9 个：FinishTurn / PrepareRequest / PrepareNextTurn / PreparePrompt / ConvertToLlm / TransformLLMMessages / BeforeToolCall / AfterToolCall / PrepareToolResult）。每个钩子对应循环里哪个时点，在第 2、3 节的图上标出来。</li>
+    <li>在 <code>loop()</code> 里找出外层循环的 <code>continue</code> 有几处、各自被什么条件触发（答：两处——follow-up 非空、explicitContinuation）。</li>
+    <li>打开 <code>agent/agent.go:1544</code> 的 <code>emit</code>，验证"message_end 才提交 transcript"——找 <code>appendMessages</code> 的唯一调用点。</li>
+    <li>（进阶）读 <code>consumeStream</code>（agent.go:1602）：ai 包的流事件 → agent 事件的映射是几对几？<code>TextStartEvent/TextDeltaEvent/TextEndEvent</code> 为什么都走同一个 <code>emitAssistantUpdate</code>？</li>
+    <li>（验证）跑 <code>go test ./agent -run TestAgentLoop -v 2>&1 | head -30</code> 看测试怎么命名这些行为。</li>
+  </ol>
+  <p style="margin-bottom:0">目标：合上代码，能手画 loop 的状态转换图。画不出哪条边 = 下一课该精读哪里的信号。</p>
+</div>
+
+<h2><span class="sec-no">9</span>对你自己 agent 的可抄清单</h2>
+
+<table>
+  <tr><th>设计</th><th>要不要抄</th><th>理由</th></tr>
+  <tr><td>事件单出口 + message_end 提交点</td><td><strong>抄</strong></td><td>UI/持久化/日志全是订阅者，引擎零依赖；提交点唯一则一致性永远简单</td></tr>
+  <tr><td>stopReason 驱动控制流</td><td><strong>抄</strong></td><td>四值开关比一堆 bool 标志干净；length→整批拒执行是真实踩坑经验</td></tr>
+  <tr><td>工具批三段式（串行 prepare / 并发 execute / 源序 finalize）</td><td><strong>抄</strong></td><td>并发提速但不牺牲事件序与 transcript 确定性</td></tr>
+  <tr><td>provider 失败合成 error 消息</td><td><strong>抄</strong></td><td>让重试策略处理数据而不是异常；transcript 自洽</td></tr>
+  <tr><td>两条队列 + next-turn 槽</td><td>按需</td><td>你的 agent 若不需要"中途插话"，一条队列就够</td></tr>
+  <tr><td><code>panic(runFailure)</code> 传 listener 错误</td><td>三思</td><td>这是"把 TS throw 翻译成 Go"的产物；从零写可用显式 error 链</td></tr>
+  <tr><td>runDeadlineContext 取消解耦</td><td>三思</td><td>同样是对齐 Pi 的 AbortSignal 语义；简单 agent 直接 ctx 取消即可</td></tr>
+</table>
+
+<footer class="lesson-foot">
+  <div class="primary-source">
+    <strong>📖 课后主读：</strong>上游 <code>packages/agent/src/agent-loop.ts</code>——本文件逐行对齐它，注释里到处是指向行号的出处（如 <code>agent-loop.ts:402-413</code>）。本地镜像跑 <code>make upstream-mirror</code> 拉取到 <code>.upstream/current/</code>，或直接读 <a href="https://github.com/earendil-works/pi">github.com/earendil-works/pi</a> 对应 release。配套读 <code>agent/AGENTS.md</code>（若有）和根 <code>AGENTS.md</code> 的 async parity 节。
+  </div>
+  <p><strong>卡住就问我。</strong>比如："listener 为什么是同步的""runDeadlineContext 到底解决什么""pendingToolCall 为什么不直接存 ai.ToolCall"——我可以现场查证。</p>
+  <p>参考速查：<a href="../reference/glossary.html">术语表</a> · <a href="0001-architecture-map.html">← 第 1 课：架构地图</a></p>
+  <div class="lesson-nav">
+    <a href="0001-architecture-map.html">← 第 1 课</a>
+    <span>下一课候选：ai.Provider 与流式协议 / 事件如何到 TUI / 扩展钩子全景</span>
+  </div>
+</footer>
+
+</article>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
