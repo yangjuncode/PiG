@@ -36,6 +36,17 @@ type ProjectedSessionEntry struct {
 
 // SessionProjection is the provenance-preserving, compaction-aware model
 // context of one branch (session-manager.ts SessionProjection).
+//
+// 投影 = "磁盘上的条目序列"投影成"模型实际看到的消息序列"，
+// 应用三层语义：
+//  1. 只取最新压缩点之后的范围（更早的历史只剩摘要文本）；
+//  2. context_edit 按 targetId 覆盖/删除对应条目产出的消息；
+//  3. 每种条目类型映射到其上下文消息形态（compaction→摘要+系统
+//     快照，branch_summary→摘要消息，custom_message→custom 角色等），
+//     纯状态条目（model_change/label/session_info 等）投影为空。
+//
+// Entries 保留每条来源条目的指针，供"消息→磁盘条目"反查
+// （findPersistedMessageEntryID 就靠它）。
 type SessionProjection struct {
 	Entries  []ProjectedSessionEntry
 	Messages []agent.AgentMessage

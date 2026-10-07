@@ -52,6 +52,10 @@ func (s *Session) ExportHeader() SessionHeader {
 // SerializeSessionBranch writes a fresh session header, the current branch
 // with each entry's parentId chained to the previous entry, and any trailing
 // entries, one JSON object per line. Mirrors upstream serializeSessionBranch.
+//
+// 导出的是"一条线性路径"而非整棵树：保留每条原条目的 ID（引用如
+// firstKeptEntryId/targetId 仍可解析），但 parentId 被重写为前一
+// 条——分叉出去的兄弟分支不带过去，导出文件打开后是一条干净直线。
 func SerializeSessionBranch(header SessionHeader, branch []SessionEntry, now time.Time, createTrailingEntries TrailingEntries) (string, error) {
 	lines, size, err := sessionBranchLines(header, branch, now, createTrailingEntries)
 	if err != nil {

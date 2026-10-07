@@ -1,3 +1,8 @@
+// messages.go 负责"会话内部消息 → provider 线格式"的转换，以及自定义
+// 角色消息的文本化。转换不是简单的类型映射：ConvertToLLM 先做
+// NormalizeMessages 清洗（transform.go），再把 bash 执行记录、分支/压缩
+// 摘要等自定义角色改写成 user 消息——模型协议里只有 user/assistant/
+// toolResult 三种角色。
 package agent
 
 import (
@@ -7,6 +12,25 @@ import (
 	"github.com/MichaelKinsy/PiG/ai"
 )
 
+// ConvertToLLM converts AgentMessages to the wire format expected by the AI provider.
+// It calls NormalizeMessages first to filter errored/aborted assistant messages and
+// insert synthetic tool results for orphaned tool calls.
+//
+// 每次模型请求前的消息转换主入口（streamAssistantResponse 调用，也可被
+// AgentOptions.ConvertToLlm 替换）。三个职责：清洗（丢出错/中止的回复、
+// 补孤儿工具结果）→ 逐条映射到 ai.Message → 自定义角色文本化降级为
+// user 消息。assistant 回复无内容时补一个空文本块——空 content 数组
+// 会被某些 provider 拒绝。
+// 先清洗：丢掉 error/aborted 回复、给孤儿 tool_use 补合成结果、
+// 跨模型的思维块降级（transform.go 的详细规则）。
+// 空 content 会被部分 provider 拒绝，补一个空文本块保底。
+// Mirrors upstream convertToLlm (coding-agent core/messages.ts):
+// every known custom role becomes a user message whose content is a
+// text-block array; "custom" block-array content passes through.
+// 自定义角色降级：模型协议没有这些角色，全部转成 user 消息——
+// bash 执行/分支摘要/压缩摘要走固定文本模板；纯 custom 的
+// content 尽量保留块结构。
+// excludeFromContext 的 bash 记录仅留档，不进模型视野。
 // ConvertToLLM converts AgentMessages to the wire format expected by the AI provider (convertToLlm, messages.ts:148).
 // Like upstream it only converts: the agent loop passes the result to the stream function as it is, and a provider
 // filters errored/aborted assistant messages and closes orphaned tool calls itself (transformMessages).
@@ -75,6 +99,8 @@ func customUserMessage(m map[string]any) (ai.UserMessage, bool) {
 // whether built in memory or decoded from JSON. Missing content is an empty
 // array, as session projection stores it.
 func customMessageContent(content any) (ai.UserContentBlocks, bool) {
+	// content 在内存里有四种已知形态（字符串/空/两种块切片），
+	// 直接归一成块数组。
 	switch content := content.(type) {
 	case string:
 		return ai.UserContentBlocks{ai.TextContent{Text: content}}, true
@@ -85,6 +111,8 @@ func customMessageContent(content any) (ai.UserContentBlocks, bool) {
 	case []ai.UserContentBlock:
 		return ai.UserContentBlocks(content), true
 	}
+	// 剩下的是从 JSON 解出来的 map/[]any 形态：借 UnmarshalJSON 的
+	// user 通道走一遍，还原成块数组。
 	raw, err := json.Marshal(map[string]any{"role": RoleUser, "content": content})
 	if err != nil {
 		return nil, false
@@ -130,6 +158,10 @@ func (m *UserMessage) LLMMessage() ai.UserMessage {
 }
 
 // Observe returns an independently owned observation of the message. A streaming shallow view keeps its copied top-level values while observing its retained nested objects.
+//
+// 读取 assistant 消息的正确姿势：流式视图（streamView≠nil）下导出字段
+// 只是事件发出时的快照，嵌套内容还在被 provider 更新；Observe 取"此刻"
+// 的独立副本，读到的才是最新状态。定稿消息下它就是一次普通深读。
 func (m *AssistantMessage) Observe() *AssistantMessage {
 	if m == nil {
 		return nil

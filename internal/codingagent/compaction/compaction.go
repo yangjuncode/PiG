@@ -290,6 +290,13 @@ func estimateMessagesTokens(messages []agent.AgentMessage) int {
 // FindCutPoint finds the raw-entry cut point that keeps approximately
 // keepRecentTokens of recent context between startIndex and endIndex
 // (exclusive) (compaction.ts findCutPoint).
+//
+// 选点策略：先收集合法切口（user/assistant/custom/摘要类条目；
+// tool_result 不能切——它必须跟在发起它的 tool call 后面），再从
+// 尾部向前累计 token，首次超过 keepRecentTokens 时把切口对齐到
+// 最近的合法切点；然后向前吞掉相邻的无上下文元数据条目（label/
+// model_change 等不占 token 的不留孤儿）。落点在回合中间时
+// IsSplitTurn=true 并给出该回合的起始索引。
 func FindCutPoint(entries []codingagent.SessionEntry, startIndex, endIndex, keepRecentTokens int) CutPointResult {
 	cutPoints := findValidCutPoints(entries, startIndex, endIndex)
 	if len(cutPoints) == 0 {
@@ -407,6 +414,17 @@ func projectedMessages(entries []codingagent.ProjectedSessionEntry) []agent.Agen
 // the canonical session projection, so context edits, omissions, and the
 // previous compaction's retained range all apply. It returns nil when the
 // branch ends in a compaction or nothing would be summarized.
+//
+// 规划三步：
+//  1. 投影分支（应用压缩/编辑语义），定位"上一次压缩"作为上界——
+//     之前的历史不再重复摘要，只把它的 summary 传给增量更新提示词；
+//  2. findProjectedCutPoint 从尾部倒推 KeepRecentTokens 预算，选出
+//     第一个保留条目；落点若在回合中间则标记 IsSplitTurn（该回合
+//     前半段进"turn prefix"单独摘要，后半段保留原文）；
+//  3. 汇总待摘要区间 + 抽取文件读写操作清单（供摘要尾部列出，跨
+//     压缩累积）。
+//
+// 返回的 Preparation 就是 session_before_compact 扩展看到的事件载荷。
 func PrepareCompaction(
 	pathEntries []codingagent.SessionEntry,
 	s CompactionSettings,
@@ -968,6 +986,19 @@ func summarizationFailure(operation string, err error) error {
 
 // ─── Main Compaction Function ─────────────────────────────────────────────────
 
+// Compact generates summaries for compaction using PrepareCompaction output.
+// thinkingLevel applies to reasoning-capable models; an empty sessionID gives
+// each summary request a fresh routing ID.
+// Mirrors upstream compact (compaction.ts:714).
+// Compact generates summaries for compaction using PrepareCompaction output.
+// thinkingLevel applies to reasoning-capable models; an empty sessionID gives
+// each summary request a fresh routing ID.
+// Mirrors upstream compact (compaction.ts:714).
+//
+// 摘要执行：切点在回合中间（IsSplitTurn）时要两次 LLM 调用——历史
+// 部分照常摘要，回合前缀用专用提示词单独摘要，然后两段拼接；正常
+// 情况一次摘要。最后把文件操作清单附加到摘要尾部（读过/改过的
+// 文件，模型压缩后仍能知道动过哪些文件）。
 // Compact generates the summaries of a compaction using PrepareCompaction output (compaction.ts:965 compact). thinkingLevel applies to
 // reasoning-capable models; an empty sessionID gives each summary request a fresh routing ID; apiKey, headers and env are the request auth. streamFn
 // sends each summary request, as upstream's streamFn does (agent-session.ts passes this.agent.streamFunction): a [CompleterStreamFn] sends it through a

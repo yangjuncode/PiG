@@ -53,6 +53,12 @@ func (s *Session) cacheWarmerHooks() CacheWarmer {
 
 // cacheWarmingStreamFn installs response observers and restarts cache warming
 // before sending each agent request through the provider, as sdk.ts streamFn does.
+//
+// Agent 的默认 streamFn（NewSession 里注入）：每次模型请求先装
+// after_provider_response/provider_stream_event 观察钩子和超时/重试
+// /请求头选项，再"借本次请求重启缓存预热"（warm 请求与业务请求共用
+// 前缀，预热才有意义），最后走 modelRuntime.StreamSimple 发出。
+// Session 已被 GC/关闭时退化到 provider 直发。
 func cacheWarmingStreamFn(session func() *Session) agent.StreamFn {
 	return func(ctx context.Context, model *ai.Model, transcript ai.TranscriptContext, options ai.StreamOptions) (*ai.AssistantMessageEventStream, error) {
 		if s := session(); s != nil {
@@ -118,6 +124,10 @@ func (s *Session) streamWarmRequest(ctx context.Context, model *ai.Model, transc
 
 // installCacheWarmer binds a fresh warmer to inner and retires the previous
 // one.
+//
+// 换 inner（新会话/恢复/克隆）时重装预热器：旧预热器立即取消，
+// 它的在途刷新在 retired.WaitGroup 里排空后再清它名下会话的
+// provider 资源——排空前清理会让迟到的响应重建资源。
 func (s *Session) installCacheWarmer(inner *icodingagent.Session, supplied CacheWarmer) {
 	inner.SetCacheReadPriceSource(s.services.Registry().CacheReadPrice)
 	s.warming.mu.Lock()

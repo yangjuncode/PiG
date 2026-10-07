@@ -26,6 +26,9 @@ type Recorder struct {
 }
 
 // NewRecorder creates a Recorder. SessionStart is set to time.Now().
+//
+// 每个 Agent 一台（NewAgent 里创建，Agent.Timings() 暴露）。状态行、
+// /cost、--diagnose 等只读消费者通过 Snapshot() 取一致快照。
 func NewRecorder() *Recorder {
 	return &Recorder{
 		sessionStart: time.Now(),

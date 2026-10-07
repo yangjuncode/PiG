@@ -53,6 +53,9 @@ func (s *Session) ReapplyActiveTools(names []string) {
 }
 
 // setActiveToolsByName is upstream's _setActiveTools: it applies the loadout and drops the declared tools from the pending ones. The caller holds applyMu and toolRegistryMu.
+// setActiveToolsByName 激活工具变更的落地四步：装配（跑
+// prepareLoadout 钩子产出声明集）→ 从 pending 名单里核销已激活的
+// → 喂给 agent → 重建系统提示里的工具段（声明差分写入下次转录）。
 func (s *Session) setActiveToolsByName(names []string) {
 	declared := s.applyToolLoadout(names)
 	valid := make([]string, len(declared))
@@ -99,6 +102,8 @@ func (s *Session) rebuildSystemPrompt(toolNames []string) {
 	if s.defaultSystemPrompt {
 		s.baseSystemSections = sections
 	} else {
+		// 调用方自带结构化提示：只刷新 tools/rules 两个"系统所有"
+		// 的段，调用方的其它段（preamble 等）保持不动。
 		for i, section := range s.baseSystemSections {
 			if section.Name != "tools" && section.Name != "rules" {
 				continue
@@ -188,6 +193,8 @@ func (s *Session) SetSystemPromptSections(sections ai.OrderedSections) {
 // restoreToolsFromTranscript activates the tools the current branch's transcript declares, with the +name/-name modifiers applied (upstream _restoreToolsFromTranscript). The whole branch is replayed, so a tool removed before a compaction stays inactive. Extension and SDK tools the branch never added or removed were registered after it recorded its loadout; they activate like newly registered tools unless they are registered with `defaultActive: false`, and built-in tools follow `defaultTools` instead. Declared tools the Session does not have yet, such as tools of MCP servers that are still connecting, stay pending until they register, if the allowlist and denylist admit them. A branch without a system message keeps the current tools. It returns the TypeError Pi's replay throws for a system message holding a tool list it cannot read, before it changes anything.
 func (s *Session) restoreToolsFromTranscript(modifiers ...string) error {
 	// The transcript is read before the loadout locks, so they are not held while the whole branch is read.
+	// 先投影拿系统消息（含 ToolsAdded 声明累积），再上锁——投影要
+	// 遍历整支，不能持锁做。
 	systems, err := replayedTranscript(s.inner)
 	if err != nil {
 		return err
@@ -221,6 +228,8 @@ func (s *Session) applyTranscriptTools(messages []agent.AgentMessage, modifiers 
 	for _, tool := range ai.GetCurrentTools(systems) {
 		names = append(names, tool.Name)
 	}
+	// 声明里有、但当下注册表还没有的工具（比如 MCP 还在连）记为
+	// pending：下次 RefreshTools 里它们一旦注册就自动激活。
 	base := map[string]struct{}{}
 	for _, entry := range s.toolRegistry.base {
 		base[entry.tool.Name()] = struct{}{}

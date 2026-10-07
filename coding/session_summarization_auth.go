@@ -56,6 +56,15 @@ func withoutDeletedHeaders(headers ai.ProviderHeaders) map[string]string {
 }
 
 // prepareSummarizationRequest resolves the summary model and its request auth (agent-session.ts:560 _getSummarizationRequestAuth).
+// prepareSummarizationRequest uses the same Services-owned request preparation as ModelRuntime streaming. Explicit custom streams may operate without registry auth; caller-supplied Go providers own their own auth callbacks.
+//
+// 摘要请求的认证装配：虚拟模型先路由出物理模型（摘要按物理模型
+// 的窗口/上限裁剪输入）；registry 构造或自带 Auth 的 provider 走
+// modelRuntime.prepare 拿密钥/请求头，把认证合并进 StreamOptions
+// 再包一层 completer/streamFn——这样摘要复用运行时认证而不需要
+// 扩展自己传 key。prepare 失败时：有自定义流函数或非 registry
+// provider 可以无认证继续；registry provider 的 auth missing 翻译
+// 成"找不到 API key"的用户可读错误。
 func (s *Session) prepareSummarizationRequest(ctx context.Context, model *ai.Model) (summarizationRequest, error) {
 	thinking := s.ThinkingLevel()
 	// Pi's getAuth rejects with the signal's reason when the signal is already aborted (resolve.ts:33-44), before any request exists. A caller-owned Go provider has no getAuth: it is not called once the signal has aborted, with the same reason (pinned by TestCompactCancelsSynchronouslyFromStartEvent).

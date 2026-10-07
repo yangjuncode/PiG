@@ -101,6 +101,11 @@ func (runtime *ModelRuntime) syncRegistration(providerID string, provisional *ai
 
 // updateModelSnapshot projects the catalog in the current provider order without credential I/O, as Pi's updateModelSnapshot does: every provider's catalog is read again, and every provider whose published snapshot holds an auth check is available with its whole catalog. A provisional check marks the changed provider configured when auth.json stores it or its request auth is configured, and never replaces a published check. Account-filtered membership of other providers widens until the queued local refresh recomputes it, as in Pi.
 // upstream: packages/coding-agent/src/core/model-runtime.ts:updateModelSnapshot,registerProvider
+//
+// 并发语义：catalogSeq 是这次投影的代次——锁外读各 provider 目录
+// （目录回调可重入 runtime，不能持锁）；读到 configured provider
+// 集合扩大时循环补读；提交前比对 seq，期间有更新的投影则这次
+// 作废。即"最新投影赢、旧投影静默丢弃"的乐观发布。
 func (runtime *ModelRuntime) updateModelSnapshot(providerID string, provisional *ai.AuthCheck, providerOrder func() []string) {
 	configured := false
 	if provisional != nil {
@@ -253,6 +258,11 @@ func (runtime *ModelRuntime) loadAvailableModels(ctx context.Context, providerID
 }
 
 // queueAvailabilityRefresh assigns publication generations when the availability pass starts, after any catalog work. Only a later availability pass invalidates this pass.
+//
+// 全量可用性刷新：开工时先取 refreshSeq（只有自己这代能提交）
+// 并把所有 providerSeq 加一（作废旧 provider 级刷新）；三路凭证
+// I/O 经 AwaitModelTasks 排队串行化进模型任务组；写回前验 seq——
+// 更新的刷新存在就静默丢弃这次结果，"最新赢"不回流。
 // The pass reads auth.json through one view (AvailabilityReadContext) unless an extension provider takes part.
 func (runtime *ModelRuntime) queueAvailabilityRefresh(ctx context.Context) error {
 	ctx = runtime.services.Registry().AvailabilityReadContext(runtime.services.Registry().ModelTaskContext(ctx))

@@ -67,6 +67,10 @@ func (s *Session) bindTool(tool agent.AgentTool, description ...string) agent.Ag
 }
 
 func (tool *sessionBoundTool) Execute(ctx context.Context, id string, args json.RawMessage, update agent.ToolUpdateCallback) (agent.AgentToolResult, error) {
+	// 工具执行前的两层包装：1) ctx 里没有会话环境就补 ToolEnvironment
+	// （PI_* 环境变量来源 + 图片能力/输入限制）；2) 每次调用都从
+	// runner 拿一个独立的扩展工具上下文（嵌套调用也一样，ctx 上
+	// 的 ui/session 句柄按调用隔离）。
 	if _, bound := agent.ToolEnvironmentFrom(ctx); !bound {
 		session := tool.session
 		env := agent.ToolEnvironment{SessionID: session.ID(), SessionFile: session.Path(), ThinkingLevel: string(session.ThinkingLevel())}
@@ -138,6 +142,12 @@ type wrappedTool struct {
 	tool     agent.AgentTool
 }
 
+// sessionToolRegistry 是"注册表"而非"激活列表"：base=内置工具、
+// custom=调用方/SDK 工具，扩展工具在每次 refresh 时动态并入；
+// entries 是过了 allowed/excluded 两道闸后的全部可注册集合。
+// 激活与否由 Session.SetActiveToolsByName / 各 selectTools 调用决定。
+// usesDefaultTools/addedDefaultTools 记录"初始集来自 defaultTools
+// 设置"及设置重载后新增的名字，供 RefreshTools 自动激活新工具。
 type sessionToolRegistry struct {
 	base, custom []sessionToolEntry
 	entries      []sessionToolEntry
@@ -206,6 +216,7 @@ func createSessionToolRegistry(services *AgentSessionServices, opts SessionOptio
 	registry := sessionToolRegistry{allowed: maps.Clone(opts.AllowedTools), excluded: maps.Clone(opts.ExcludedTools), skipExtensions: opts.skipExtensionTools,
 		usesDefaultTools: usesDefaultTools(opts), defaultToolModifiers: slices.Clone(opts.DefaultToolModifiers)}
 	if opts.toolRegistry != nil {
+		// Clone 路径：复用源会话的注册表，深拷贝各列表防共享修改。
 		registry = *opts.toolRegistry
 		registry.base = slices.Clone(registry.base)
 		registry.custom = slices.Clone(registry.custom)
@@ -327,6 +338,9 @@ func createSessionToolRegistry(services *AgentSessionServices, opts SessionOptio
 }
 
 func (r *sessionToolRegistry) refresh(runner *inproc.Runner) error {
+	// 重建注册集：base → runner 上注册的扩展工具（包成 bridgeTool）
+	// → custom，按 excluded/allowed 过滤，同名后到的覆盖先到的
+	// （索引定位原槽位替换，保持首次出现的位置）。
 	entries := slices.Clone(r.base)
 	var wrapped map[string]wrappedTool
 	if runner != nil && !r.skipExtensions {
@@ -485,6 +499,18 @@ func (s *Session) RefreshToolsAfterReload() error {
 }
 
 // refreshTools rebuilds the registry. Only a reload passes includeAllExtensionTools.
+// 注册表重建主流程（reload 专用参数 includeAllExtensionTools）：
+//  1. reload 时先把当前激活集整体记为 pending——重建中途若激活判定
+//     暂时丢了这些名字，末尾按 pending 补回来，防止工具在刷新缝
+//     里掉出激活集；
+//  2. 记"老激活集合"（只数注册时即激活的工具）；
+//  3. 当前激活名 + defaultTools 新增名合成初始 active；
+//  4. registry.refresh 重算注册集（并入最新扩展注册）；
+//  5. reload 且无 allowlist 时，全部扩展/SDK 工具重新激活
+//     （含会话中被禁过的——上游 reload 语义是"重新采纳"）；
+//  6. 逐工具判定激活：allowlist 点名且可声明，或新出现/重激活且
+//     自带激活属性；
+//  7. pending 名单追加，最后 selectTools 落成新的激活工具集。
 func (s *Session) refreshTools(includeAllExtensionTools bool) error {
 	s.loadout.applyMu.Lock()
 	defer s.loadout.applyMu.Unlock()

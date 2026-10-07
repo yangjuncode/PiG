@@ -18,6 +18,11 @@ import (
 // completeSimpleWithRetries runs call through ai.RetryAssistantCall, upstream's
 // retryAssistantCall: a cancelled ctx is never retried, non-retryable errors and
 // budget exhaustion return the final error, and OnRetryFinished fires once iff a
+// retry occurred. opts == nil (or disabled) means a single unretried call.
+//
+// 摘要调用（压缩/分支摘要/bug 报告）的统一重试口：瞬断、限流等
+// IsRetryable 判真的错误按 2^n 退避重试，取消和确定性错误立即终了。
+// 与主循环重试分离——摘要是一次性旁路调用，不进 Session 的重试序列。
 // retry occurred. A nil or disabled policy means a single unretried call. The
 // policy and callbacks are ai.RetryPolicy and ai.RetryCallbacks, the types Pi's
 // compaction functions take as `retry` and `callbacks` (compaction.ts:624-625).

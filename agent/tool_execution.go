@@ -20,6 +20,16 @@ import (
 
 // Tool-call execution for one assistant message. Mirrors upstream
 // packages/agent/src/agent-loop.ts executeToolCalls and its helpers.
+//
+// 本文件实现"一次 assistant 回复里全部工具调用"的执行管线，分三段：
+//   prepareToolCall（查工具 → 参数归一化 → schema 校验 → before 钩子）
+//   → executePreparedToolCall（真正跑工具，收集进度更新）
+//   → finalizeExecutedToolCall（after 钩子改写结果 → PrepareToolResult）。
+// 批次的两种排布：executeToolCallsSequential 逐条跑完再跑下一条；
+// executeToolCallsParallel 先按源顺序同步做完所有 prepare（保证文件
+// 变更队列等按调用顺序登记），再并发执行。任一批次产出
+// executedToolCallBatch：按源顺序排列的 ToolResultMessage + 整批是否
+// 要求提前终止。
 
 // executedToolCallBatch is the outcome of one assistant message's tool calls.
 type executedToolCallBatch struct {
@@ -55,6 +65,9 @@ func (r *loopRun) toolCtx() context.Context {
 // executeToolCalls runs a batch sequentially when the loop is configured for
 // sequential execution or any call targets a tool whose ExecutionMode is
 // sequential; otherwise in parallel.
+//
+// 批次入口：只要有一个调用指向声明了 ToolModeSequential 的工具，整批
+// 退化为顺序执行——因为该工具的语义可能依赖"看不到并发中的兄弟调用"。
 func (r *loopRun) executeToolCalls(assistant *AssistantMessage, calls []pendingToolCall) executedToolCallBatch {
 	ctx := WithToolCallHookContext(r.toolCtx(), r.toolCallHookContext(assistant))
 	if r.h.cfg.ToolExecution == ToolModeSequential || r.hasSequentialToolCall(calls) {
@@ -81,6 +94,7 @@ func (r *loopRun) executeToolCallsSequential(ctx context.Context, calls []pendin
 	for _, call := range calls {
 		r.h.emitToolExecutionStart(call)
 		var f finalizedToolCall
+		// prepare 通过：执行 + after 钩子定稿。
 		if outcome := r.h.prepareToolCall(ctx, call); outcome.prepared != nil {
 			executed, err := r.h.executePreparedToolCall(ctx, *outcome.prepared)
 			if err != nil {
@@ -88,8 +102,11 @@ func (r *loopRun) executeToolCallsSequential(ctx context.Context, calls []pendin
 			}
 			f = r.h.finalizeExecutedToolCall(ctx, *outcome.prepared, executed)
 		} else {
+			// prepare 已给出失败定稿（未知工具/参数非法/被拦截）。
 			f = *outcome.finalized
 		}
+		// 顺序模式：每完成一个立即发它的 toolResult 消息——下游
+		// （以及模型侧可见的转录顺序）与调用顺序一致。
 		r.h.emitToolExecutionEnd(f)
 		messages = append(messages, r.appendToolResult(f))
 		finalized = append(finalized, f)
@@ -106,6 +123,15 @@ func (r *loopRun) executeToolCallsSequential(ctx context.Context, calls []pendin
 // calls' tools settled, when the tool reports it: ToolSettleFromContext); tool-result
 // messages follow source order once every call has finished (Promise.all).
 //
+// 并行批次分两阶段：
+//
+//	阶段一（串行、按源顺序）：发 tool_execution_start、prepare（含
+//	  QueueOrderable 的变更队列占位登记）、失败的调用立即定稿。这一步
+//	  必须串行，否则 goroutine 到达顺序会让同路径文件操作乱序。
+//	阶段二（并发）：每个已准备的调用一个 goroutine 跑 Execute，
+//	  wg.Wait() 齐收后再按源顺序统一发 toolResult 消息——事件顺序
+//	  按完成先后，消息顺序按调用顺序。
+//
 // A tool implementing QueueOrderable has its shared-queue position reserved
 // here too, in this same source-order loop, before any goroutine starts:
 // upstream's Promise.all(calls.map(...)) runs each call's synchronous
@@ -115,12 +141,16 @@ func (r *loopRun) executeToolCallsSequential(ctx context.Context, calls []pendin
 func (r *loopRun) executeToolCallsParallel(ctx context.Context, calls []pendingToolCall) executedToolCallBatch {
 	outcomes := make([]toolCallOutcome, 0, len(calls))
 	callCtxs := make([]context.Context, 0, len(calls))
+	// 阶段一：按调用源顺序串行 prepare。顺序在此固定，之后 goroutine
+	// 的到达顺序不再影响同路径资源的排队序。
 	var registration registrationOrder
 	for _, call := range calls {
 		r.h.emitToolExecutionStart(call)
 		outcome := r.h.prepareToolCall(ctx, call)
 		callCtx := ctx
 		if outcome.prepared != nil {
+			// 声明了 QueueOrderable 的工具（文件写入类）：此刻就在
+			// 变更队列占好位，票据随 ctx 传给 Execute。
 			tool := outcome.prepared.tool
 			if mayTake, ok := tool.(MayTakeFileMutationQueue); ok && mayTake.MayTakeFileMutationQueue() {
 				callCtx = registration.extensionTool(callCtx, call.id)
@@ -152,6 +182,8 @@ func (r *loopRun) executeToolCallsParallel(ctx context.Context, calls []pendingT
 		}
 	}
 
+	// 阶段二：已准备的调用每个一个 goroutine 并发执行；prepare 失败
+	// 的直接落定不占 goroutine。
 	registration.prepared()
 	finalized := make([]finalizedToolCall, len(outcomes))
 	prepared := 0
@@ -233,6 +265,9 @@ func (h *loopHost) runPreparedToolCall(ctx context.Context, prepared preparedToo
 		// turn behind its real predecessor before handing off to whoever is
 		// queued behind it, or a later caller could run concurrently with
 		// that still-in-flight predecessor.
+		// 已取消的调用不进 Execute，但它在阶段一占的队列位必须按规矩
+		// 退掉：先 Wait 轮到自己（等前驱交接），再 Release 放行后继，
+		// 否则同路径后续调用会永远卡在队列里。
 		if ticket, ok := MutationTicketFromContext(ctx); ok {
 			ticket.Wait()
 			ticket.Release()
@@ -275,6 +310,11 @@ func (h *loopHost) finalizeCalledTool(ctx context.Context, prepared preparedTool
 // message that hit the output token limit. Streamed tool-call arguments are
 // finalized with a best-effort salvage parser, so a truncated message can
 // yield arguments that parse and validate but are silently incomplete.
+//
+// StopReason=="length" 时的保护分支：截断回复里的工具参数可能"能解析
+// 但缺尾巴"（比如 JSON 被抢救解析补齐），执行这种调用比拒绝更危险，
+// 所以整批不执行、全部返回"参数可能被截断请重发"的错误结果，让模型
+// 下一轮重新发起完整调用。
 func (r *loopRun) failToolCallsFromTruncatedMessage(calls []pendingToolCall) executedToolCallBatch {
 	messages := make([]ToolResultMessage, 0, len(calls))
 	for _, call := range calls {
@@ -350,16 +390,31 @@ func (h *loopHost) prepareToolCall(ctx context.Context, call pendingToolCall) to
 // prepareToolCall resolves the call against tools; see Agent.prepareToolCall.
 // Mirrors upstream prepareToolCall, whose config is ToolCallHooks and whose
 // tools default to the context's (.upstream/v0.99.1/packages/agent/src/agent-loop.ts:707-716).
+//
+// 执行前的全部裁决，任何一步不过都会以 finalized（带 isError 的结果）
+// 短路返回，根本不到 Execute：
+//  1. findTool 查名字，查无此工具 → 立即错误结果；
+//  2. ArgumentPreparer 归一化旧式参数形状（在 schema 校验之前）；
+//  3. schema 校验（优先 ArgumentSchema()，退回 Schema().Parameters）；
+//  4. 逐个跑 BeforeToolCall 钩子：Block 拦截、Args 改写（不再校验）；
+//  5. ctx 已取消 → "Operation aborted"。
+//
+// defer recover 把 prepare 阶段的 panic 也变成错误结果——工具侧的崩溃
+// 不允许掀翻整个 run。
 func prepareToolCall(ctx context.Context, tools []AgentTool, hooks ToolCallHooks, call pendingToolCall) (outcome toolCallOutcome) {
 	tool := findTool(tools, call.name)
 	if tool == nil {
 		return immediateOutcome(call, errorToolResult("Tool "+call.name+" not found"))
 	}
+	// 兜底 recover：归一化/校验/钩子里的 panic 一律降级为错误工具
+	// 结果，而不是让 panic 掀翻整个运行。
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			outcome = immediateOutcome(call, errorToolResult(thrownMessage(recovered)))
 		}
 	}()
+	// ArgumentPreparer：在 schema 校验之前把旧式参数形状改写成新形状
+	// （典型：edit 工具的扁平参数 → edits 数组）。
 	// The tool reads the call's own argument bytes, as Pi passes toolCall.arguments itself; nothing writes them after the call is built.
 	args := json.RawMessage(call.args)
 	if preparer, ok := tool.(ArgumentPreparer); ok {
@@ -372,6 +427,8 @@ func prepareToolCall(ctx context.Context, tools []AgentTool, hooks ToolCallHooks
 		}
 	}
 	var validationErr error
+	// 校验路径二选一：工具自带原始 ArgumentSchema 就按原文校验；
+	// 否则用 Schema().Parameters 的声明式参数描述。
 	if schemaTool, ok := tool.(interface{ ArgumentSchema() json.RawMessage }); ok {
 		args, validationErr = ai.ValidateToolArgumentsJSON(call.name, schemaTool.ArgumentSchema(), args)
 	} else {
@@ -389,6 +446,8 @@ func prepareToolCall(ctx context.Context, tools []AgentTool, hooks ToolCallHooks
 			return immediateOutcome(call, errorToolResult("Operation aborted"))
 		}
 		if hookResult.Block {
+			// 钩子拦截：不执行，生成错误结果；钩子的 Terminate 也会
+			// 并入批次提前终止的判定。
 			reason := hookResult.Reason
 			if reason == "" {
 				reason = "Tool execution was blocked"
@@ -398,6 +457,8 @@ func prepareToolCall(ctx context.Context, tools []AgentTool, hooks ToolCallHooks
 			return immediateOutcome(call, result)
 		}
 		if hookResult.Args != nil {
+			// 钩子改写参数：直接生效且不再二次校验——校验已在钩子前
+			// 完成，改写是钩子的责任。
 			args = hookResult.Args
 		}
 	}
@@ -438,6 +499,12 @@ func (h *loopHost) executePreparedToolCall(ctx context.Context, prepared prepare
 //
 // An update the sink rejects does not stop the tool or the later updates. Once the tool returned and every update settled, the first rejection is returned and the result is dropped: upstream awaits `Promise.all(updateEvents)` in the try body and again in the catch, so the rejection leaves the function either way (agent-loop.ts:833-845).
 //
+// 进度更新的并发闸：sink 包装层用 mu+inflight 计数保证
+//   - Execute 返回后不再接受新更新（accepting=false 丢弃迟到的回调）；
+//   - 返回前 inflight.Wait() 等所有已接受的更新投递完毕；
+//   - onUpdate 报错（rejected）不中断工具，只记第一笔，等 Execute
+//     结束后以 error 形式向上抛、丢弃工具结果。
+//
 // observed reports whether anything could see the updates now; nil means always. The tool reads it through
 // ToolUpdatesObserved with the callback it was given.
 func executePreparedToolCall(ctx context.Context, prepared preparedToolCall, onUpdate ToolUpdateSink, observed func() bool) (finalizedToolCall, error) {
@@ -445,6 +512,9 @@ func executePreparedToolCall(ctx context.Context, prepared preparedToolCall, onU
 	accepting := true
 	var firstRejection error
 	var inflight sync.WaitGroup
+	// sink：包在工具 onUpdate 外的闸。工具的每个进度回调都过它——
+	// 只在接受期内放行给 onUpdate 并计入 inflight；onUpdate 报错只记
+	// 第一笔（firstRejection），不打断工具本身。
 	sink := func(partial AgentToolResult) {
 		mu.Lock()
 		if !accepting {
@@ -473,6 +543,7 @@ func executePreparedToolCall(ctx context.Context, prepared preparedToolCall, onU
 	}
 	start := time.Now()
 	result, err := executeTool(ctx, prepared, sink)
+	// Execute 已返回：关闸拒绝迟到更新，等已接受的更新全部投递完。
 	// upstream: agent-loop.ts:841-846 reads elapsed() before it awaits the update events.
 	duration := time.Since(start)
 	mu.Lock()
@@ -483,13 +554,17 @@ func executePreparedToolCall(ctx context.Context, prepared preparedToolCall, onU
 	rejection := firstRejection
 	mu.Unlock()
 	if rejection != nil {
+		// 更新被拒是上游的 promise rejection：丢弃工具结果向上抛错。
 		return finalizedToolCall{}, rejection
 	}
 	isError := result.IsError
 	switch {
 	case err != nil:
+		// 工具抛错：换成错误结果形态（文本+空 details）。
 		result, isError = errorToolResult(err.Error()), true
 	case result.Thrown:
+		// 工具用 Thrown 标记表达"这是异常结果"：同样归到错误分支，
+		// 并清掉结果自身的 IsError/Thrown（异常不占业务失败位）。
 		result.IsError, result.Thrown, isError = false, false, true
 	}
 	return finalizedToolCall{call: prepared.call, result: result, isError: isError, executed: true, duration: duration}, nil
@@ -546,19 +621,30 @@ func (h *loopHost) finalizeExecutedToolCall(ctx context.Context, prepared prepar
 // result.IsError, as upstream's context.isError beside the result. A hook that
 // returns an empty override leaves the result as it was, as a hook that returns
 // undefined does.
+//
+// 定稿阶段（每个 AfterToolCall 钩子依次改写，再交 PrepareToolResult）：
+// 逐字段覆盖而非深合并——Content 被替换而不同步替换 StructuredContent
+// 时后者丢弃，防止结构化数据和新文本对不上。钩子 panic 同样降级为
+// 错误结果而不是让运行崩掉。
 func finalizeExecutedToolCall(ctx context.Context, hooks ToolCallHooks, prepared preparedToolCall, executed finalizedToolCall) finalizedToolCall {
 	result, isError := executed.result, executed.isError
+	// 钩子看到的 IsError 是"调用级"标志（含执行期判定的失败），
+	// 不等于结果自带的 result.IsError。
 	for _, hook := range hooks.after() {
 		seen := result
 		seen.IsError = isError
 		override, message, ok := runAfterToolCallHook(ctx, hook, prepared, seen)
 		if !ok {
+			// 钩子 panic：整个结果替换为错误结果，不再跑后续钩子。
 			result, isError = errorToolResult(message), true
 			break
 		}
 		if override.isZero() {
 			continue
 		}
+		// structuredContent 的三态合并：钩子给了非 null 值→用它；
+		// 没给且 Content 也没换→保留工具原值；没给但 Content 换了→
+		// 丢弃（旧结构化数据可能和新文本对不上）。
 		structuredContent := override.StructuredContent
 		if isNullishJSON(structuredContent) {
 			structuredContent = nil
@@ -584,6 +670,8 @@ func finalizeExecutedToolCall(ctx context.Context, hooks ToolCallHooks, prepared
 		case len(structuredContent) == 0:
 			result.StructuredContentAppended = false
 		case !hadStructuredContent:
+			// 钩子新增的 structuredContent 排在工具原有成员之后——
+			// 记录这个"追加"事实供序列化时还原成员顺序。
 			result.StructuredContentAppended = true
 		}
 		if override.IsError != nil {
@@ -591,6 +679,8 @@ func finalizeExecutedToolCall(ctx context.Context, hooks ToolCallHooks, prepared
 		}
 	}
 	if hooks.PrepareToolResult != nil {
+		// 最后一道加工：扩展可对整个结果做最终改写（失败保留原结果）。
+		// 它看到的 IsError 同样是调用级；改完把标志还原回结果字段。
 		seen := result
 		seen.IsError = isError
 		prepared := hooks.PrepareToolResult(ctx, seen)

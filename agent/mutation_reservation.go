@@ -42,6 +42,10 @@ type MutationTicket struct {
 // registered but never released). The returned params are the same
 // (possibly ArgumentPreparer-normalized) arguments Execute receives.
 type QueueOrderable interface {
+	// ReserveMutationOrder 由并行调度器在准备阶段（goroutine 启动前）
+	// 同步调用，为本调用在同路径变更队列里占位。返回 ok=false 表示
+	// 该调用根本不会进入队列，调度器不再附带票据；返回票据则随 ctx
+	// 传给 Execute，Execute 必须认领它而不是重复登记。
 	ReserveMutationOrder(params json.RawMessage) (*MutationTicket, bool)
 }
 

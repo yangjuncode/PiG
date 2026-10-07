@@ -13,6 +13,11 @@ import (
 )
 
 // PreparedPrompt holds one prompt's preflight result. It does not reserve the agent or mutate another prompt's pending messages while an extension awaits input.
+// 一次 prompt 的"预检产出物"：内容、扩展改写后的系统提示、
+// 待注入的自定义消息、before_agent_start 给出的运行配置
+// （含扩展挑选的工具集）。它只占数据不占运行权——扩展等待期间
+// 别的 prompt/队列操作可以继续，BeginPreparedPrompt 时才竞争
+// agent 运行权。
 type PreparedPrompt struct {
 	session      *Session
 	sessionID    string
@@ -25,6 +30,13 @@ type PreparedPrompt struct {
 	run icodingagent.BeforeAgentStartRun
 }
 
+// PreparePrompt awaits before_agent_start without holding the Session run lock. Hosts normalize images and admit the result after that await, so another prompt or queue operation may proceed while a handler is suspended.
+//
+// 预检主流程：抽出文本/图片 → 克隆当前系统提示选项（快照给扩展看，
+// 不被后续并发改影响）→ 有 before_agent_start 处理器就调扩展
+// （它能改系统提示、给自定义消息、改工具集）→ ResolveBeforeAgentStartRun
+// 把扩展结果折成运行配置。扩展拒绝时仍会先把已采纳的工具配置应用
+// 掉（与上游顺序一致）。
 // PreparePrompt awaits before_agent_start for the user prompt whose RunStart keeps the Session busy (agent-session.ts:1885-1936
 // _prepareRun). Hosts normalize images and admit the result after that await; a message or queued prompt sent while a handler is
 // suspended joins the starting run.
@@ -136,6 +148,13 @@ func (r *PreparedPromptRun) Run() ([]agent.AgentMessage, error) {
 	return messages, err
 }
 
+// BeginPreparedPrompt commits preflight and claims the agent before returning its run. A busy agent rejects execution after acceptance; it is not serialized behind the old run.
+//
+// 领取运行权：sessionID 变了（会话中途换底）的 PreparedPrompt 作废；
+// 在 pendingBashMu 保护下先置 active 再向 agent claim，与
+// recordBashResult 的"运行中→缓冲"判定保持原子。被拒（agent 忙）
+// 时返回带 err 的 PreparedPromptRun，由 Run 统一走 settled 通知。
+// claim 成功后按预检结果应用工具集/系统提示/待注入消息。
 // BeginPreparedPrompt claims the agent for the prompt that start prepared, after its held messages were flushed (agent-session.ts:1857
 // agent.prompt). An error abandons start. A busy agent rejects the run after acceptance; it is not serialized behind the old run.
 func (s *Session) BeginPreparedPrompt(ctx context.Context, start *RunStart, p *PreparedPrompt) (*PreparedPromptRun, error) {

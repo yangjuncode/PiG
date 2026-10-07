@@ -5,6 +5,12 @@ import "context"
 // Context is the per-extension runtime context. Mirrors upstream's
 // ExtensionContext (types.ts:ExtensionContext).
 //
+// 核心模式：每个 getter/方法先调 assertActive——runner 失效（会话
+// 替换、shutdown、reload）后旧 Context 上的任何调用都返回错误，
+// 而不是悄悄读到陈旧 host 状态。actions 里的回调由 host 绑进来，
+// 未绑定的 action 都回落到上游 runner.ts 的默认 no-op 值（nil/
+// true/false/""），保证扩展在未接线宿主上行为仍是上游的预绑定态。
+//
 // Authors retrieve the Context from a context.Context via FromContext.
 // The host attaches it at event-dispatch time using WithContext.
 //

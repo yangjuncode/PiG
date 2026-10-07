@@ -57,6 +57,11 @@ type RunToolCallOptions struct {
 // calls, and panics come back as an outcome with IsError set. It returns the
 // first error of options.OnUpdate after the tool returned, without running the
 // after hooks, as upstream's promise rejects.
+//
+// "工具里再调工具"的入口：复用 prepare → execute → finalize 同一条管线，
+// 使子调用同样过权限钩子与参数校验，但不发事件、不进转录——子调用对
+// 外层是透明的，它的结果由父工具揉进自己的返回值里（如需留痕由
+// NestedCalls 记录）。
 func RunToolCall(ctx context.Context, call AgentToolCall, options RunToolCallOptions) (AgentToolCallOutcome, error) {
 	// upstream: agent-loop.ts runToolCall passes assistantMessage and context to the hooks' context argument.
 	if _, inherited := ToolCallHookContextFrom(ctx); options.AssistantMessage != nil || options.Context.Messages != nil || options.Context.Tools != nil || !inherited {

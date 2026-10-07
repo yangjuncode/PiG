@@ -96,6 +96,13 @@ func (context TranscriptContext) borrowed() []Message {
 }
 
 // NormalizeContext folds shorthand prompt/tools into a leading system message and normalizes missing content to empty block arrays.
+//
+// 公共请求→provider 输入的唯一关口：SystemPrompt/Tools 捷径折叠成
+// 最前面的 system 消息（Tools 落在 system 消息上，由 provider 拆
+// 出来发）；nil content 归一成空块数组（上游 undefined/null 同
+// 义）；校验失败不 panic，err 存进返回的 TranscriptContext 让
+// provider 在 Stream 入口报出来；结果是深拷贝——provider 改不动
+// 调用方的消息对象。
 func NormalizeContext(context Context) TranscriptContext {
 	candidate := TranscriptContext{messages: normalizeMissingMessageContent(context.Messages)}
 	if context.SystemPrompt != "" || len(context.Tools) > 0 {

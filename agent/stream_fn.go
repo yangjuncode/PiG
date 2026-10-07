@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+// stream_fn.go 维护"宿主默认 StreamFn"的全局注册表。Agent 发请求时
+// 按 StreamFn（调用方注入）→ DefaultStreamFn（NewAgent 时从此处捕获）
+// → 模型自带 Provider.Stream 的顺序降级选择。
+
 // ErrNoDefaultStreamFunction is Pi's getDefaultStreamFn failure: no stream function was passed and none is configured.
 var ErrNoDefaultStreamFunction = errors.New("No default stream function configured. Pass streamFn explicitly or call setDefaultStreamFn().")
 

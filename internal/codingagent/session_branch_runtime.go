@@ -119,6 +119,11 @@ func (s *Session) SetSessionFile(path string) error {
 	return nil
 }
 
+// replaceSessionLog 把克隆出的新日志整体灌回这个 Session 壳——
+// 换底而非换壳，所以 coding.Session 持有的 *inner 指针、缓存预热器
+// 里按 sessionID 归属的资源都不需要跟着换。三把锁按序持有（追加
+// 序→条目态→解析缓存），解析缓存和 undecodable 直接清空：新条目的
+// 同 ID 可能是不同内容。
 func (s *Session) replaceSessionLog(branched *Session) {
 	s.leafAppendMu.Lock()
 	defer s.leafAppendMu.Unlock()

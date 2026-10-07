@@ -19,6 +19,13 @@ import (
 )
 
 // installAgentBoundaryHooks runs actionable turn_end before the Agent chooses its next turn. An earlier explicit end decision wins; an invalid extension continuation does not suppress natural tool or queue scheduling.
+//
+// 把 Session 的 turn_end 扩展边界塞进 Agent 的 FinishTurn 钩子：
+// 每个自然回合结束时，先让扩展看/改（可写草稿条目、可要求续轮），
+// 再跑调用方原 FinishTurn。裁决合并规则——原来已判 end 不再被扩展
+// 的 continue 推翻；扩展 continue 或原判 continue 都合成 continue；
+// 否则 nil（交给自然规则）。boundaryDispatchedMessage 标记本回合已
+// 走边界，让 handleAgentEvent 的 TurnEndEvent 分支不重复派发。
 func (s *Session) installAgentBoundaryHooks() {
 	s.lastActivityOutcome = extension.AgentActivityCompleted
 	previous := s.agent.FinishTurnHook()
@@ -46,6 +53,20 @@ func (s *Session) installAgentBoundaryHooks() {
 }
 
 // handleAgentEvent is the Session's awaited Agent subscription. Queue consumption notifies listeners before message_start handlers. Synthetic failed turns have no FinishTurn dispatch, so their boundary runs here before public listeners.
+//
+// Session 侧唯一挂到 Agent 的事件总线入口，每个 agent 事件都会过
+// 这道序列（在 agent goroutine 上同步执行）：
+//  1. recordNestedCalls 记账嵌套工具调用；
+//  2. 按事件类型做副作用：user 消息核销队列双写、agent_start 归零
+//     回合计数、turn_end 对"未走 FinishTurn 边界的回合"补发边界
+//     （合成失败回合没有 FinishTurn 的机会）；
+//  3. 非 turn_end 事件先走扩展事件钩子 + 观察域让渡（对应上游两个
+//     microtask 边界）；
+//  4. emitSynchronousSessionEvent 同步投给 Session 监听器；
+//  5. message_end 落盘持久化；
+//  6. 包 publishedSessionEvent 入队，等持久化完成后才对 events
+//     通道发布；
+//  7. turn_end 末尾记下本回合工具结果、冲刷挂起的自定义消息。
 func (s *Session) handleAgentEvent(ctx context.Context, event agent.AgentEvent) error {
 	s.agentEventHold.wait()
 	// upstream: agent-session.ts:1104-1106 (_handleAgentEvent): an abort requested while the run was starting, e.g. during
@@ -99,6 +120,8 @@ func (s *Session) handleAgentEvent(ctx context.Context, event agent.AgentEvent) 
 }
 
 func (s *Session) dispatchTurnEndBoundary(ctx context.Context, event agent.TurnEndEvent) (bool, error) {
+	// 先按 stop reason 给本回合定 activity 结局——before_settle/turn_end
+	// 事件的 BoundaryState 就带这个值给扩展看。
 	s.lastActivityOutcome = extension.AgentActivityCompleted
 	if message := event.Message.Assistant; message != nil {
 		switch message.StopReason {
@@ -112,6 +135,9 @@ func (s *Session) dispatchTurnEndBoundary(ctx context.Context, event agent.TurnE
 	if runner == nil || !runner.HasHandlers(icodingagent.EventTurnEnd) {
 		return false, nil
 	}
+	// 解析 assistant/工具结果各自的磁盘条目 ID 交给扩展（扩展按
+	// entry id 写草稿/编辑）；解析不到 assistant 条目是 bug 级状况，
+	// 记扩展错误并跳过边界。
 	event = s.turnEndWithEntryIDs(event)
 	for i := range event.ToolResults {
 		s.rememberMessageEntry(agent.AgentMessage{ToolResult: &event.ToolResults[i]}, event.ToolResultEntryIDs[i])
@@ -132,6 +158,9 @@ func (s *Session) dispatchTurnEndBoundary(ctx context.Context, event agent.TurnE
 	base := extension.TurnEndEvent{Type: icodingagent.EventTurnEnd, TurnIndex: s.boundaryTurnIndex, Message: event.Message, ToolResults: results, MessageEntryID: event.MessageEntryID, ToolResultEntryIds: ids, BoundaryState: &extension.BoundaryState{Outcome: s.lastActivityOutcome}}
 	// Upstream emitBoundary takes no abort signal, so an aborted run's turns
 	// still reach turn_end handlers.
+	// EmitBoundary 用 WithoutCancel：被中止的回合也要让 turn_end
+	// 扩展看到结局。期间扩展可反复要 buildBoundaryContext 预览草稿
+	// 效果，最后返回 Entries（待提交草稿）+ Continue 裁决。
 	dispatchCtx, wire := boundarywire.WithSessionCache(context.WithoutCancel(ctx), &s.boundaryEncodings)
 	result, err := runner.EmitBoundary(dispatchCtx, base, func(drafts []extension.SessionBoundaryDraft) (extension.BoundaryContextPreview, error) {
 		return s.recordedBoundaryContext(wire, drafts, icodingagent.EventTurnEnd)
@@ -150,6 +179,7 @@ func (s *Session) dispatchTurnEndBoundary(ctx context.Context, event agent.TurnE
 	if err != nil {
 		return false, err
 	}
+	// 扩展要求续轮但没有可跑的内容：记错误并忽略其裁决。
 	if !final.CanContinue {
 		s.reportInvalidBoundaryContinuation(icodingagent.EventTurnEnd)
 		return false, nil
@@ -157,6 +187,11 @@ func (s *Session) dispatchTurnEndBoundary(ctx context.Context, event agent.TurnE
 	return true, nil
 }
 
+// runBeforeSettleBoundary 是运行落定前的最后一道扩展边界：
+// agent_before_settle 处理器可以追加条目/自定义消息并要求续跑
+// （比如"目标没达成就再让模型补一句"）。isBeforeSettle 标记期间
+// RequestAbort 不硬取消而是等边界返回；边界结束后校验 CanContinue
+// 防"没内容可跑还要求续"。
 func (s *Session) runBeforeSettleBoundary(ctx context.Context) (bool, error) {
 	runner := s.currentRunner()
 	if runner == nil || !runner.HasHandlers(icodingagent.EventAgentBeforeSettle) {
@@ -218,6 +253,9 @@ func (s *Session) commitBoundaryDrafts(drafts []extension.SessionBoundaryDraft) 
 	return nil
 }
 
+// createBoundaryPreviewManager 造一份"当前分支 + 草稿"的影子
+// Session：扩展在边界回调里预览"这些草稿如果提交了上下文会长成
+// 什么样"，预览完丢弃，不碰真实 JSONL。
 func (s *Session) createBoundaryPreviewManager(drafts []extension.SessionBoundaryDraft) (*icodingagent.Session, error) {
 	var branch []icodingagent.SessionEntry
 	if leaf := s.inner.GetLeafID(); leaf != nil {
@@ -348,6 +386,9 @@ func (s *Session) completeBoundaryContext(projected extension.BoundaryContextPre
 	s.runState.mu.Unlock()
 	pending := slices.Concat(s.agent.PeekQueuedMessages(), custom)
 	pendingMessages := make([]extension.AgentMessage, len(pending))
+	// CanContinue = "续一轮有没有东西可跑"：上下文尾部不是 assistant
+	// （模型有话可接）、有待注入的自定义消息、或队列里还有消息——
+	// 三种之一即可；扩展据此决定要不要 Continue。
 	copy(pendingMessages, pending)
 	canContinue := hasNonSystem && !finalAssistant || len(custom) > 0 || (boundary == icodingagent.EventTurnEnd || finalAssistant) && s.agent.HasQueuedMessages()
 	return extension.BoundaryContextPreview{ContextEntries: projected.ContextEntries, ContextMessages: projected.ContextMessages, LLMMessages: projected.LLMMessages, PendingMessages: pendingMessages, CanContinue: canContinue}

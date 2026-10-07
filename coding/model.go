@@ -50,6 +50,12 @@ func BuildModel(spec string, svcs *AgentSessionServices) (*ai.Model, error) {
 
 // buildModel builds spec's model; a non-empty apiKey replaces the resolved
 // credential, as upstream providers use options.apiKey when one is given.
+//
+// "provider/model" 规格的解析顺序：registry 里已知的 providerID 直
+// 接走 ModelRuntime.GetModel（拿回共享 provider 实例与认证）；
+// 否则查生成目录（models_generated.go 的内置清单）拿静态元数据，
+// 再退到 registry.Resolve 处理自定义 models.json 条目，最后由
+// buildModelFromEntry 按 API 族构造 provider。
 func buildModel(spec string, svcs *AgentSessionServices, apiKey string) (*ai.Model, error) {
 	if svcs == nil {
 		return nil, fmt.Errorf("coding: BuildModel: Services is required")
@@ -186,6 +192,14 @@ func lookupGeneratedModel(providerID, modelID string) (*ai.GeneratedModel, bool)
 // is upstream's options.apiKey: it owns the request ahead of runtime, stored,
 // configured, and environment credentials. The Anthropic leaf retains the selected model's reasoning metadata and limits instead of resolving it again from the built-in catalog.
 // apiLeaf selects the pi-ai API implementation for apiKind itself. Pi's compat stream() and streamSimple() dispatch on model.api through the api registry and never consult the provider an extension registered under the model's provider id (packages/ai/src/compat.ts:278-293, stream at 252), so an API leaf must not re-enter that provider's streamSimple callback.
+//
+// 构造分派的三层优先级：test-faux/github-copilot 专用构造（自带
+// OAuth/测试桩）→ 扩展注册的 ProviderStreamSimple 回调接管（除非
+// apiLeaf 是"API 族本身"的叶子调用，避免重入扩展回调）→ 按 API
+// 族落到内置 provider 实现（openai-completions/responses、anthropic、
+// google、bedrock、mistral、pi-messages 等）。认证链：显式 apiKey
+// > 运行时注入 key > auth.json 存储凭据 > 环境变量/注册表静态 key；
+// 支持每请求取 key 的 provider 用回调以跟上 OAuth 刷新。
 // A built-in provider whose upstream constructor wraps its API streams (cloudflareStreams for the Cloudflare providers) has the wrapper
 // applied, as when its models run through the registered provider. An API leaf is the API implementation alone, which sends the model's
 // endpoint as given (openai-completions.ts:795), so it is not wrapped.

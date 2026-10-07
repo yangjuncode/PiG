@@ -7,6 +7,12 @@ import "maps"
 // CompilerSchema translates the positional items and dependencies TypeBox accepts alongside current JSON Schema
 // keywords into their draft-2020 spellings for the validator, without changing the schema used for conversion or error
 // traversal.
+//
+// 给严格 draft-2020 编译器用的"方言翻译"：TypeBox schema 里可能带老式
+// 写法（items 元组数组、dependencies），校验器不认，于是在编译副本上
+// 把它们改写成 prefixItems / dependentRequired / dependentSchemas 的
+// allOf 组合。只影响 validator() 用的那份，convert/coerce/错误遍历
+// 仍在原始 schema 树上走。
 func CompilerSchema(value any) any {
 	original, ok := value.(map[string]any)
 	if !ok {

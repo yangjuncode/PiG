@@ -27,6 +27,10 @@ import (
 
 // SessionManager owns the on-disk sessions directory for a given cwd
 // and tracks the active session.
+//
+// 目录与命名约定：会话文件放在 <agentDir>/sessions/--<cwd 转义>--/
+// 下，文件名 "<ISO 时间戳>_<uuidv7>.jsonl"——目录按字典序即时间序。
+// Manager 只管"目录归属 + 当前会话指针"；条目读写全在 Session 上。
 type SessionManager struct {
 	cwd        string
 	sessionDir string
@@ -207,6 +211,10 @@ func (sm *SessionManager) SessionDir() string { return sm.sessionDir }
 func (sm *SessionManager) CWD() string { return sm.cwd }
 
 // Clone extracts the chosen root-to-leaf path with resolved labels into a fresh Session. In-memory sessions stay in memory. A persisted clone is written immediately only when its path contains a user or assistant message; otherwise its first such message creates the file.
+//
+// 克隆与 ForkFromFile 的区别：Clone 只复制"到 leafID 的一条路径"
+// （丢弃其他分支，生成新 session ID，header 记 parentSession）；
+// ForkFromFile 则整树原样复制、立即写盘。
 func (sm *SessionManager) Clone(source *Session, leafID string) (*Session, error) {
 	if source == nil {
 		return nil, fmt.Errorf("sessionmanager: Clone: nil source")
@@ -400,6 +408,9 @@ func forEachJSONLLine(r io.Reader, fn func(line []byte) error) error {
 var jsonlReaderPool = sync.Pool{New: func() any { return bufio.NewReaderSize(nil, 64*1024) }}
 
 func forEachJSONLLineContext(ctx context.Context, r io.Reader, fn func(line []byte) error) error {
+	// 不定长行读取：bufio 固定缓冲遇到超长行返回 ErrBufferFull，
+	// 分片累积到 long 直到读到行尾再回调——会话行可能含大段工具
+	// 输出，不能假设行长上限。
 	reader := jsonlReaderPool.Get().(*bufio.Reader)
 	reader.Reset(r)
 	//perf:ok the pooled bufio.Reader keeps its fixed 64 KiB buffer; a long line grows the separate long slice, which is not pooled

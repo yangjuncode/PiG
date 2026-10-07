@@ -43,6 +43,16 @@ func (s *Session) sendCustomMessage(ctx context.Context, message extension.Custo
 	if options != nil {
 		opts = *options
 	}
+	// 投递裁决全在 pendingBashMu 下完成（与 bash 缓冲共用一把锁，
+	// 保证"会话此刻是流式还是静止"的判定和入队/落盘动作原子）：
+	//   - DeliverAsNextTurn：进 next-turn 队列，等下个回合开头发出；
+	//   - 流式 + TriggerTurn=false：挂到 pendingCustom，等本回合工具
+	//     结果齐了再补落盘；
+	//   - 流式：按 DeliverAs 进 steer/followUp 队列；
+	//   - 静止 + TriggerTurn=false/nil：直接追加磁盘 + 发成对
+	//     start/end 事件（不触发模型回合）；
+	//   - settling：推迟到 agent_settled 派发后；
+	//   - 否则：独占一次运行，wait=调用方等完成，否则后台跑。
 	s.pendingBashMu.Lock()
 	select {
 	case <-s.closeDone:

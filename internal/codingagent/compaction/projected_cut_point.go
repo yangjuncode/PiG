@@ -79,6 +79,12 @@ func isRecoveryOmissionSuffix(suffix []codingagent.ProjectedSessionEntry) bool {
 // findProjectedCutPoint finds the cut point over projected entries
 // (compaction.ts findProjectedCutPoint). Only projected messages count, so
 // omitted entries neither become cut points nor consume the keep budget.
+//
+// 与 FindCutPoint（裸条目版）的区别：这里在投影结果上选点，context_edit
+// 删除过的条目既不占预算也不能当切口。多的一步是"恢复尾部"检查：
+// 如果切口之后的尾巴恰好是一次溢出恢复留下的残骸（被删除的
+// assistant 尝试 + 它的删除编辑 + 不可见元数据），切口再进一格
+// 越过它——这些条目已不在上下文里，留着只会污染摘要输入。
 func findProjectedCutPoint(entries []codingagent.ProjectedSessionEntry, startIndex, endIndex, keepRecentTokens int) CutPointResult {
 	var cutPoints []int
 	for i := startIndex; i < endIndex; i++ {

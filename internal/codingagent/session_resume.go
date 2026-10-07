@@ -139,6 +139,12 @@ const noMessagesText = "(no messages)"
 var errSessionDropped = errors.New("session: not listed")
 
 // summarizeSessionFile streams picker metadata and searchable text without retaining entry objects.
+//
+// 选择器列表的性能关键路径：只流式扫描、不构建条目对象——首行
+// header 出身份；message 行只取 role/text/timestamp（canonical 前缀
+// 快路径避免完整反序列化）；统计消息数、最后活动时间、首条用户
+// 消息（预览）、全部文本（模糊搜索）。ctx 取消时靠关闭文件打断
+// 阻塞读取。
 func summarizeSessionFile(path string) (SessionInfo, error) {
 	return summarizeSessionFileContext(context.Background(), path)
 }

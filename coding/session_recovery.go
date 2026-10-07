@@ -57,6 +57,12 @@ func (s *Session) refreshReplacementContext() {
 	s.refreshProjectedContext(false)
 }
 
+// refreshProjectedContext 是"磁盘为准"的上下文重建：用 JSONL 投影
+// （BuildSessionProjection，含压缩/编辑/分支的最新语义）整体替换
+// agent 内存转录，并重建消息→条目 ID 映射。投影生成的是全新消息
+// 对象，所以刚结束回合的消息要靠 lastAssistant* 指针把旧 ID 映射
+// 带过来。preserveInstructionBaseline=false 用于换底（ReplaceInner）：
+// 旧会话的系统提示基线不带过界。
 func (s *Session) refreshProjectedContext(preserveInstructionBaseline bool) {
 	// The agent's transcript shares the messages of the kept projection, as the requests do: the history is held once, not once for the agent and once for the projection.
 	projection := s.inner.BuildSessionProjectionView()
@@ -109,6 +115,7 @@ func (s *Session) findPersistedMessageEntryID(message agent.AgentMessage) (strin
 		return id, true
 	}
 	if message.ToolResult != nil {
+		// 快路径：toolResult 有天然 ID（ToolCallID），直接从投影倒查。
 		// The newest projected entries are the turn's own: the kept projection extends by each append, so the lookup reads them without projecting the history, and a match ends the walk.
 		projection := s.inner.BuildSessionProjectionView()
 		for _, entry := range slices.Backward(projection.Entries) {
@@ -120,6 +127,9 @@ func (s *Session) findPersistedMessageEntryID(message agent.AgentMessage) (strin
 			}
 		}
 	}
+	// 慢路径：按消息在转录里的位置去投影里数——投影顺序和转录一致。
+	// 转录开头若多了一条"恢复时注入的基线 system"（投影里没有），
+	// 位置要先-1 对齐。
 	messageIndex := slices.IndexFunc(s.agent.Messages(), func(candidate agent.AgentMessage) bool {
 		return messageIdentity(candidate) == key
 	})
@@ -243,6 +253,11 @@ func (s *Session) runPostAgentRuns(ctx context.Context, messages []agent.AgentMe
 
 // runPostAgentRunsWith is runPostAgentRuns with the continuation supplied by
 // the caller, which decides whether the Session lock is held across it.
+//
+// 跑后处理主循环：每次底层运行结束后先过 handlePostAgentRun（重试/
+// 溢出恢复/压缩裁决要不要续），不需要续时再给 before_settle 扩展
+// 边界一次机会（它可注入消息要求续）。要续就调用方提供的 resume
+// 再来一轮。任一步发现已中止就退出并收尾被砍掉的重试序列。
 func (s *Session) runPostAgentRunsWith(ctx context.Context, messages []agent.AgentMessage, runErr error, resume func(context.Context) ([]agent.AgentMessage, error)) ([]agent.AgentMessage, error) {
 	for !s.agentRunAborted(ctx) {
 		continueRun, err := s.handlePostAgentRun(ctx)
@@ -269,6 +284,12 @@ func (s *Session) runPostAgentRunsWith(ctx context.Context, messages []agent.Age
 // handlePostAgentRun applies retry, recovery, and compaction to one finished
 // low-level run and reports whether the agent should continue
 // (agent-session.ts _handlePostAgentRun).
+// handlePostAgentRun 对刚结束的一次底层运行做"续不续"裁决，按序：
+// 已中止→收尾退出；无 assistant 产出（比如队列被清空）→看队列有
+// 没有存粮；可重试错误→走指数退避重试（并把失败回复存
+// failedResponse 供重放）；不可重试但仍 error→结束重试序列并发
+// AutoRetryEnd 失败版；然后过压缩检查（溢出恢复/阈值压缩可要求
+// 续跑）；最后队列里有消息才续。
 func (s *Session) handlePostAgentRun(ctx context.Context) (bool, error) {
 	message := s.lastAssistantMessage
 	s.lastAssistantMessage = nil
@@ -297,6 +318,8 @@ func (s *Session) handlePostAgentRun(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 	if message.StopReason == ai.StopReasonError {
+		// 走到这里说明错误不可重试或已超限：序列结束，补发
+		// auto_retry_end(success=false)。
 		if attempt := s.retryAttempt.Swap(0); attempt > 0 {
 			s.emitEvent(agent.AutoRetryEndEvent{Success: false, Attempt: int(attempt), FinalError: message.ErrorMessage})
 		}
@@ -315,6 +338,11 @@ func (s *Session) handlePostAgentRun(ctx context.Context) (bool, error) {
 // auto_retry_start, omits the failed attempt, and waits out the backoff
 // (agent-session.ts _prepareRetry). It reports false when retries are
 // disabled or exhausted, or when the wait is cancelled.
+// prepareRetry 的一次重试流程：retryPrefix 的临界区里先判"还能不
+// 能重试"（开关/上限/已中止），能则递增计数、算退避延迟、发
+// auto_retry_start、把失败回复从上下文抠掉（omitRecoveryAttempt），
+// 再建可取消的等待器；临界区外放开 s.mu 等计时器/AbortRetry 唤醒。
+// 等待期间 s.mu 是释放的——其他 Session 操作可以照常进行。
 func (s *Session) prepareRetry(ctx context.Context, message *agent.AssistantMessage) (bool, error) {
 	s.retryMu.Lock()
 	schedule := s.retrySchedule

@@ -32,6 +32,19 @@ const runtimeErrorPath = "<runtime>"
 // _isEmittingAgentSettled, _deferredSettledActions, and the idle-wait
 // promise. Every mode reads streaming and idle state from here, and abort
 // reaches the active run whichever caller started it.
+//
+// Session 层"本次运行"的完整状态机（区别于 agent 内部的 run
+// 状态：这里把重试、压缩、排队续接都算进同一次运行）：
+//   - active/settling/abortRequested：运行中 / 正在发 agent_settled /
+//     用户请求了中止。
+//   - generation + cancel：每次 beginAgentRun 递增代次并登记运行级
+//     cancel，finishAgentRun 按代次校验——旧代次的清理函数碰不到
+//     新代次的控制器。
+//   - idle：WaitForIdle 的等待通道，每次状态翻转后关闭重置。
+//   - deferred/pendingCustom：agent_settled 派发期间收到的 prompt 先
+//     挂起，派发结束才放行（对应上游"settled 回调里的新 prompt 排队"）。
+//   - background/bgCtx/bgCancel/shutdownOnce：扩展在空闲时自己起的
+//     后台运行，Close 统一取消并等它们退出。
 type sessionRunState struct {
 	active         atomic.Bool
 	settling       atomic.Bool
@@ -123,6 +136,12 @@ func (s *Session) notifyIdleWaiters() {
 }
 
 // RequestAbort stops Session continuations and cancels the Agent's signal without cancelling its caller context. An awaited before-settle hook still commits its drafts, but cannot continue. Extensions do not await the run they stop.
+//
+// 中止的完整扇面：打 abortRequested 标记（WillRetry 判定看的就是
+// 它）→ 取消重试等待、压缩、分支摘要 → 取消 agent 当前运行。运行
+// 不在 streaming（比如处于 before-settle 的扩展等待段）时改走
+// runState.cancel——但 before-settle 阶段不直接取消，等钩子自己
+// 收尾，只有 Session 关闭才强行取消。
 func (s *Session) RequestAbort() { s.requestAbort(true) }
 
 // requestAbort is RequestAbort. discardDeferred also drops the prompts agent_settled handlers deferred. Manual compaction keeps them: Pi's compact() aborts the run it replaces, not the continuations an extension queued.
@@ -184,6 +203,11 @@ func (s *Session) beginAgentRun(ctx context.Context) (context.Context, context.C
 	return runCtx, s.ownAgentRun(cancel)
 }
 
+// ownAgentRun installs cancellation only after admission; a rejected claim must not replace another run's controller.
+// 运行权注册：代次自增 + 登记 cancel + 清 abortRequested/active。
+// 顺带做三项新运行的开场工作——清 failedResponse（上一轮压缩排的
+// 重放被新 prompt 作废）、recordSelection、清 pendingToolNames（等
+// 注册的迟到工具到下次运行就丢弃）。返回的清理闭包带代次校验。
 // ownAgentRun installs the run RunAgentPrompt seeds, which no RunStart marked busy, so an abort requested before it no longer applies. It
 // installs cancellation only after admission; a rejected claim must not replace another run's controller.
 func (s *Session) ownAgentRun(cancel context.CancelFunc) context.CancelFunc {
@@ -354,6 +378,8 @@ func (s *Session) emitAgentSettledNotification() {
 }
 
 func (s *Session) publishAgentSettled() {
+	// 先翻 inactive 再派发——settled 监听器里调 IsStreaming 必须看到
+	// 已结束；settling 标记让派发期间递进来的 prompt 改走 deferred。
 	s.runState.active.Store(false)
 	s.runState.settling.Store(true)
 	defer s.runState.settling.Store(false)

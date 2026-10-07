@@ -7,6 +7,13 @@ import (
 )
 
 // Message is the closed provider-facing transcript union.
+//
+// 转录的消息是封闭联合（sealed interface）：SystemMessage/
+// UserMessage/AssistantMessage/ToolResultMessage/CustomMessage 五个
+// 变体，各自再有内容联合（SystemText 纯文本或块、UserText 或
+// 文本+图片块、assistant 的 text/thinking/toolCall 三块等）。
+// messageRole 供序列化判别；cloneMessage 供深拷贝——转录在
+// NormalizeContext 和回放路径里都不能共享可变引用。
 type Message interface {
 	messageRole() string
 	MessageRole() string

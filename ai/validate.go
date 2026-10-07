@@ -20,6 +20,13 @@ import (
 
 // validateToolArgs clones, normalizes optional nulls, converts, and validates arguments.
 // The returned JSON, rather than the model's original input, is passed to hooks and execution. It keeps the member order of args, as Pi validates structuredClone of the arguments and returns it (validation.ts:317-339).
+//
+// 工具参数进入 Execute 前的最后一道关（prepareToolCall 调用）。不是
+// 单纯"验货"而是"整形+验货"：先删掉"可选字段被写成 null"的键
+// （normalizeOptionalNulls），再按 TypeBox convert/coerce 语义做类型
+// 矫正（字符串 "42"→数字等），最后过 JSON Schema 编译器校验。
+// 返回的是矫正后的 JSON——钩子和工具看到的是修整后的参数而非模型
+// 原始输入，成员顺序与原始输入保持一致。
 func validateToolArgs(toolName string, schema map[string]any, args json.RawMessage) (json.RawMessage, error) {
 	if schema == nil {
 		schema = map[string]any{}
@@ -53,10 +60,13 @@ func validateToolArgsSchema(toolName string, rawSchema, args json.RawMessage) (j
 	if err != nil {
 		return nil, fmt.Errorf("Validation failed for tool %q:\n  - invalid JSON: %w\n\nReceived arguments:\n%s", toolName, err, args)
 	}
+	// 第一步整形：可选字段被模型写成 null 时直接删键——"没写"和
+	// "写了 null"对可选字段是同一语义，留着 null 反而校验不过。
 	// The cached schema outlives this validation; it must not keep the arguments' objects reachable after it.
 	defer func() { schema.wrapped, schema.mutated = nil, false }()
 	schema.normalizeOptionalNulls(instance)
 	// Pi ignores Convert's return value. Interior mutations survive; replacing the root does not.
+	// 第二步整形：TypeBox convert（仅 ~kind 元数据路径），原地改内部值。
 	schema.convert(instance)
 	compiled, err := schema.validator()
 	if err != nil {
@@ -64,9 +74,14 @@ func validateToolArgsSchema(toolName string, rawSchema, args json.RawMessage) (j
 	}
 	coerced := instance
 	if schema.value("~skipCoercion") != true {
+		// 第三步整形：标准 JSON Schema 的 coerce（字符串"42"→42 等
+		// 保守类型矫正）。
 		coerced = schema.coerce(instance)
 	}
 	if !sameArgumentValue(coerced, instance) {
+		// coerce 产生了新根值（非原地修改）：对象→对象可以接受替换；
+		// 其他类型替换要先用矫正值验一遍，验不过就回退原值继续走
+		// 正常校验报错，而不是把矫正值强行塞给工具。
 		_, fromObject := instance.(map[string]any)
 		_, toObject := coerced.(map[string]any)
 		if !fromObject || !toObject {
@@ -78,6 +93,8 @@ func validateToolArgsSchema(toolName string, rawSchema, args json.RawMessage) (j
 		instance = coerced
 	}
 	if err := compiled.Validate(instance); err != nil {
+		// 校验失败：自己走一遍 TypeBox 遍历生成与上游一致措辞的错误
+		// 列表（库自带的 ValidationError 格式不同），拼进报错文本。
 		failures := schema.argumentErrorsAt(schema.sourceOrder(instance, args), instance, "", "")
 		// TypeBox's error context keeps the first maxErrors (8) errors and drops the rest.
 		failures = failures[:min(len(failures), typeboxMaxErrors)]
@@ -157,6 +174,11 @@ func (entry *argumentSchemaEntry) parsed() (*argumentSchema, error) {
 	return entry.schema, entry.err
 }
 
+// argumentSchema 是参数 schema 的惰性解析树：doc 存解码后的完整节点，
+// fields/keys 保留对象成员的原始 JSON 和出现顺序（key 顺序参与
+// TypeBox 语义），children 缓存按关键字取出的子 schema，validator
+// 缓存编译结果。整套校验（convert/coerce/错误枚举）都在这棵树上
+// 递归进行，对应 TypeBox 编译器的运行期行为。
 type argumentSchema struct {
 	doc        any
 	fields     map[string]json.RawMessage
@@ -339,6 +361,10 @@ func (s *argumentSchema) eachItem(items []any, visit func(*argumentSchema, any) 
 	}
 }
 
+// coerce 是"宽容模式"的类型矫正：对没有 ~kind 的普通 JSON Schema，
+// 尽量把模型给的近似值整形成 schema 要求的类型（如 "true"→true）。
+// 遍历顺序与 TypeBox 一致：先 allOf 逐个子 schema、再 anyOf/oneOf
+// 挑能过的分支、然后单 type 矫正、最后递归进 object 属性和 array 元素。
 func (s *argumentSchema) coerce(value any) any {
 	for _, child := range s.list("allOf") {
 		value = child.coerce(value)
@@ -349,6 +375,8 @@ func (s *argumentSchema) coerce(value any) any {
 		}
 	}
 	types := s.types()
+	// 多类型联合（type: ["string","number"]）且当前值已匹配其中一种
+	// 时不做矫正；否则按声明顺序试第一种能转的类型。
 	matches := len(types) > 1 && slices.ContainsFunc(types, func(typ string) bool { return matchesArgumentType(value, typ) })
 	if !matches {
 		for _, typ := range types {

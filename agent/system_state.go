@@ -8,6 +8,8 @@ import (
 	"github.com/MichaelKinsy/PiG/ai"
 )
 
+// toolDeclarations 把当前工具表转成写进系统消息的工具声明列表——模型
+// 能调用什么工具完全由它决定，SetTools 后下一轮请求即生效。
 func toolDeclarations(current []AgentTool) []ai.ToolSchema {
 	tools := make([]ai.ToolSchema, len(current))
 	for i, t := range current {
@@ -37,6 +39,13 @@ func systemMessages(messages []AgentMessage) []ai.Message {
 }
 
 // declareToolChanges replaces pending tool intent with the delta from the committed transcript to the executable loadout.
+//
+// 工具增删（扩展注册/卸载工具）发生在两次请求之间时，需要告诉模型
+// "工具集变了"：对比转录里最近一条 system 消息记录的工具集与当前实际
+// 工具表，把差集写进一条带 ToolsAdded/ToolsRemoved 的 system 消息，
+// 插在下一批待发消息中。没变时原样返回——不制造多余消息。
+// 先在待发批次里找最后一条 system 消息（它就是本次要更新的
+// "工具视图基线"载体）。
 func (h *loopHost) declareToolChanges(context, pending []AgentMessage) []AgentMessage {
 	return declareToolChanges(h.tools(), context, pending)
 }
@@ -58,8 +67,11 @@ func declareToolChanges(tools []AgentTool, context, pending []AgentMessage) []Ag
 	}
 	baseline := slices.Clone(pending)
 	if index >= 0 {
+		// 先清掉这条 system 上旧的增删记录再算差分——差分是相对
+		// "转录已声明的工具集"算的，旧的声明不能参与本次比较。
 		baseline[index] = withToolChanges(pending[index], ai.ToolStateChanges{})
 	}
+	// 算差分：转录+待发消息里已声明的工具集 → 当前实际工具表。
 	changes := ai.GetToolStateChangesFrom(slices.Concat(systemOnly(context), systemOnly(baseline)), toolSchemas(tools))
 	unchanged := len(changes.ToolsAdded) == 0 && len(changes.ToolsRemoved) == 0
 	if index >= 0 {
@@ -73,6 +85,8 @@ func declareToolChanges(tools []AgentTool, context, pending []AgentMessage) []Ag
 	if unchanged {
 		return pending
 	}
+	// 待发批次里没有 system 消息可挂：造一条空指令的 system 消息，
+	// 插在第一个非 system 消息之前，专门携带工具差分。
 	update := withToolChanges(AgentMessage{System: &ai.SystemMessage{Content: ai.SystemText(""), Timestamp: time.Now().UnixMilli()}}, changes)
 	index = slices.IndexFunc(pending, func(m AgentMessage) bool { return m.System == nil })
 	if index < 0 {
@@ -146,6 +160,10 @@ func decodeSystemContent(raw []byte) (ai.SystemContent, error) {
 }
 
 // projectSystemPrompt preserves the active tool declarations while replacing instructions at the provider boundary.
+//
+// SetSystemPrompt 的实现机制：不改写历史转录，只在发往 provider 的消息
+// 边界上把系统消息的指令部分替换成投影值（工具声明等成员保留原样）。
+// 这样 ClearSystemPrompt 后历史仍自洽，重放不会看到两套提示打架。
 func projectSystemPrompt(messages []ai.Message, prompt string) []ai.Message {
 	head := ai.GetCurrentSystemMessage(messages)
 	if head == nil {

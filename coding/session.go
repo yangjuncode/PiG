@@ -41,6 +41,49 @@ import (
 // agent loop: concurrent Sends serialise via an internal mutex.
 //
 // Construct a Session via NewSession or through Runtime.
+//
+// 中文导读：Session 是 agent.Agent 之上的"会话编排层"，一次会话 =
+// 磁盘上一条 JSONL（inner，由 SessionManager 追加条目）+ 内存里一个
+// Agent（消息转录+运行循环）+ 扩展 runner（生命周期事件发给子进程
+// 扩展）。它在 Agent 提供的四件套钩子（PreparePrompt/PrepareNextTurn/
+// PrepareRequest/TransformLLMMessages）上挂接压缩、扩展消息改写、
+// 重试与恢复；Agent 每产生一个事件，经 handleAgentEvent 落盘持久化
+// 并进入 rawEvents → forwardAgentEvents goroutine → events 的管道，
+// 沿途同步分发给扩展和 Session 订阅者（Subscribe），最后推到对外的
+// Events() 通道。
+//
+// 字段按职责分组（并发纪律写在各组注释里）：
+//   - 构造与配置：processImage/services/callerHooks —— 建会话时定的
+//     只读属性；Clone 靠 callerHooks 复刻一个等价会话。
+//   - Agent 与持久化：inner/agent/tools/toolRegistry* —— agent 跑循环
+//     产生事件；inner 追加 JSONL；toolRegistry 管"注册了哪些工具 vs
+//     激活哪些工具"（pendingToolNames 是"声明了还没接上"的等待集合）。
+//   - 模型：modelRuntime/modelRegistry/modelChangeMu —— 会话级模型
+//     执行路径；切换走 setModel 写 model_change 条目。
+//   - 事件管道：rawEvents(生产者侧缓冲)→forwardAgentEvents→events
+//     (消费者侧)；listeners 是 Session 级订阅（区别于 agent 内订阅）；
+//     queueEvents 管队列更新事件的排序与溢出。
+//   - 回合边界记账：boundary*/lastAssistant*/assistantEnds/entryIDs*
+//     —— assistantEnds 记录"agent goroutine 在每条 message_end 时
+//     判定的结果"（重试/溢出等），forwardAgentEvents 在对应事件点
+//     弹出并发布；entryIDsByMessage 把内存消息映射到磁盘条目 ID，
+//     供上下文编辑/压缩定位。
+//   - 队列镜像：queuedSteering/queuedFollowUp —— Session 侧自己记的
+//     排队文本副本（agent 队列里存的是消息对象），用于 UI 展示与
+//     QueueUpdate 事件。
+//   - bash：bashCancels + pendingBash* —— ExecuteBash 可并发跑；
+//     运行中的回合不能插入 bashExecution 记录（会拆散 tool_use/
+//     tool_result 配对），先缓冲到 pendingBashMessages，回合末
+//     flushPendingBashLocked 落盘。
+//   - 压缩与导航：compact*/branchSum* —— compactMu 统一仲裁
+//     手动压缩、自动压缩、树导航三类"会话级操作"互斥；
+//     overflowRecoveryAttempted 防溢出恢复递归；failedResponse
+//     记下待重放的失败回复。
+//   - 重试：retryAttempt/retryCancel/retrySchedule —— 可重试错误
+//     的指数退避等待器。
+//   - 系统提示与资源：resourceLoader/baseSystemPrompt/
+//     systemPromptResources/runPrompt/warming —— 提示词来源、
+//     before_agent_start 挂起的自定义消息、缓存预热器。
 type Session struct {
 	processImage      imageprocessing.ProcessImageFunc
 	sessionStartEvent extension.SessionStartEvent
@@ -415,12 +458,21 @@ func NewAgentSession(config SessionOptions) (*Session, error) {
 //   - opts.Model is nil → restore the selected model from supplied or resumed history when available; otherwise start without a selected model.
 //   - file persistence fails → wrapped error
 //   - ResumePath set and the file is missing/corrupt → wrapped error
+//
+// 构造顺序（与上游 createAgentSession 对应）：定目录 → 建 runner →
+// 解资源加载器 → 建工具注册表 → 建 Agent（把 Session 的钩子闭包
+// 注入 AgentOptions；此时 sess 还是 nil，闭包延迟解析）→ 创建或
+// 恢复磁盘会话 inner 并恢复模型/思维级别 → 组装 Session 结构体 →
+// 激活工具、挂事件订阅与边界钩子、绑定扩展、初始化系统提示、
+// 启动 forwardAgentEvents goroutine。
 func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, error) {
 	if svcs == nil {
 		return nil, ErrNoServices
 	}
 	svcs.ensureSettings()
 	if opts.SessionManager != nil {
+		// 调用方给了现成管理器（Clone/Runtime 路径）：是否持久化、
+		// 目录都以管理器为准。
 		opts.NoSession = !opts.SessionManager.IsPersisted()
 		if dir := opts.SessionManager.GetSessionDir(); dir != "" {
 			opts.SessionDir = dir
@@ -489,6 +541,19 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	}
 	thinkingLevel = string(ai.ClampThinkingLevel(opts.Model, ai.ModelThinkingLevel(thinkingLevel)))
 
+	// Read at tool-call time: the file appears once the session first persists.
+	// SessionFile 是闭包惰性读：NoSession 会话尚无文件路径，等到工具
+	// 调用时第一次持久化后才有值。
+	// 四件套钩子把 Session 的编排职责插进 Agent 循环——注意此时 sess
+	// 尚未赋值，全部走闭包延迟解析，靠 NewSession 返回前 goroutine
+	// 尚未发起来保证不读空。
+	// 默认流函数套缓存预热：没有调用方注入 StreamFn 时，每次请求
+	// 都会经它决定是否触发后台预热。
+	// Read per request so a mid-session change applies (sdk.ts
+	// convertToLlmWithBlockImages).
+	// 每次请求重读设置：hideDeclarations 把 loadout 里"注册但隐藏"
+	// 的工具声明从上下文抠掉，blockImages 按设置把消息里的图片块
+	// 替换成占位文本。
 	sessionFile := func() string {
 		if sess == nil {
 			return ""
@@ -592,10 +657,16 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	agent.SetTools(allTools)
 
 	// Create or resume the on-disk session.
+	// 磁盘会话三条来源：调用方给的 SessionManager（含 Clone 的
+	// existing）、ResumePath 恢复、新建。每条分支都要把模型/思维
+	// 级别恢复到"转录记录的最后一次选择 + 构造期显式覆盖"的状态，
+	// 并只在历史里没有相应条目时补 bootstrap 条目。
 	sm := newSessionManagerForDir(svcs, opts.SessionDir)
 	switch {
 	case opts.SessionManager != nil:
 		inner = opts.SessionManager
+		// 空上下文 = 全新会话：补 model_change + thinking_level_change
+		// 两条引导条目；非空则从分支历史恢复。
 		if len(inner.BuildContext(inner.GetLeafID())) == 0 {
 			if opts.Model != nil {
 				if _, err := inner.AppendModelChange(providerID(opts.Model), opts.Model.ID); err != nil {
@@ -747,6 +818,8 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	}
 	sess.SetActiveToolsByName(initialToolNames)
 	// upstream: agent-session.ts constructor restores the transcript's tools when no initial loadout is given. A Session over a caller-supplied session manager that is not a clone is that case; the CLI, like sdk.ts, always gives one.
+	// 从转录恢复工具集：恢复旧会话时转录里记着当时激活了哪些工具
+	// （包括已消失的 MCP/扩展工具名字——进 pendingToolNames 等注册）。
 	if opts.existing != nil && opts.toolRegistry == nil {
 		sess.applyTranscriptTools(restoredTranscript, nil)
 	}
@@ -756,6 +829,8 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	}
 	sess.detachModelObserver = sync.OnceFunc(svcs.Registry().ObserveChanges(sess.refreshCurrentModelFromRegistry))
 	// Initial rebinding follows backend ownership; declared metadata alone does not own a caller-supplied transport.
+	// 注册表里该 provider 有 runtime 所有权才立刻换到目录里的最新
+	// 模型；调用方自带 Provider 的不动。
 	if opts.Model != nil && opts.Model.Provider != nil && svcs.Registry().HasRegisteredProvider(opts.Model.Provider.ID()) {
 		sess.refreshCurrentModelFromRegistry()
 	}
@@ -771,6 +846,8 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	if opts.existing == nil {
 		// A clone shares its source's runner; the source keeps the binding.
 		// The core binding flushes the virtual models and MCP registrations extensions made while loading into this session's registry, before any model is selected. upstream: agent-session.ts _buildRuntime -> _applyExtensionBindings.
+		// 非 Clone：先让扩展的注册结果（虚拟模型、MCP server、命令动作）
+		// 落进本会话的注册表与 runner，再进任何模型选择。
 		if opts.Runner != nil {
 			sess.bindExtensionCore(opts.Runner)
 		}
@@ -778,6 +855,8 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 	}
 	sess.initSystemPrompt(opts)
 	sess.refreshContext()
+	// 事件管道 goroutine：rawEvents → 同步监听 + 扩展 + events 通道，
+	// 直到 closeDone。
 	sess.installCacheWarmer(inner, opts.CacheWarmer)
 	go sess.forwardAgentEvents()
 	return sess, nil
@@ -807,6 +886,12 @@ func replayedTranscript(inner *icodingagent.Session) ([]agent.AgentMessage, erro
 // persistMessage records one message the agent produced, as Pi's message_end
 // persistence does, and indexes it by its new entry. A write failure is
 // returned so the agent fails the run, as Pi's appendMessage throws.
+//
+// message_end 时的持久化：把消息追加成 JSONL 条目并登记
+// entryIDsByMessage 映射（供上下文编辑/压缩定位）。写失败直接让运行
+// 失败——磁盘和内存转录分叉是不可接受的状态。
+// assistant 消息额外记一条 assistantEnd 便签（重试判定等结果），
+// forwardAgentEvents 在对应 message_end 发布点时弹出使用。
 func (s *Session) persistMessage(msg agent.AgentMessage) error {
 	if msg.User != nil {
 		s.overflowRecoveryAttempted.Store(false)
@@ -815,6 +900,7 @@ func (s *Session) persistMessage(msg agent.AgentMessage) error {
 	if in := s.inner; in != nil {
 		var id string
 		if msg.Custom != nil {
+			// 自定义消息（customType/display/details）走专用追加入口。
 			customType, _ := msg.Custom["customType"].(string)
 			display, _ := msg.Custom["display"].(bool)
 			id, err = in.AppendCustomMessageEntry(customType, msg.Custom["content"], display, msg.Custom["details"])
@@ -935,6 +1021,8 @@ func (s *Session) Send(ctx context.Context, prompt string) ([]agent.AgentMessage
 }
 
 // SendContent dispatches extension commands before ordinary structured-content turns. Modes that already process commands and input use SendContentWithPreflight instead.
+// 先过一遍"/命令"拦截：首块文本以 / 开头且扩展注册了该命令时，由
+// 扩展消费（不进模型），否则走普通 prompt 链路。
 func (s *Session) SendContent(ctx context.Context, content []ai.UserContentBlock) ([]agent.AgentMessage, error) {
 	if len(content) > 0 {
 		if text, ok := content[0].(ai.TextContent); ok && strings.HasPrefix(text.Text, "/") {
@@ -960,6 +1048,16 @@ func (s *Session) SendContentWithPreflight(ctx context.Context, content []ai.Use
 	return run.Run()
 }
 
+// prepareContentRun 是"发消息前"的全部前置裁决链，任何一步失败
+// 都不进 agent 运行（也不会把会话标记为 streaming）：
+//  1. 已 streaming → 拒绝并发 Send；
+//  2. flush 扩展挂起的自定义消息（让它们先进转录）；
+//  3. 校验当前有可用模型（含 auth）；
+//  4. 压缩检查：上一回合若逼近窗口，先压缩再接这条 prompt；
+//  5. PreparePrompt：内容 → 用户消息（扩展可改写）；
+//  6. 图片归一化 + 调用方的 preflight 收尾；
+//  7. BeginPreparedPrompt 领取运行权，产出 PreparedPromptRun。
+//
 // prepareContentRun is _startRun up to agent.prompt for a user prompt: it marks the Session busy, runs _prepareRun (the compaction check,
 // before_agent_start and image normalization), appends the messages held meanwhile, calls preflight and claims the Agent.
 func (s *Session) prepareContentRun(ctx context.Context, content []ai.UserContentBlock, preflight func()) (*PreparedPromptRun, error) {
@@ -1076,10 +1174,16 @@ func (s *Session) CheckPromptCompaction(ctx context.Context) error {
 // handlers already run synchronously on the agent goroutine. The run remains
 // active for IsStreaming and Abort until RunAgentPrompt returns.
 func (s *Session) RunAgentPrompt(ctx context.Context, start func(context.Context) ([]agent.AgentMessage, error)) ([]agent.AgentMessage, error) {
+	// beginAgentRun 领取运行权（标记 streaming、登记 abort）；endAgentRun
+	// 在返回前收尾。start 是"首轮底层运行"（prompt/续接等）。
 	ctx, cancelRun := s.beginAgentRun(ctx)
 	defer s.endAgentRun(cancelRun)
 	messages, runErr := start(ctx)
 	s.mu.Lock()
+	// 跑后处理：可重试错误自动重试、上下文溢出/长度截断做压缩+重放、
+	// 跑完发现排队输入就 Continue 续跑——直到没人要求再来一轮。
+	// 每次续接前先 FlushEvents 保证监听器把已发事件处理完（与上游
+	// "session listener 先于 agent.continue"的顺序一致）。
 	messages, runErr = s.runPostAgentRunsWith(ctx, messages, runErr, func(ctx context.Context) ([]agent.AgentMessage, error) {
 		s.mu.Unlock()
 		defer s.mu.Lock()
@@ -1089,6 +1193,7 @@ func (s *Session) RunAgentPrompt(ctx context.Context, start func(context.Context
 		messages, err := s.agent.ContinueMessages(ctx)
 		return messages, err
 	})
+	// 回合间缓冲的 bashExecution 与扩展自定义消息此刻才能落盘。
 	if err := s.flushPendingBashLocked(); err != nil {
 		s.mu.Unlock()
 		return messages, errors.Join(runErr, err)
@@ -1096,6 +1201,8 @@ func (s *Session) RunAgentPrompt(ctx context.Context, start func(context.Context
 	runErr = errors.Join(runErr, s.flushPendingCustomMessages())
 	s.mu.Unlock()
 	// Cancellation only ends the wait; the run's own result stands.
+	// 最后一次 Flush：等事件消费者收干净；ctx 已取消时等待会提前
+	// 返回，但运行结果不受等待成败影响。
 	_ = s.FlushEvents(ctx)
 	return messages, runErr
 }
@@ -1334,6 +1441,10 @@ func (s *Session) beginModelChangeWithThinking(ctx context.Context, m *ai.Model,
 	return s.beginModelChangeState(ctx, m, source, explicit, false, options...)
 }
 
+// beginModelChangeState 是 SetModel/CycleToModel/BeginModelChange 共用的
+// 同步变更段：按目标模型钳定思维级别 → 改 agent 当前模型 → 写
+// model_change 持久条目 → 按需落全局默认与思维级别，返回一个延迟
+// 通知闭包给调用方择机执行（model_select 扩展事件在里面发出）。
 func (s *Session) beginModelChangeState(ctx context.Context, m *ai.Model, source extension.ModelSelectSource, explicit *ai.ModelThinkingLevel, deferThinking bool, options ...ModelMutationOptions) (func(), error) {
 	if m == nil {
 		return nil, fmt.Errorf("coding: SetModel: model is nil")
@@ -1356,6 +1467,7 @@ func (s *Session) beginModelChangeState(ctx context.Context, m *ai.Model, source
 		}
 	}
 	if len(options) > 0 && options[0].Persist {
+		// Persist 额外把选择写成全局默认 + 当前模型作用域。
 		// agent-session.ts setModel: setDefaultModelAndProvider queues its write and records a failure for the settings diagnostics, so the
 		// model change goes on.
 		// upstream: packages/coding-agent/src/core/settings-manager.ts:enqueueWrite
@@ -1421,6 +1533,9 @@ func (s *Session) Inner() *icodingagent.Session { return s.inner }
 
 // ReplaceInner aborts work owned by the old Session, then installs the new
 // Session state, including whether its manager persists to a file.
+// 换底（Resume/新会话/分支跳转共用）：先中断旧会话持有的压缩/分支摘要，
+// 再换 inner（新 JSONL）、更新 agent 的 session id、重建上下文、从分支
+// 恢复模型/思维级别。Services/Resources/内置工具不换（D61）。
 func (s *Session) ReplaceInner(sess *icodingagent.Session) {
 	// pig divergence (D61): Services, Resources, and built-in tools remain bound
 	// to the startup project.
@@ -1514,6 +1629,9 @@ func (s *Session) EmitSessionShutdownTransition(reason, targetSessionFile string
 // a partial dispose. The Agent runs on its own goroutine here, so the Session
 // disconnects and invalidates before it aborts the Agent.
 func (s *Session) Dispose() {
+	// 顺序是刻意的：先摘掉 agent 事件订阅 + 失效 runner + 清监听器
+	// （之后的事件不再进入管道），再逐项中止在途工作——上游同步执行
+	// 这些步骤，Go 版靠"先断线后中止"达到同样的不可观察部分态。
 	if s.detachAgentEvents != nil {
 		s.detachAgentEvents()
 	}
@@ -1843,6 +1961,9 @@ func (s *Session) AbortRetry() {
 }
 
 // QueueSteer admits already-processed input before the next model call. Modes that own input dispatch use this boundary to avoid running handlers twice.
+// 双写：Session 侧的文本列表（queuedSteering，给 UI/统计看）+ agent
+// 侧的消息队列（agent.Steer，真正被循环消费的）。两边靠
+// consumeQueuedMessage 在消息被取走时核销对账。
 func (s *Session) QueueSteer(text string, images []ai.ImageContent) {
 	s.queueMu.Lock()
 	s.queuedSteering = append(s.queuedSteering, text)
@@ -1927,6 +2048,9 @@ func (s *Session) emitQueueUpdate() {
 	s.publishQueueEvent(event)
 }
 
+// consumeQueuedMessage 是双写队列的对账点：agent 循环取走一条队列
+// 消息进入转录时（queue_message_consumed），按文本内容从 Session 侧
+// 列表里删掉同一条，并返回新的队列快照——两边以"文本"为对账键。
 func (s *Session) consumeQueuedMessage(message agent.AgentMessage) (agent.QueueUpdateEvent, bool) {
 	if message.User == nil {
 		return agent.QueueUpdateEvent{}, false
@@ -2074,6 +2198,8 @@ func (s *Session) ExecuteBash(ctx context.Context, command string, onChunk func(
 func (s *Session) executeBash(ctx context.Context, command string, excludeFromContext *bool, onChunk func(string), operations extension.BashOperations, id *string) (BashResult, error) {
 	// Runs are concurrent; each registers its cancel so AbortBash stops all
 	// of them (upstream executeBash + _bashAbortControllers).
+	// 每个 bash 调用登记自己的 cancel 进共享集合，AbortBash 一网打尽；
+	// 返回时注销（先删登记再调 cancel，避免重复取消）。
 	bashCtx, bashCancel := context.WithCancel(ctx)
 	s.bashMu.Lock()
 	if s.bashCancels == nil {
@@ -2090,6 +2216,8 @@ func (s *Session) executeBash(ctx context.Context, command string, excludeFromCo
 
 	// Upstream applies the shell command prefix (e.g. "shopt -s
 	// expand_aliases") and records the command as typed.
+	// 设置里的命令前缀（alias 展开等）拼到实际执行串前面；记录进
+	// 转录的是用户输入的原命令。
 	settings := s.services.Settings()
 	resolvedCommand := command
 	if prefix := settings.GetCommandPrefix(); prefix != "" {
@@ -2106,6 +2234,7 @@ func (s *Session) executeBash(ctx context.Context, command string, excludeFromCo
 	// The awaited executor can publish output through the Session event funnel, so release notification admission after setup rather than after Bash completion.
 	invocation.Acknowledge(ctx)
 	// upstream: packages/coding-agent/src/core/agent-session.ts:executeBash
+	// 每个输出块先回调调用方，再走有序事件通道发 bash_execution_update。
 	shared, err := tools.ExecuteBashWithOperations(bashCtx, resolvedCommand, s.inner.CWD(), operations, tools.BashExecOptions{OnChunk: func(delta string) {
 		if onChunk != nil {
 			onChunk(delta)
@@ -2460,6 +2589,12 @@ func (s *Session) emitOrderedEventSync(ev agent.AgentEvent) {
 
 // emitSynchronousSessionEvent reserves a streaming continuation before queueing it on the ordered Session worker. This is the awaited _emitExtensionEvent return boundary before public listeners and persistence.
 //
+// 同步事件投递：把事件包成 envelope 推进 rawEvents 后，调用方阻塞
+// 等 forwardAgentEvents 处理完才返回——对应上游 await 总线的效果
+// （保证事件按产生顺序被监听器看到）。带流观察域的事件先预订一个
+// continuation，处理端在恢复观察域后才投递，保证消息事件里的流式
+// 视图在正确时刻刷新。
+//
 //perf:hot
 func (s *Session) emitSynchronousSessionEvent(ev agent.AgentEvent, listenersOnly bool) {
 	dispatched := &synchronousSessionEvent{AgentEvent: ev, listenersOnly: listenersOnly}
@@ -2470,6 +2605,7 @@ func (s *Session) emitSynchronousSessionEvent(ev agent.AgentEvent, listenersOnly
 		owner = observation.Owner()
 	}
 	wait := func() error {
+		// Session 已关：取消预订的 continuation 然后直接返回。
 		// When nothing is queued ahead, the producer executes the event itself instead of handing it to the executor goroutine and waiting for it: the continuation runs at its reserved FIFO position, on this goroutine, while the producer is released in AwaitContinuation. The producer released its stream turn (AwaitContinuation) or holds none, so it may wait for the executor's current event.
 		s.execMu.Lock()
 		if s.inlineReadyLocked() {
@@ -2486,6 +2622,8 @@ func (s *Session) emitSynchronousSessionEvent(ev agent.AgentEvent, listenersOnly
 			return nil
 		}
 		select {
+		// 投递期间 Session 关闭：能取消预订就取消；已被消费端领走
+		// 的就等它跑完，不能丢下正在执行的回调。
 		case <-s.eventsDone:
 			if dispatched.continuation != nil && !dispatched.continuation.Cancel() {
 				// A claimed callback still owns its observation; join it instead of abandoning active execution.
@@ -2510,6 +2648,10 @@ func (s *Session) emitCompactionEvent(ev agent.AgentEvent) {
 // emitEvent queues a Session event behind the agent events already produced.
 func (s *Session) emitEvent(ev agent.AgentEvent) { s.emitOrderedEvent(ev) }
 
+// forwardAgentEvents 是 Session 唯一的事件搬运 goroutine：从
+// rawEvents 按 FIFO 取事件交给 forwardAgentEvent 处理（同步监听→
+// 扩展→events 通道），closeDone 关闭即退出并 close(events) 通知
+// 消费者。队列溢出补偿事件优先于通道读取——保证队列更新不被饿死。
 func (s *Session) forwardAgentEvents() {
 	// This goroutine runs every continuation callback of the Session, so it identifies itself once.
 	owner := ai.CurrentStreamOwner()
@@ -2559,6 +2701,21 @@ const agentEventErrorPath = "<agent-event>"
 
 // forwardAgentEvent executes listener delivery and wire publication in FIFO order. Agent events arrive in an awaited listener-only envelope, then in a publishedSessionEvent after persistence. Other Session-owned events use one envelope for both phases. Panics are reported and awaited producers are released.
 //
+// 单条事件的处理管线（在 forwardAgentEvents goroutine 上运行）。
+// 事件有三种信封形态：
+//  1. *synchronousSessionEvent + continuation：先在预订的观察域里
+//     跑一个"恢复观察域→刷新事件→递归重投"的 continuation；
+//  2. *synchronousSessionEvent（无 continuation）：同步监听阶段，
+//     处理完 close(done) 释放等待的生产者；
+//  3. publishedSessionEvent：已经过监听阶段、持久化完的"已发布"
+//     事件，只负责推 events 通道；
+//  4. 普通事件：两段合一起跑。
+//
+// 特殊修补：AgentEndEvent 补 WillRetry（问 assistantEnds 记账）；
+// assistant message_end 弹出对应便签拿 retryEnded 补发
+// AutoRetryEndEvent。整个处理兜 recover：panic 上报扩展错误且
+// done 必须 close（不然同步投递的生产者永远卡住）。
+//
 //pig:hotpath
 func (s *Session) forwardAgentEvent(ev agent.AgentEvent, owner ai.StreamOwner) (open bool) {
 	if dispatched, ok := ev.(*synchronousSessionEvent); ok && dispatched.continuation != nil {
@@ -2600,6 +2757,7 @@ func (s *Session) forwardAgentEvent(ev agent.AgentEvent, owner ai.StreamOwner) (
 			close(synchronous.done)
 		}
 	}()
+	// sessionEventBarrier：FlushEvents 插的栅栏，只过通道不计监听器。
 	if _, ok := ev.(*sessionEventBarrier); ok {
 		return s.sendEvent(ev)
 	}
@@ -2615,6 +2773,8 @@ func (s *Session) forwardAgentEvent(ev agent.AgentEvent, owner ai.StreamOwner) (
 	}
 	listenersOnly := synchronous != nil && synchronous.listenersOnly
 	if end, ok := ev.(agent.AgentEndEvent); ok {
+		// agent_end 发布前补 WillRetry：跑后处理是否会对这条 assistant
+		// 发起重试，是 agent goroutine 在 message_end 时判定记账的。
 		end.WillRetry = !s.runState.abortRequested.Load() && lastAssistantMessage(end.Messages) != nil && s.lastAssistantEnd.willRetry
 		ev = end
 	}
@@ -2802,6 +2962,8 @@ func (s *Session) CompactForExtension(ctx context.Context, customInstructions st
 func (s *Session) compact(ctx context.Context, customInstructions string) (*CompactionResult, error) {
 	// Manual compaction aborts the active run first and never continues it
 	// (upstream compact() awaits abort()).
+	// 手动压缩两步先行：中止当前运行（压缩必须在静止转录上做）、
+	// 抢占"会话级操作"位（踢掉在途的树导航/自动压缩并等其退出）。
 	if err := s.abortKeepingDeferred(ctx); err != nil {
 		return nil, err
 	}
@@ -2852,6 +3014,8 @@ func (s *Session) compact(ctx context.Context, customInstructions string) (*Comp
 	if settingsErr != nil {
 		return fail(settingsErr, false)
 	}
+	// PrepareCompaction 做"能不能压/怎么压"的规划：分出被摘要的
+	// 前缀和保留的尾部；nil 表示没到可压缩的体量。
 	prep := compaction.PrepareCompaction(entries, settings)
 	if prep == nil {
 		reasonMsg := "Nothing to compact (session too small)"
@@ -2861,6 +3025,8 @@ func (s *Session) compact(ctx context.Context, customInstructions string) (*Comp
 		return fail(errors.New(reasonMsg), false)
 	}
 
+	// 先让扩展路由裁决（session_before_compact 可给现成摘要、可取消、
+	// 可声明"我自己压"）；没裁决才走默认摘要生成。
 	if yield, ok := ctx.Value(compactionYieldKey{}).(func(context.Context)); ok {
 		yield(compactCtx)
 	}
@@ -2885,6 +3051,8 @@ func (s *Session) compact(ctx context.Context, customInstructions string) (*Comp
 	}
 
 	s.mu.Lock()
+	// 压缩结果落盘成 compaction 条目（记首个保留条目 ID + 压缩前
+	// token 数），然后重建内存上下文——之后转录就是"摘要+保留尾部"。
 	entryID, err := s.inner.AppendCompaction(result.Summary, result.FirstKeptEntryID, result.TokensBefore, result.Details, fromExtension, result.Usage)
 	if err != nil {
 		s.mu.Unlock()
@@ -3038,6 +3206,9 @@ func (s *Session) navigateTree(ctx context.Context, targetID string, opts Naviga
 		return NavigateTreeResult{}, errors.New("Wait for the current response to finish before navigating the session tree.")
 	}
 
+	// 用 compactMu 同一套仲裁占"会话级操作"位——树导航、手动压缩、
+	// 自动压缩三者互斥；branchSumCancel/done 登记本次操作供
+	// AbortBranchSummary/IsCompacting/其他操作等待。
 	branchCtx, cancel := context.WithCancel(ctx)
 	s.compactMu.Lock()
 	if s.compacting.Load() || s.branchSumCancel != nil {
@@ -3082,9 +3253,12 @@ func (s *Session) navigateTree(ctx context.Context, targetID string, opts Naviga
 	}
 
 	// Collect entries to summarize (from old leaf to common ancestor).
+	// 摘要是给"将被离开的分支"做的：从旧叶子回溯到与目标分支的
+	// 公共祖先，这段区间的条目就是待摘要内容。
 	collected := compaction.CollectEntriesForBranchSummary(icodingagent.HandleReads{Session: s.inner}, derefLeafID(oldLeafID), targetID)
 
 	// Extensions may override the instructions and label.
+	// session_before_tree 钩子可以改指令/标签，甚至直接给现成的摘要。
 	customInstructions := opts.CustomInstructions
 	replaceInstructions := opts.ReplaceInstructions
 	label := opts.Label
@@ -3124,6 +3298,8 @@ func (s *Session) navigateTree(ctx context.Context, targetID string, opts Naviga
 		}
 	}
 
+	// 扩展没给摘要且用户要求摘要：本会话自己调模型生成（可能带
+	// 重试/预算设置）。
 	if opts.Summarize && len(collected.Entries) > 0 && summary == nil {
 		request, authErr := s.prepareSummarizationRequest(branchCtx, s.Model())
 		if authErr != nil {
@@ -3158,9 +3334,12 @@ func (s *Session) navigateTree(ctx context.Context, targetID string, opts Naviga
 	}
 
 	// Determine the new leaf position based on the target type.
+	// 目标类型决定新叶子：摘要/分叉点落在其前驱，普通条目落在自身。
 	newLeafID, editorText := treeNavigationTarget(targetEntry)
 
 	s.mu.Lock()
+	// moveTreeLeaf 一步完成"写摘要条目 + 挪叶子指针"；之后按新分支
+	// 重建上下文与激活工具（转录里记着当时的工具集）。
 	summaryID, err := s.moveTreeLeaf(targetID, newLeafID, summary, label)
 	if err != nil {
 		s.mu.Unlock()
@@ -3257,6 +3436,8 @@ func (s *Session) checkCompactionDecision(ctx context.Context, assistantMsg *age
 	// An overflow from another model (the user switched to a larger window)
 	// does not apply to the current model. Under a virtual selection, the
 	// physical model that produced the message supplies the limits.
+	// 判定溢出要用"产出这条消息的那个模型"的窗口；sameModel=false 时
+	// （用户中途换了更大窗口的模型）旧溢出对新模型不成立。
 	messageModel := s.modelForMessage(assistantMsg)
 	sameModel := messageModel != nil
 	if messageModel == nil {
@@ -3271,6 +3452,7 @@ func (s *Session) checkCompactionDecision(ctx context.Context, assistantMsg *age
 	// The decision reads the projection (entry ids, estimates) and keeps none of its messages.
 	projection := s.inner.BuildSessionProjectionView()
 	// A message from before the latest compaction carries stale usage.
+	// 压缩点之前的消息其 usage 度量的是旧上下文，不算数。
 	latestCompTS, hasCompaction := projectionCompactionTimestamp(projection)
 	if hasCompaction && assistantMsg.Timestamp <= latestCompTS {
 		return false, nil
@@ -3282,6 +3464,8 @@ func (s *Session) checkCompactionDecision(ctx context.Context, assistantMsg *age
 		(recovery.usageMatchesProjection && icodingagent.IsContextOverflow(assistantMsg, contextWindow)))
 	recoverableLength := sameModel && recovery.projected && icodingagent.IsRecoverableLength(assistantMsg, messageModel.Capabilities.MaxOutputTokens)
 	if contextOverflow || recoverableLength {
+		// 溢出/可恢复截断：做一次"丢弃失败尝试 → 压缩 → 重放"的恢复，
+		// 只给一次机会（overflowRecoveryAttempted 防递归）。
 		willRetry := assistantMsg.StopReason != ai.StopReasonStop
 		if !willRetry {
 			return compact(ctx, "overflow", false)
@@ -3306,6 +3490,10 @@ func (s *Session) checkCompactionDecision(ctx context.Context, assistantMsg *age
 		return retry, err
 	}
 
+	// 阈值检查分支：算出"当前上下文大概多少 token"。有 context_edit
+	// 的会话不能信单条 usage（编辑改变了上下文构成），用投影估算；
+	// 错误回复/零 usage 用最近一条有效 usage + 尾部估算；正常回复
+	// 直接用它的 usage。
 	var contextTokens int
 	directContextTokens := 0
 	if assistantMsg.Usage != nil {

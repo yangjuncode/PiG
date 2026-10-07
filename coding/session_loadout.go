@@ -19,6 +19,13 @@ import (
 )
 
 // sessionLoadoutState is the Session state of tool exposure and nested calls.
+//
+// 工具装配（loadout）状态：三个概念要分清——"注册"（注册表里有的
+// 全部工具）、"激活"（agent.Tools 里模型可见可调的子集）、"声明"
+// （实际写进请求的 declaration，prepareLoadout 钩子可以再藏掉
+// 一部分进 hidden）。nested 是 ctx.executeTool 的嵌套调用执行器
+// （懒建）；pending 缓冲嵌套调用汇总，从 toolResult 的
+// message_start 暂存到 message_end 应用到共享消息上。
 type sessionLoadoutState struct {
 	// applyMu serializes loadout changes, including the registry refresh that precedes one. It is taken before toolRegistryMu; see [Session.applyToolLoadout].
 	applyMu sync.Mutex
@@ -131,6 +138,12 @@ func (s *Session) callableEntriesLocked(active map[string]struct{}) []sessionToo
 // The caller holds loadout.applyMu, then toolRegistryMu. The hooks run with toolRegistryMu released: a hook may read the Session's tools, as a subprocess hook does when the host pushes extension state before it asks, and toolRegistryMu is not reentrant. applyMu keeps other loadout and registry changes out until the loadout is applied.
 //
 // upstream: agent-session.ts:1500-1560 (_applyToolLoadout)
+//
+// 装配流程：planToolLoadout 选出激活工具 + 收集钩子（读注册表，
+// 持锁内完成）→ 放锁跑 prepareLoadout 钩子（钩子可能回调读会话
+// 工具，toolRegistryMu 不可重入所以必须放锁）→ 合并结果：钩子改
+// 的描述经 bindTool 注入包装、隐藏的声明记入 loadout.hidden 供
+// hideDeclarations 在请求时过滤。
 func (s *Session) applyToolLoadout(names []string) []agent.AgentTool {
 	plan := s.planToolLoadout(names)
 	var descriptions map[string]string
@@ -276,6 +289,11 @@ func runPrepareLoadout(hook extension.ToolPrepareLoadoutFunc, loadout extension.
 // hideDeclarations removes the declarations that `prepareLoadout` hooks hide from every request. The whole transcript is filtered with the current set, so the projected declarations stay consistent across requests and only change when the loadout does.
 //
 // upstream: agent-session.ts:1683-1706 (_installHiddenDeclarationsProjection)
+//
+// 请求时的投影（TransformLLMMessages 钩子调用）：hidden 集合只过滤
+// 系统消息里的 ToolsAdded/ToolsRemoved 差分声明——工具调用本身不藏，
+// 藏的是"这个工具存在过"的声明痕迹，模型看到的是一个从未知道它的
+// 上下文。
 func (s *Session) hideDeclarations(messages []ai.Message) []ai.Message {
 	hiddenSet := s.loadout.hidden.Load()
 	if hiddenSet == nil || len(*hiddenSet) == 0 {
@@ -407,6 +425,12 @@ func (s *Session) appendExtensionEntry(customType string, data any) error {
 // recordNestedCalls records the calls a tool made through `ctx.executeTool()` and their usage on its result message.
 //
 // upstream: agent-session.ts:1062-1074 (_handleAgentEvent, `message_start` of a toolResult). Go difference forced by the agent loop (agent/agent_loop.go startEventMessage): message_start carries its own copy of the message, while message_end shares the message with the transcript and the persisted entry. The record is taken at message_start and applied to that copy for listeners, then applied to the shared message at message_end, before anything reads or persists it.
+//
+// 嵌套调用记账的两次应用：start 时取走记录（TakeRecord）既存进
+// pending 又应用到 start 消息的独立拷贝上（监听器立刻能看到）；
+// end 时把同一份汇总再应用到共享给转录/持久化的那条消息上——
+// 两次 apply 是因为 start/end 持有的是不同的消息对象（agent 循环
+// 的 startEventMessage 副本语义）。agent_end 清空所有未结算记录。
 func (s *Session) recordNestedCalls(event agent.AgentEvent) {
 	nested := s.loadout.nested.Load()
 	if nested == nil {

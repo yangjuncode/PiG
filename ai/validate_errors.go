@@ -12,6 +12,11 @@ import (
 // argumentErrorsAt follows TypeBox 1.3.27 schema/engine/schema.mjs and system/locale/en_US.mjs. Unlike jsonschema.ValidationError it reports siblings after a type failure and includes failing union arms before the
 // union error. It takes the JSON pointer of the value and the member order of the arguments' source: TypeBox visits object members in their enumeration order, so errors for additional
 // properties, pattern properties and property names follow it.
+//
+// 校验失败时的错误报告生成器：手写遍历而不是读 jsonschema 库的
+// ValidationError，因为返回给模型的错误文本必须与上游 TypeBox 输出
+// 一致（措辞、路径格式、遍历顺序——union 要先列每个分支的失败再报
+// union 总错）。模型读到这些文本后会按提示修正参数重试。
 func (s *argumentSchema) argumentErrorsAt(order schemaObjectOrder, value any, path, pointer string) []string {
 	var lines []string
 	emit := func(message string) {

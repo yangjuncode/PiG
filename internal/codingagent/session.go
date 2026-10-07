@@ -36,6 +36,20 @@ const CurrentSessionVersion = sessionentry.CurrentSessionVersion
 // extends: this is how forks share a single JSONL: the leaf pointer
 // jumps back to an earlier id and new entries become its children
 // (siblings in the entry stream, but logically a separate branch).
+//
+// 整体心智模型（读 coding/session.go 前先建立这个）：
+//   - 一个 JSONL 文件 = 一棵以 parentId 连边的条目树；leafID 是当前
+//     分支末端，SetLeafID/Fork 只挪指针，不改历史。
+//   - "当前分支" = 从 leafID 沿 parentId 回溯到根的路径
+//     （Branch/pathToLocked），压缩、context_edit、树导航都是对这个
+//     路径做语义解释（BuildSessionProjection）。
+//   - 追加是唯一写操作：所有 AppendXxx 都经 leafAppendMu 把"读叶子
+//     →生成 ID→以旧叶子为父→追加"做成原子步骤，后台写入者（如
+//     缓存预热）不会把链分叉。
+//   - 落盘有闸门：新会话在出现第一条 user/assistant 消息前不落盘
+//     （flushed/hasConversation），开了又关不留空文件。
+//   - 条目不可变且保留 raw JSON：未知字段随 raw 原样存活，跨版本
+//     前进兼容。
 
 // The entry values live in internal/sessionentry so coding/extension can name them without an import cycle.
 type (
@@ -103,6 +117,10 @@ func AsMessage(e SessionEntry) (MessageEntry, bool) { return asMessage(e) }
 
 // messageFor is asMessage that records a message entry which did not decode, so UndecodableCount can report it. Callers must clone the
 // contained AgentMessage before handing it to a mutable pipeline.
+//
+// 条目→消息的解析缓存：条目不可变，所以按 ID 缓存永不过期；解析
+// 失败的也缓存（记进 undecodable），防止一条新格式消息让每次树
+// 遍历/投影都重新付出整行 json 扫描的代价。
 func (s *Session) messageFor(e SessionEntry) (MessageEntry, bool) {
 	message, ok := asMessage(e)
 	if ok || e.Base().Type != "message" {
@@ -333,6 +351,14 @@ func (s *Session) SetLeafID(id *string) error {
 
 // AppendEntry appends a complete entry to memory and the session file. The caller supplies id, parentId and timestamp; a nil parent denotes a root and is never inferred from the current leaf.
 // Returns an error if marshalling, parsing, or file write fails. Persistence errors expose Node's filesystem message while retaining the underlying Go error for errors.Is and errors.As.
+//
+// 追加的完整管线：序列化为 raw JSON 行 → 解出公共 base → 锁内更新
+// 内存态（stats 增量、entries、byID 索引、leafID 指到新条目、
+// hasConversation 闸门判定）→ 锁外落盘：未 flushed 且还没有真正
+// 对话则什么都不写；闸门刚开则 header+全部缓冲条目一次性建文件
+// （O_EXCL，不覆盖同名文件）；已 flushed 则单行追加。
+// 注意：内存追加在写盘前生效——写盘失败时内存里已有该条目，调用方
+// 看到的错误仍代表"持久化失败"。
 func (s *Session) AppendEntry(entry any) error {
 	raw, err := marshalSessionLine(entry)
 	if err != nil {
@@ -994,6 +1020,11 @@ func (s *Session) AppendUsage(kind, provider, model string, usage ai.Usage, note
 // empty firstKeptEntryID is Pi's null: the entry stores its own ID, so the
 // compaction retains no preceding entries. The entry also records the current
 // projected system state, when there is one, stamped with the entry time.
+//
+// 压缩条目的两个关键载荷：SystemMessage 是压缩边界的完整系统状态
+// 快照（投影恢复上下文时从这里取当时的提示与工具声明）；
+// FirstKeptEntryID 指向摘要之后第一个保留条目——投影从它开始续接，
+// 之前的条目只存在于摘要文本里。
 func (s *Session) AppendCompaction(summary, firstKeptEntryID string, tokensBefore int, details any, fromHook bool, usage *ai.Usage) (string, error) {
 	return s.appendCompaction(summary, firstKeptEntryID, tokensBefore, details, fromHook, false, usage)
 }
@@ -1049,6 +1080,10 @@ func (s *Session) appendCompaction(summary, firstKeptEntryID string, tokensBefor
 //
 // Mirrors upstream branchWithSummary(branchFromId: string | null, ...) in
 // session-manager.ts.
+//
+// 树导航的产物：当用户离开一个分支去别处时，被离开的那段历史浓缩
+// 成一条 branch_summary 挂在新父节点下——新叶子是这条摘要，旧分支
+// 成为孤儿子树留在文件里（随时可再导航回去）。
 func (s *Session) BranchWithSummary(parentID *string, summary string, details any, fromHook bool, usage *ai.Usage) (string, error) {
 	s.leafAppendMu.Lock()
 	defer s.leafAppendMu.Unlock()
@@ -1417,6 +1452,8 @@ func generateEntryID() (string, error) {
 }
 
 // generateUniqueEntryID mirrors Pi's collision-checked short IDs and UUID fallback.
+// ID 生成策略：先摇 8 位十六进制短 ID 并在本会话索引里查重，撞满
+// 100 次（概率上几乎不可能）退化为完整 UUIDv4。
 func generateUniqueEntryID(has func(string) bool) (string, error) {
 	for range 100 {
 		id, err := generateEntryID()

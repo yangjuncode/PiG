@@ -12,6 +12,11 @@ import (
 )
 
 // CycleModel selects the next available model. Empty direction means forward; only Persist changes global defaults.
+//
+// 循环切换：有 scoped scope 时候选集是 scope 与"当前可用"的交集
+// （scope 里记的可能已下线）；无 scope 时全部可用模型。当前模型
+// 不在候选集按 index 0 起算，环形步进；scope 项自带的 thinking
+// 偏好作为显式覆盖传给切换。
 func (s *Session) CycleModel(direction string, options ...ModelMutationOptions) (*ModelCycleResult, error) {
 	result, complete, err := s.BeginModelCycle(context.Background(), direction, options...)
 	if complete != nil {

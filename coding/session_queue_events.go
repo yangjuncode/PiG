@@ -7,6 +7,14 @@ import (
 	"github.com/MichaelKinsy/PiG/agent"
 )
 
+// A callback running on the event executor cannot wait for that executor to consume its publications. Overflow retains a reentrant publication burst and subsequent queue updates until the executor drains them, after the already-enqueued prefix and before later Agent events.
+//
+// 队列事件发布的防死锁结构：队列更新监听器（同步跑在事件执行器
+// 上）可能在回调里又触发队列更新——这时它不能等通道被消费（
+// 执行器就是它自己）。notifying 标记"回调进行中"；此期间的事件
+// 非阻塞写 rawEvents，写不进就进 overflow 暂存，prefix 记通道里
+// 已排队数——执行器回来先把 prefix 个通道事件发完，再放 overflow，
+// 保持全序。
 // A callback running on the event executor, or on a producer that executes it inline while the executor waits for execMu, cannot wait for the executor to consume its publications. Overflow retains a reentrant publication burst beyond the raw-event mailbox, and every event published after it, until the executor drains it once the events sent before it executed.
 type queueEventPublication struct {
 	mu        sync.Mutex
@@ -44,6 +52,9 @@ func (s *Session) publishQueueEvent(event agent.QueueUpdateEvent) {
 		return
 	}
 	if s.queueEvents.notifying {
+		// 在执行器自己的回调里：非阻塞投递，满了记 prefix（通道中
+		// 已排队的数目）+ overflow，等执行器下一轮从
+		// nextQueueOverflowEvent 取出补齐。
 		s.queued.Add(1)
 		select {
 		// upstream: packages/ai/src/utils/event-stream.ts:push

@@ -115,6 +115,12 @@ func newSessionWithOptions(cwd string, id *string, parentSession string) (*Sessi
 }
 
 // MigrateSessionEntries applies Pi's v1 tree and v2 custom-message migrations, preserving JSON member order. The version is the first session header's `version`, 1 when the entries have no header or the header omits it (session-manager.ts migrateToCurrentVersion); the entries migrate in place and entries already at the current version stay unchanged.
+//
+// 两段迁移：v<2 的文件没有 id/parentId（顺序即父子链），迁移给每
+// 条补发新 ID 并按出现顺序连 parentId；v1 压缩条目的
+// firstKeptEntryIndex（索引）改写成对应条目的 ID。v<3 把
+// role=hookMessage 的消息改写成 custom。全程只改 JSON 字段值，
+// 保留成员顺序。
 func MigrateSessionEntries(entries []FileEntry) error {
 	version := 1
 	for _, entry := range entries {

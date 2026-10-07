@@ -1,5 +1,24 @@
 // Package agent provides the core agent loop and message types.
 // Mirrors packages/agent of the pinned Pi release.
+//
+// 本包是整個 agent 运行机制的最底层：消息类型（AgentMessage 及其变体）、
+// 事件流（AgentEvent 各子类型）、工具接口（AgentTool）、以及驱动
+// "请求模型 → 流式收答 → 执行工具 → 再请求" 这一循环的 Agent 类型。
+//
+// 典型使用流程：
+//  1. 上层（Session / codingagent）用 NewAgent(AgentOptions{...}) 构造 Agent；
+//  2. 用户输入经 Send/SendContent 进入，占用运行权后调用 runLoop；
+//  3. runLoop 每个 turn 调用 streamAssistantResponse 向 provider 发请求，
+//     consumeStream 把流式事件转成 message_start/update/end 与 assistant 消息；
+//  4. 若回复含 tool_call，executeToolCalls 批量执行工具并把 toolResult
+//     消息追加回上下文，然后进入下一个 turn；
+//  5. 全程通过 emit 发出 AgentEvent，供 TUI、持久化、扩展钩子观察。
+//
+// 包内文件分工：agent.go 放公共类型与 Agent 生命周期；agent_loop.go 放主
+// 循环；tool_execution.go / run_tool_call.go 放工具执行管线；queue.go 放
+// steering/follow-up 队列；lifecycle.go 放订阅、取消与运行信号；
+// messages.go / message_json.go / transform.go 负责消息与 LLM 线格式互转；
+// validate*.go 是工具参数的 TypeBox 语义校验；proxy.go 是代理流实现。
 package agent
 
 import (
@@ -19,6 +38,11 @@ import (
 // ─── Message Types ────────────────────────────────────────────────────────────
 
 // Role constants mirror upstream.
+//
+// role 是消息在 JSON 线上的判别字段：序列化后的消息不再有 Go 类型信息，
+// 只凭 role 字符串区分（见 message_json.go 的 UnmarshalJSON）。前三个是
+// 模型协议角色；后四个是会话层自定义角色（bash 执行记录、扩展自定义消息、
+// 分支摘要、压缩摘要），它们在发给模型前会被 ConvertToLLM 改写成 user 消息。
 const (
 	RoleUser       = "user"
 	RoleAssistant  = "assistant"
@@ -31,6 +55,10 @@ const (
 )
 
 // UserMessage is a user turn whose content retains the upstream string-or-block-array shape.
+//
+// 用户一轮输入的消息。Content 既可以是纯文本（ai.UserText）也可以是
+// 文本/图片块数组（ai.UserContentBlocks），因为线上格式允许两种写法，
+// 反序列化时按 JSON 首字符是 `"` 还是 `[` 区分。
 type UserMessage struct {
 	Role      string         `json:"role"` // "user"
 	Content   ai.UserContent `json:"content"`
@@ -41,6 +69,13 @@ type UserMessage struct {
 }
 
 // AssistantMessage is a streamed response from the LLM. Streaming events retain a shallow provider view; Observe and JSON serialization read its current nested state without mutating these exported fields.
+//
+// 模型一次回复的消息。它有两种形态：流式进行中的"浅视图"（streamView
+// 非空，Content 等字段可能滞后于 provider 内部状态，读取要走 Observe）
+// 和已完成的定稿消息（streamView 为空，字段即最终值）。
+// StopReason 是理解整个循环的关键字段：stop=正常结束、toolUse=有工具
+// 调用待执行（循环继续）、aborted/error=硬退出。ErrorMessage 仅在
+// StopReason=="error" 时携带失败原因，供会话层做重试分类。
 type AssistantMessage struct {
 	Role                  string                     `json:"role"` // "assistant"
 	Content               []ai.AssistantContentBlock `json:"content"`
@@ -85,6 +120,12 @@ type AssistantMessage struct {
 
 // ToolResultMessage carries one tool execution result back to the LLM.
 // Mirrors upstream pi-ai ToolResultMessage.
+//
+// 一次工具执行的结果消息。每个 assistant 消息里的 tool_call 块都必须有
+// 对应的 ToolResultMessage 紧随其后，否则 provider 会拒绝请求（transform.go
+// 的 NormalizeMessages 负责补洞）。DetailsNull 用来区分"工具没写 details"
+// （JSON 里整个键省略）与"工具显式写了 details: null"——两者在线上
+// 是不同的字节序列，会话持久化必须原样还原。
 type ToolResultMessage struct {
 	Role       string                        `json:"role"` // "toolResult"
 	ToolCallID string                        `json:"toolCallId"`
@@ -140,6 +181,11 @@ func (m ToolResultMessage) Images() []ai.ImageContent {
 }
 
 // AgentMessage is the union of all message types. Only one field is non-nil.
+//
+// 会话中所有消息的联合信封：同一时刻只有一个字段非空，相当于 TypeScript
+// 里的判别联合类型（Go 没有联合，用"多指针字段+至多一个非空"表达）。
+// Custom 兜住所有自定义角色，以原始 map 保存扩展写入的任意字段。
+// MarshalJSON/UnmarshalJSON 通过 role 字段把它拍平回线上格式。
 type AgentMessage struct {
 	System     *ai.SystemMessage
 	User       *UserMessage
@@ -231,6 +277,10 @@ func (m AgentMessage) ContentBlocks() []ai.ContentBlock {
 
 // ToolUpdateCallback is called when a tool emits a streaming progress update. The partial result is the complete-so-far AgentToolResult, which the tool_execution_update event carries verbatim as `partialResult`.
 // upstream: packages/agent/src/types.ts AgentToolUpdateCallback, agent-loop.ts:778-786
+//
+// 传给工具 Execute 的进度回调。注意契约是"累计快照"而非增量：每次调用
+// 携带的都是到目前为止的完整结果，TUI 直接整体替换显示。工具可以在自己
+// 的 goroutine 里调用它。
 type ToolUpdateCallback func(partial AgentToolResult)
 
 // ToolUpdateSink receives the progress updates of a tool call that [RunToolCall] runs. A non-nil error is upstream's rejected promise: the update is not delivered further, later updates still reach the sink, and the call fails with the first error once the tool returns.
@@ -248,6 +298,17 @@ const (
 
 // AgentToolResult carries the ordered text/image blocks returned by a tool.
 // Ports packages/agent/src/types.ts.
+//
+// 工具执行的返回值。三个容易混淆的标志位：
+//   - IsError：工具主动报告的业务失败（如命令退出码非 0），结果保留
+//     details/structuredContent；
+//   - Thrown：工具抛出异常（Go 里等价于 Execute 返回 error 或 panic），
+//     结果会被换成只有错误文本的 createErrorToolResult 形态；
+//   - Terminate：提示 agent 在这一批工具后停止运行——只有整批结果都
+//     置位才真正提前结束（见 shouldTerminateToolBatch）。
+//
+// MemberOrder 记录工具写入字段的原始顺序，因为 JSON 序列化要保持和
+// 上游对象成员顺序一致的字节输出（持久化文件逐字节比对依赖它）。
 type AgentToolResult struct {
 	// MemberOrder names the members of the result object in the order its tool wrote them (content, details,
 	// isError, structuredContent, usage, terminate). Upstream hands the tool's own object on, so JSON.stringify
@@ -359,6 +420,12 @@ func (r AgentToolResult) Images() []ai.ImageContent {
 }
 
 // AgentTool is the interface that all tools must implement.
+//
+// 一切可被模型调用的工具（内置 bash/read/edit、扩展注册工具等）的抽象。
+// Schema() 返回的 JSON Schema 有两处用途：放进系统消息的工具声明（让模型
+// 知道怎么调），以及在 prepareToolCall 里校验模型发来的参数。
+// ExecutionMode() 决定并行批次策略：声明 sequential 的工具会迫使整个
+// 批次退化为顺序执行（见 executeToolCalls）。
 type AgentTool interface {
 	// Name is the tool's name as known to the LLM.
 	Name() string
@@ -404,8 +471,24 @@ type ArgumentPreparer interface {
 // ─── Agent Events ─────────────────────────────────────────────────────────────
 
 // AgentEvent is emitted by the agent loop to notify observers.
+//
+// 事件是 agent 对外界唯一的数据出口：TUI 刷新、会话持久化、扩展钩子、
+// 遥测全靠订阅它。密封接口（agentEvent 私有方法）保证事件集合是封闭的，
+// 外部只能消费不能新增。一次完整运行的事件序列为：
+//
+//	agent_start
+//	  ├─ turn_start → message_start/update…/message_end（assistant 流式回复）
+//	  │             → tool_execution_start/update/end × N（工具批次）
+//	  │             → message_start/end（每条 toolResult 消息）
+//	  │             → turn_end
+//	  └─（有工具调用或排队消息则重复上一行）
+//	agent_end
+//
+// 任何监听器返回错误都会以 runFailure panic 终止本次运行（见 emit）。
 type AgentEvent interface{ agentEvent() }
 
+// AgentStartEvent 标志一次运行的开始；AgentEndEvent 标志结束并携带本次
+// 运行产生的全部新消息（WillRetry 提示会话层还会自动重试）。
 type AgentStartEvent struct{}
 type AgentEndEvent struct {
 	Messages  []AgentMessage
@@ -469,6 +552,11 @@ type MessageEndEvent struct {
 	observation *ai.StreamObservation
 }
 
+// RefreshEvent returns the message event with the assistant message's and the provider event's partial fields set to the stream state at this call. A host dispatcher calls it when it delivers a retained event to a listener after an awaited step. Other events are returned unchanged.
+//
+// 事件保鲜：消息事件里携带的 assistant 浅视图是发出瞬间的快照，若
+// 派发途中有 await 间隔（比如 Session 逐个通知监听器），先调它把
+// partial 刷新成"此刻"状态再投递，后到的监听器看到的才是新内容。
 // RefreshEvent returns the message event with the assistant message's and the provider event's partial fields set to the stream state at this call. A host dispatcher calls it when it delivers a retained event to a listener after an awaited step. An event whose message and partial already hold that state (the stream published nothing since they were taken), and other events, are returned unchanged.
 func RefreshEvent(event AgentEvent) AgentEvent {
 	switch value := event.(type) {
@@ -521,6 +609,10 @@ func EventObservation(event AgentEvent) *ai.StreamObservation {
 }
 
 // WithEventObservation carries a stream scope across synchronous host dispatch without changing message identity or serialized fields. Events outside the message lifecycle are unchanged.
+//
+// 给消息生命周期事件挂上流观察域（私有不序列化字段）：Session 在
+// 同步派发时要靠它把事件接回正确的微任务/回调顺序上，与 RefreshEvent
+// 是一对（一个挂域，一个按域刷新）。
 func WithEventObservation(event AgentEvent, observation *ai.StreamObservation) AgentEvent {
 	switch value := event.(type) {
 	case MessageStartEvent:
@@ -687,6 +779,10 @@ func (SummarizationRetryFinishedEvent) agentEvent()     {}
 // Mirrors upstream BeforeToolCallResult. Terminate on a blocked call joins the
 // batch early-termination rule: the agent stops after the batch only when
 // every finalized result in it terminates.
+//
+// before 钩子的裁决结果：Block=true 直接拦截执行（生成错误结果而不调用
+// 工具）；Args 非空则替换参数继续执行——替换后的参数不再二次校验，所以
+// 钩子必须自己保证改写后的参数合法。
 type ToolCallHookResult struct {
 	Block     bool
 	Reason    string
@@ -730,7 +826,6 @@ type AfterToolCallHook func(ctx context.Context, toolCallID, toolName string, ar
 
 // ─── Agent ────────────────────────────────────────────────────────────────────
 
-// AgentOptions configures the agent loop.
 // AgentInitialState seeds a new agent's state. A field that is set takes the place of the same-named AgentOptions field.
 //
 // upstream: packages/agent/src/agent.ts:115 (AgentOptions.initialState: Partial<Omit<AgentState, "pendingToolCalls" | "isStreaming" | ...>>)
@@ -744,6 +839,20 @@ type AgentInitialState struct {
 	Messages []AgentMessage
 }
 
+// AgentOptions configures the agent loop.
+//
+// Agent 的全部可注入行为都集中在这个结构里，可分为四组：
+//   - 模型与请求：Model / ThinkingLevel / ThinkingBudgets / Transport /
+//     StreamFn / DefaultStreamFn / SessionID（prompt 缓存键）；
+//   - 上下文变换：ConvertToLlm / TransformLLMMessages / PreparePrompt /
+//     PrepareRequest / PrepareNextTurn / FinishTurn——Session 和扩展用
+//     这些钩子在每次请求前后改写上下文、换模型、拦截收尾；
+//   - 工具与权限：Tools / ToolExecution / BeforeToolCall / AfterToolCall /
+//     PrepareToolResult；
+//   - 事件与持久化：EventCh / EventDone / OnEvent / AfterEvent /
+//     OnMessagePersist / OnProviderStreamEvent。
+//
+// 钩子在 runLoop 里的精确触发点见 agent_loop.go 的注释。
 type AgentOptions struct {
 	// InitialState seeds the model, thinking level, tools, system prompt and transcript.
 	// upstream: agent.ts:115 (initialState)
@@ -867,6 +976,18 @@ type StreamFn func(ctx context.Context, model *ai.Model, transcript ai.Transcrip
 // Agent is the agent loop.
 //
 // Mirrors upstream packages/agent/src/agent.ts (class Agent).
+//
+// Agent 是并发安全的有状态对象：同一时刻最多一个运行（streaming 标志 +
+// beginRun/finishRun 互斥占用），但消息历史、工具列表、队列都可以在
+// 运行中被其他 goroutine 读取/写入，因此各字段由不同锁保护：
+//   - stateMu：运行状态（streaming、runContext、model/thinking 等运行时
+//     可变选项）、listeners、stateRevision；
+//   - messagesMu：messages 转录本体，保证运行中追加消息时外部仍能快照；
+//   - toolsMu：opts.Tools 工具表；
+//   - pendingNextTurnMu：下一回合注入消息。
+//
+// runContext/runCancel/runDone 构成一次运行的取消信号三角：Signal()
+// 暴露给外界取消，Abort() 触发，WaitForIdle() 等在 runDone 上。
 type Agent struct {
 	// BeforeToolCall and AfterToolCall are Pi's public hook properties (agent.ts:201-207). They start as the options' functions and may be assigned between runs; a run reads them when it starts.
 	BeforeToolCall BeforeToolCallFunc
@@ -928,6 +1049,12 @@ type Agent struct {
 	transformContext func(context.Context, []AgentMessage) ([]AgentMessage, error)
 }
 
+// NewAgent creates a new Agent.
+//
+// 构造时只做三件事：克隆工具表（防外部修改）、填充缺省值（无模型时给
+// unknown 占位、thinking 默认 off、队列模式默认 one-at-a-time、工具执行
+// 默认并行）、把系统提示写成转录的第一条 system 消息（附工具声明）。
+// 不会发起任何请求——真正的循环要等 Send/Continue。
 // NewAgent creates a new Agent. Like Pi's constructor (`streamFn ?? getDefaultStreamFn()`), it fails with ErrNoDefaultStreamFunction when
 // the options carry no stream function and no host default is configured; a model's own Provider does not stand in for one.
 func NewAgent(opts AgentOptions) (*Agent, error) {
@@ -1079,6 +1206,10 @@ var ErrToolResultsUnanswered = errors.New("agent run ended after tool results wi
 // tool results still waiting for a model response.
 var ErrMaxTurnsReached = errors.New("agent stopped at its turn limit with tool results still unanswered")
 
+// ensureModel requires a model and either an injected stream function or a provider runtime.
+// 每次进入 runLoop 前的门卫：没有可用模型、也没有任何发请求的途径
+// （调用方注入的 StreamFn、宿主默认 DefaultStreamFn、或模型自带
+// Provider）时直接拒绝，防止在循环深处才 nil 解引用。
 // ensureModel requires a model and a stream function.
 func (a *Agent) ensureModel() error {
 	a.stateMu.RLock()
@@ -1094,6 +1225,13 @@ func (a *Agent) ensureModel() error {
 
 // beginRun claims the agent for one run, or returns busy when a run is active.
 // Mirrors upstream Agent's activeRun guard.
+//
+// 运行互斥的入口：streaming=true 期间任何新 Send/Continue 都立即失败，
+// 调用方应改用 Steer/FollowUp 排队。成功占用后会派生本次运行的
+// runDeadlineContext：它从父 ctx 继承 deadline、转发父级取消，但用
+// context.WithoutCancel 切断"父 ctx 结束 ⇒ 运行 ctx 必然结束"的硬绑定，
+// 使运行结束时还能保住未消费的取消语义（Abort 的语义等价于上游 abort
+// signal）。
 func (a *Agent) beginRun(ctx context.Context, busy error) error {
 	if err := a.claimRun(ctx, busy); err != nil {
 		return err
@@ -1110,6 +1248,8 @@ func (a *Agent) claimRun(ctx context.Context, busy error) error {
 	}
 	// Detach the parent's cancellation registration at settlement without
 	// aborting a successfully completed run's retained signal.
+	// WithoutCancel 切断父子取消硬绑定；deadline 单独继承；父取消改由
+	// AfterFunc 显式转发，运行结束时能摘掉这次注册。
 	runContext, cancel := context.WithCancel(jsloop.WithTurns(context.WithoutCancel(ctx), a.loopTurns))
 	deadline, hasDeadline := ctx.Deadline()
 	signal := &runDeadlineContext{Context: ai.WithStreamContinuations(runContext), parent: ctx, deadline: deadline, hasDeadline: hasDeadline}
@@ -1138,6 +1278,8 @@ func (a *Agent) releaseRun() {
 	defer a.stateMu.Unlock()
 	a.stopParentCancel()
 	signal := a.runContext.(*runDeadlineContext)
+	// 父 ctx 若在运行期间已经取消，补一次 cancel 把该状态固化进运行
+	// ctx——否则 active=false 后 Err() 只剩内层，外部看到的中断会丢。
 	if signal.parent.Err() != nil {
 		a.runCancel()
 	}
@@ -1151,12 +1293,19 @@ func (a *Agent) releaseRun() {
 	a.stopParentCancel = nil
 	close(a.runDone)
 	a.runDone = nil
+	// 运行结束统一清扫惰性注销的监听器（运行中不打标记即时删，避免
+	// notifyListeners 遍历到一半切片被改）。
 	a.listeners = slices.DeleteFunc(a.listeners, func(listener *agentListener) bool { return listener.removed.Load() })
 }
 
 // Send sends a plain-text user message and runs the agent loop until the LLM
 // stops calling tools. Steering and follow-up messages queued via
 // Steer/FollowUp are polled at the appropriate points in the loop.
+//
+// 最常用的入口：阻塞到整个运行结束，返回本次运行新增的消息。
+// 完整链路：Send → SendContent → BeginSendContent（占用运行权、校验模型）
+// → PromptRun.Start（准备 prompt、发 agent_start）→ runLoop（agent_loop.go）。
+// 想边运行边观察事件，应订阅事件或读 EventCh，而不是轮询返回值。
 func (a *Agent) Send(ctx context.Context, content string) ([]AgentMessage, error) {
 	return a.SendContent(ctx, []ai.UserContentBlock{ai.TextContent{Text: content}})
 }
@@ -1171,6 +1320,13 @@ func (a *Agent) SendContent(ctx context.Context, content []ai.UserContentBlock) 
 }
 
 // PromptRun owns a claimed prompt and its cancellation context. Start dispatches agent_start; Run drains the remaining events and releases the claim. The owner must call Run exactly once, even if Start fails or the context is cancelled.
+//
+// 把"一次 prompt 运行"拆成两步的结构：BeginSendContent/BeginSendMessages
+// 先占住运行权并返回 PromptRun；Start() 做 prompt 准备并发出 agent_start；
+// Run() 才真正进入 runLoop 并在返回时释放运行权（defer finishRun）。
+// 拆分的意义：占用运行权和发出第一个事件之间有一段窗口，调用方可以在
+// Start 之前先做自己的事（比如先注册监听器），又不会让别人插进来。
+// 约定：无论 Start 成败，持有方必须恰好调用一次 Run()，否则运行权泄漏。
 type PromptRun struct {
 	agent            *Agent
 	ctx              context.Context
@@ -1194,16 +1350,21 @@ func (r *PromptRun) Start() error {
 	a := r.agent
 	var messages []AgentMessage
 	if r.suppliedMessages {
+		// 调用方直接给了成品消息（SendMessages）：只过 PreparePrompt 钩子。
 		messages = r.messages
 		if prepare := a.PreparePromptHook(); prepare != nil {
 			messages, r.startErr = prepare(r.ctx, messages)
 		}
 	} else {
+		// 常规路径：文本/块内容 → user 消息 + 排队的 nextTurn 消息，
+		// 再过 PreparePrompt（prepareContent 内部完成）。
 		messages, r.startErr = a.prepareContent(r.ctx, r.content)
 	}
 	if r.startErr != nil {
 		return r.startErr
 	}
+	// 写入工具集差分声明：扩展在两次运行间增删了工具时，模型必须看到
+	// toolsAdded/toolsRemoved 变化声明，否则它的工具视图和实际不符。
 	tools := a.toolList()
 	a.messagesMu.RLock()
 	r.prompts = declareToolChanges(tools, a.messages, messages)
@@ -1212,6 +1373,8 @@ func (r *PromptRun) Start() error {
 	a.stateMu.Lock()
 	a.errorMessage = ""
 	a.stateMu.Unlock()
+	// agent_start 是第一个事件；监听器在 Start 阶段抛错同样走失败收尾，
+	// 保证事件序列不残缺。
 	err, failure := catchRunFailure(func() error { a.emit(AgentStartEvent{}); return nil })
 	if failure != nil {
 		r.failed = true
@@ -1270,6 +1433,8 @@ func (a *Agent) prepareContent(ctx context.Context, content []ai.UserContentBloc
 			Timestamp: time.Now().UnixMilli(),
 		},
 	}
+	// user 消息在前、队列里积攒的 nextTurn 上下文消息在后：扩展在上个
+	// 回合要求"下一回合带给模型"的消息借此注入到首个请求之前。
 	msgs := append([]AgentMessage{userMsg}, a.takePendingNextTurn()...)
 	if prepare := a.PreparePromptHook(); prepare != nil {
 		var err error
@@ -1305,6 +1470,10 @@ func (a *Agent) SendMessages(ctx context.Context, msgs []AgentMessage) ([]AgentM
 // If the last message is an assistant message, ContinueMessages first checks the
 // steering queue, then the follow-up queue. Without queued input it rejects
 // the assistant tail. Mirrors upstream Agent.continue (packages/agent/src/agent.ts).
+//
+// 适用场景：压缩/重写历史后续跑、从中断点恢复。与 Send 的区别是不注入
+// 新 user 消息，直接在现有转录尾部继续。尾部是 assistant 消息时没有
+// 合法续接点（模型不能接自己的话），除非队列里有转向/跟进消息把它顶掉。
 func (a *Agent) ContinueMessages(ctx context.Context) ([]AgentMessage, error) {
 	if err := a.beginRun(ctx, fmt.Errorf("%w Wait for completion before continuing.", ErrAlreadyProcessing)); err != nil {
 		return nil, err
@@ -1312,11 +1481,16 @@ func (a *Agent) ContinueMessages(ctx context.Context) ([]AgentMessage, error) {
 	defer a.finishRun()
 	ctx = a.Signal()
 	lastMsg := a.lastMessage()
+	// 空转录、或整条转录只有 system 消息（没有任何对话内容）都没法续。
 	if lastMsg == nil || slices.IndexFunc(a.messages, func(m AgentMessage) bool { return m.System == nil }) == -1 {
 		return a.messages, ErrNoMessagesToContinue
 	}
 	if lastMsg.Assistant != nil {
 		// Upstream: drain steering first, then follow-ups.
+		// 尾部是 assistant 时不能直接请求（模型不能接自己的话）；但队列里
+		// 若有用户排的消息，可把它们当本次运行的新 prompt 续接。注意
+		// skipInitialSteeringPoll=true：steering 已经在这里被取走，循环
+		// 不能再重复取一次。
 		if steered := a.steeringQueue.Drain(); len(steered) > 0 {
 			return a.runPromptMessages(ctx, steered, a.createLoopConfig(true))
 		}
@@ -1330,6 +1504,8 @@ func (a *Agent) ContinueMessages(ctx context.Context) ([]AgentMessage, error) {
 
 // runPromptMessages prepares a prompt batch and runs its lifecycle before the
 // first provider request. Mirrors upstream Agent.runPromptMessages.
+// 队列取出的消息（steering/follow-up 批次）作为本次运行的 prompt 进入
+// 循环：先过 declareToolChanges 补工具差分，再交给 runLoop。
 func (a *Agent) runPromptMessages(ctx context.Context, msgs []AgentMessage, cfg AgentLoopConfig) ([]AgentMessage, error) {
 	return a.runLoop(ctx, cfg, declareToolChanges(a.toolList(), a.messages, msgs))
 }
@@ -1386,6 +1562,8 @@ func (a *Agent) SystemPromptSnapshot() (string, bool) {
 // SetMessages replaces the message history (used for session restore). The
 // agent keeps a copy of the top-level slice, as upstream's state.messages
 // setter copies the assigned array.
+// 会话恢复/历史重写的入口：整个替换转录（克隆防外部再改）。
+// 与 appendMessages 的区别：这是全量换底，不产生消息生命周期事件。
 func (a *Agent) SetMessages(msgs []AgentMessage) { a.setMessages(slices.Clone(msgs)) }
 
 // SetSessionID updates the session ID used for prompt caching.
@@ -1633,11 +1811,19 @@ func (a *Agent) IsStreaming() bool {
 // Steer enqueues a steering message. Steering messages are delivered
 // after the current tool batch finishes but before the next LLM call,
 // allowing the user to redirect the agent mid-turn.
+//
+// 转向消息：运行进行中用户插话用的。它会在当前工具批次执行完、下一次
+// 模型请求之前被取走并注入上下文（runLoop 内层循环的 getSteeringMessages
+// 轮询点），从而在本回合内改变模型接下来看到的内容。
 func (a *Agent) Steer(msg AgentMessage) { a.steeringQueue.Enqueue(msg) }
 
 // FollowUp enqueues a follow-up message. Follow-up messages are delivered
 // only after the agent has no more tool calls AND no steering messages,
 // starting a fresh outer-loop iteration.
+//
+// 跟进消息：等当前回复彻底结束（没有更多工具调用、也没有转向消息）
+// 后才作为新一轮输入进入外层循环——相当于"自动再发一条 user 消息"，
+// 而不是打断当前回合。
 func (a *Agent) FollowUp(msg AgentMessage) { a.followUpQueue.Enqueue(msg) }
 
 // QueueNextTurn defers a message to the start of the next user turn, where it
@@ -1732,6 +1918,9 @@ func (a *Agent) Reset() error {
 	if streaming {
 		return fmt.Errorf("%w Wait for completion before resetting.", ErrAlreadyProcessing)
 	}
+	// Reset 保留"当前生效的系统基线"（系统提示+工具声明所在的那条
+	// system 消息），其余对话历史和队列全部清掉——新一轮对话从干净的
+	// 指令开始而不是从零开始。
 	baseline := ai.GetCurrentSystemMessage(a.messages)
 	var messages []AgentMessage
 	if baseline != nil {
@@ -1904,6 +2093,9 @@ func (a *Agent) AddAfterToolCallHook(h AfterToolCallHook) {
 // instead would record it between an assistant's tool_use and its tool_result,
 // which replays as an invalid sequence ("`tool_use` ids were found without
 // `tool_result` blocks immediately after").
+//
+// 持久化的唯一入口：只在 message_end 触发、只对本次运行新产生的消息
+// 触发（恢复的历史不重放），保证"中断的回合也有落盘记录"且不会写重。
 func (a *Agent) persistMessage(msg AgentMessage) error {
 	if a.opts.OnMessagePersist == nil {
 		return nil
@@ -1916,10 +2108,20 @@ func (a *Agent) persistMessage(msg AgentMessage) error {
 
 // runFailure unwinds the agent loop when handling an event fails, as a
 // throwing listener rejects upstream Agent.processEvents and ends the run.
+//
+// 运行级失败的信号载体。监听器/持久化/钩子出错时用 panic(runFailure)
+// 一路弹出到 runLoop 边界，由 catchRunFailure 捕获并转成正常的错误返回。
+// 用 panic 而非逐层 error 传递，是因为失败点（emit 深处）和恢复点
+// （runLoop 顶层）之间隔着多层不返回 error 的调用；其他不相关 panic
+// 会原样再抛出，不被误吞。
 type runFailure struct{ err error }
 
 // catchRunFailure runs fn on the loop goroutine and returns the handler
 // failure that unwound it, if any. Other panics propagate.
+//
+// 运行边界处的"解 panic"闸门：只接 runFailure，其余 panic 继续传播。
+// 返回值区分两种结果：fn 自身的 error（正常错误路径）与 failure
+// （被 panic 中断的处理器失败）。
 func catchRunFailure(fn func() error) (runErr, failure error) {
 	defer func() {
 		if recovered := recover(); recovered != nil {
@@ -1936,6 +2138,11 @@ func catchRunFailure(fn func() error) (runErr, failure error) {
 // handleRunFailure ends a run that a failing event handler interrupted with an
 // error assistant message, turn_end, and agent_end, and returns the failure
 // that interrupted delivering them. Mirrors upstream Agent.handleRunFailure.
+//
+// 运行失败的收尾协议：即使是监听器/持久化出错导致的中断，也要补发一条
+// error/aborted 的 assistant 消息和 turn_end、agent_end，让外界看到
+// 一个完整闭合的事件序列（TUI 不挂起、持久化有落点、会话层能分类错误）。
+// 收尾过程中再次失败则返回新的 failure。
 func (a *Agent) handleRunFailure(err error, aborted bool, model *ai.Model) error {
 	stopReason := ai.StopReasonError
 	if aborted {
@@ -1958,6 +2165,9 @@ func (a *Agent) handleRunFailure(err error, aborted bool, model *ai.Model) error
 		}
 	}
 	failureMessage := AgentMessage{Assistant: message}
+	// 补发完整的失败回合事件序列：message_start/end + turn_end +
+	// agent_end。这些事件自身也可能因监听器失败而中断——所以同样套
+	// catchRunFailure，第二层失败作为返回值上抛。
 	_, failure := catchRunFailure(func() error {
 		a.emit(MessageStartEvent{Message: AgentMessage{Assistant: cloneAssistantMessage(message)}})
 		a.emit(MessageEndEvent{Message: failureMessage})
@@ -1970,6 +2180,19 @@ func (a *Agent) handleRunFailure(err error, aborted bool, model *ai.Model) error
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
+// emit 是全部事件的唯一出口，处理顺序固定且每一环都有语义：
+//  1. message_end 先把消息提交进公开转录（appendMessages）——监听器
+//     看到 message_end 时消息必须已经在 Messages() 里；
+//  2. reduceEventState 更新 streamingMessage / pendingToolCalls /
+//     errorMessage 等派生状态（lifecycle.go）；
+//  3. notifyListeners 同步调用所有 Subscribe 监听器——监听器返回错误
+//     会以 runFailure panic 终止运行（对应上游 await 监听器抛异常）；
+//  4. OnEvent 同步钩子，可原地替换 message_end 的消息；
+//  5. persistMessage 对每条完成消息恰好持久化一次（OnMessagePersist）；
+//  6. 推送到 EventCh（有 EventDone 兜底防阻塞：接收方退出后丢事件而
+//     不是卡死 agent）；
+//  7. AfterEvent 后置钩子，出错同样终止运行。
+//
 //perf:hot
 func (a *Agent) emit(ev AgentEvent) {
 	// message_end commits to public state before listeners run. The provider
@@ -2029,8 +2252,18 @@ type pendingToolCall struct {
 }
 
 // consumeStream drives one provider response into agent events. thinking is the level the request asked for; it is recorded on the final response, whichever stream function answered (upstream agent-loop.ts:408-409). Partial messages do not carry it.
+//
+// 把一个 provider 事件流"泵"成 agent 层事件并返回最终 assistant 消息。
+// 事件映射：start→message_start，各类 delta→message_update，
+// done→message_end 并返回消息+提取出的工具调用列表，
+// error→message_end（返回 nil 工具调用）。
+// 两条非典型路径：流从未 start 就 done/error（合成 start 再收尾）；
+// ctx 被取消或流非正常耗尽（把已有消息标记 aborted 并收尾）。
+// 工具调用不在此执行——返回值交给 runTurn 决定是否继续。
 func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessageEventStream, model *ai.Model, thinking ai.ModelThinkingLevel) (*AssistantMessage, []pendingToolCall, error) {
 	thinking = recordedThinkingLevel(thinking)
+	// result 闭包：把 provider 的最终消息转成 agent 层消息并盖上"本次
+	// 请求要求的 thinking 级别"——无论实际由哪个 streamFn 应答。
 	result := func(final *ai.AssistantMessage) *AssistantMessage {
 		message := agentAssistantMessage(final)
 		message.ThinkingLevel = thinking
@@ -2048,8 +2281,13 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 		// Agent.abort waits for the provider's terminal response, preserving its
 		// error and draining its owned work. The Go caller can still cancel its
 		// own context if it must stop waiting for a non-responsive provider.
+		// 迭代改用父 ctx：Abort 取消的是运行 ctx，但这里要继续把 provider
+		// 的终结事件（done/error）收完，拿不到终结事件就无法给出带正确
+		// 错误信息的定稿消息。
 		iteratorContext = signal.parent
 	}
+	// start 之前的杂项事件直接跳过；第一个有效事件必须是
+	// start/done/error 三者之一才有资格建立 message。
 	// Events arrive unrefreshed: each is refreshed at the tick it arrives, unless it is a message_update that nothing can observe, whose delivery is skipped whole (h.skipUnobservedUpdate).
 	for observation, event := range stream.ObservePublishedEvents(caller.Context(iteratorContext)) {
 		if !started {
@@ -2069,6 +2307,7 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 		event = ai.RefreshEvent(event)
 		switch event := event.(type) {
 		case ai.StartEvent:
+			// 流开始：建浅视图并发出 message_start。
 			message = shallowAssistantMessage(event.Partial)
 			started = true
 			h.emitObserved(observation, MessageStartEvent{Message: AgentMessage{Assistant: message}})
@@ -2091,6 +2330,9 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 		case ai.ToolCallEndEvent:
 			message = h.emitAssistantUpdate(observation, event.Partial, event)
 		case ai.DoneEvent:
+			// 正常终结：取最终消息；若流从未 start 过（provider 一次性
+			// 返回），先补发 message_start 再补 message_end，保证事件
+			// 序列完整闭合。
 			message = result(stream.Result())
 			awaitResultWrapper(observation)
 			if !started {
@@ -2099,6 +2341,8 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 			message = h.endAssistantMessage(observation, message)
 			return message, pendingToolCalls(message), nil
 		case ai.ErrorEvent:
+			// provider 侧错误终结：同样补全生命周期后返回；error 本身
+			// 已通过 message.ErrorMessage 携带，返回 nil error。
 			message = result(stream.Result())
 			awaitResultWrapper(observation)
 			if !started {
@@ -2108,12 +2352,15 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 		}
 	}
 
+	// 事件流耗尽但没见到 done/error：只能被动收尾（常见于取消）。
 	final, resultErr := stream.ResultContext(ctx)
 	if ctx.Err() != nil || resultErr != nil {
 		if pending {
 			message = shallowAssistantMessageFrom(&unobserved)
 		}
 		if message == nil {
+			// 连 start 都没收到：凭空合成一条 aborted 消息，provider/
+			// model 元信息尽量填上，供错误分类。
 			providerID, modelID := "", ""
 			if model != nil {
 				modelID = model.ID
@@ -2126,6 +2373,7 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 				StopReason: ai.StopReasonAborted, Timestamp: time.Now().UnixMilli(),
 			})
 		} else {
+			// 收到过部分内容：定稿快照改标 aborted。
 			message = message.Observe()
 			message.StopReason = ai.StopReasonAborted
 			message.ThinkingLevel = thinking
@@ -2136,6 +2384,7 @@ func (h *loopHost) consumeStream(ctx context.Context, stream *ai.AssistantMessag
 		return h.endAssistantMessage(nil, message), nil, ctx.Err()
 	}
 
+	// 流正常耗尽但没有 done（少见）：同样补全生命周期，按已有 final 收尾。
 	finished := result(final)
 	if !started {
 		h.emit(MessageStartEvent{Message: AgentMessage{Assistant: cloneAssistantMessage(finished)}})
@@ -2163,12 +2412,17 @@ func recordedThinkingLevel(level ai.ModelThinkingLevel) ai.ModelThinkingLevel {
 // returns the message the transcript records. The event and the transcript
 // share it, as upstream shares one object, so an OnEvent replacement applied
 // in place reaches agent state, persistence and listeners alike.
+// 定稿拷贝一份再发 message_end：emit 里这条消息会进公开转录并
+// 持久化，之后不能再被流式视图带动变化。
 func (h *loopHost) endAssistantMessage(observation *ai.StreamObservation, message *AssistantMessage) *AssistantMessage {
 	final := cloneAssistantMessage(message)
 	h.emitObserved(observation, MessageEndEvent{Message: AgentMessage{Assistant: final}})
 	return final
 }
 
+// emitAssistantUpdate 是所有非终结流事件的统一出口：按 partial 当前
+// 状态建浅视图，包成 message_update 发出。浅视图让 TUI 看到事件发出
+// 瞬间的顶层字段，同时嵌套内容仍跟随流推进。
 func (h *loopHost) emitAssistantUpdate(observation *ai.StreamObservation, partial *ai.AssistantMessage, event ai.AssistantMessageEvent) *AssistantMessage {
 	message := shallowAssistantMessage(partial)
 	h.emitObserved(observation, MessageUpdateEvent{
@@ -2179,6 +2433,10 @@ func (h *loopHost) emitAssistantUpdate(observation *ai.StreamObservation, partia
 }
 
 // upstream: packages/agent/src/agent-loop.ts:416-453 awaits the event sink even when its synchronous prefix completes without blocking.
+//
+// emitObserved = emit + 一次 Yield：把流观察域挂到事件上发出后，让渡
+// 给观察域中排队的反应（对应上游 await 事件总线的微任务边界），保证
+// 同步派发路径和异步路径的回调顺序一致。
 func (h *loopHost) emitObserved(observation *ai.StreamObservation, event AgentEvent) {
 	h.emit(WithEventObservation(event, observation))
 	if observation != nil {
@@ -2227,6 +2485,10 @@ func assistantUpdatePartial(event ai.AssistantMessageEvent) (*ai.AssistantMessag
 
 // upstream: packages/agent/src/agent-loop.ts:408-433
 //
+// shallowAssistantMessage 把 provider 的流式部分消息包成 agent 层
+// AssistantMessage：拷贝顶层字段，但保留 streamView 指回 provider 内部
+// 对象——这样顶层值冻结在事件发出的瞬间，而嵌套内容（Content 等）仍随
+// 流推进，Observe() 读取时才取最新快照。
 // The shallow copy is the one snapshot of the partial at this tick: for a live view its exported fields are an owned copy of the captured publication, so the message takes them instead of observing the copy again. The view reads the stream through its retained references, never through those fields. A plain partial's shallow copy shares the producer's nested values, so the message observes (deep-copies) it.
 func shallowAssistantMessage(partial *ai.AssistantMessage) *AssistantMessage {
 	var capture ai.ShallowCapture
@@ -2249,6 +2511,9 @@ func shallowAssistantMessageFrom(capture *ai.ShallowCapture) *AssistantMessage {
 	return message
 }
 
+// agentAssistantMessage 把 provider 层的 ai.AssistantMessage 拍平成
+// agent 层 AssistantMessage：逐字段拷贝顶层值（不共享嵌套切片），
+// 顺手把所有思维块文本汇总进 Thinking 便利字段。
 func agentAssistantMessage(message *ai.AssistantMessage) *AssistantMessage {
 	if message == nil {
 		return &AssistantMessage{Role: RoleAssistant}
@@ -2314,6 +2579,9 @@ func newPendingToolCall(call ai.ToolCall) pendingToolCall {
 	return pending
 }
 
+// pendingToolCalls 从定稿的 assistant 消息里抽出全部 tool_call 块，
+// 转成待执行队列（参数取原始 JSON 字节，取不到用 "{}" 兜底）。
+// 这是 consumeStream → runTurn 之间的交接点。
 func pendingToolCalls(message *AssistantMessage) []pendingToolCall {
 	calls := make([]pendingToolCall, 0)
 	for _, block := range message.Content {

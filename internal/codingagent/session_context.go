@@ -24,6 +24,11 @@ func BuildSessionContext(entries []SessionEntry, leafID *string, byID map[string
 }
 
 // GetSessionContextSettings returns the latest model and thinking settings on a root-to-leaf path without projecting or decoding message bodies. It mirrors session-manager.ts getSessionContextSettings.
+//
+// 恢复会话的"该用哪个模型/思维等级"：从叶子倒扫，thinking 取最近
+// 一次 thinking_level_change，model 取最近一次 model_change——若
+// 没有 model_change 则退到最近一条 assistant 消息自带的 provider/
+// model（即上次实际出文的模型）。两者齐了即停。
 func GetSessionContextSettings(path []SessionEntry) (thinkingLevel string, model *SessionContextModel) {
 	thinkingLevel, _, model, _ = sessionContextSettings(path)
 	return thinkingLevel, model

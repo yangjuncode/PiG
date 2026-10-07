@@ -23,6 +23,12 @@ type AgentContext struct {
 type AgentEventSink func(AgentEvent) error
 
 // AgentLoopConfig configures a standalone loop run. Mirrors upstream AgentLoopConfig, which extends SimpleStreamOptions: StreamOptions carries the base request options. The Agent builds one for every run it starts.
+//
+// 一次运行的"冻结配置"：钩子在运行开始时快照一次，运行中调用方再
+// SetFinishTurn 等只影响后续运行。队列以函数形式注入（而非直接传切片），
+// 让循环在每次轮询点才取最新值。agentLoopConfig 即 Agent 内部读取的
+// 每次运行配置，对应上游 Agent.createLoopConfig 每次运行构建的对象
+// （packages/agent/src/agent.ts）。
 type AgentLoopConfig struct {
 	Model *ai.Model
 	// StreamOptions are the base request options upstream AgentLoopConfig inherits from SimpleStreamOptions: API key, reasoning, thinking budgets, session id, transport, retry limits, payload and response hooks. They are embedded, so each is also a field of the config. Thinking (upstream reasoning) is the run's thinking level: empty is "off" for PrepareRequest, and PrepareRequest or PrepareNextTurn may replace it for later requests. The loop sets model cost and the output-token limit per request.

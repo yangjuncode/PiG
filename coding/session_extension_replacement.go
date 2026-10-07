@@ -50,6 +50,12 @@ func (s *Session) beforeExtensionReplacement(ctx context.Context, event extensio
 	return value.Cancel, ctx.Err()
 }
 
+// finishExtensionReplacement 是换底的收尾序列（new/switch/fork 共用，
+// reason 记入事件）：模式注册的 drain 先排空 → Abort 等当前工作
+// 静止 → 发 session_shutdown（带新文件路径）→ ReplaceInner 换 inner
+// → rebind 优先（TUI 先渲染订阅新会话再发 session_start），否则
+// 直接发 session_start（带旧文件路径）。扩展的 before 钩子已在
+// beforeExtensionReplacement 里裁决过。
 func (s *Session) finishExtensionReplacement(ctx context.Context, next *icodingagent.Session, reason string) (extension.CancelledResult, error) {
 	s.mu.Lock()
 	drain := s.beforeSessionReplacement
@@ -130,6 +136,8 @@ func (s *Session) extensionFork(ctx context.Context, entryID string, opts *exten
 	if !ok {
 		return extension.CancelledResult{}, errors.New("Invalid entry ID for forking")
 	}
+	// position="before"（默认）：分叉点在目标用户消息之前，叶子取
+	// 其 parent；position="at" 直接以该条目为叶子。
 	leaf := &entryID
 	if position != "at" {
 		message, isMessage := icodingagent.AsMessage(entry)
@@ -138,6 +146,8 @@ func (s *Session) extensionFork(ctx context.Context, entryID string, opts *exten
 		}
 		leaf = entry.Base().ParentID
 	}
+	// 新会话来源三态：无文件会话→内存复制目标支；叶子为空→纯新建；
+	// 常规→Clone 出到叶子的整支成新 JSONL。
 	var next *icodingagent.Session
 	switch {
 	case s.noSession:

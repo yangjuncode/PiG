@@ -88,6 +88,11 @@ type ModelSelection struct {
 // Only the last `model_change` can hold, so this looks up at most one model in the catalog.
 //
 // upstream: virtual-models.ts:126-157 (getBranchSelection, findLastModelChange)
+//
+// 恢复"用户选的是哪个模型"的规则：倒扫分支——model_change 条目
+// 直接记选择；遇到 assistant 消息时（它只记物理模型），回看它之前
+// 最近一次 model_change 是否虚拟且仍然注册，是则那个虚拟选择保持
+// 生效，否则取这条消息实际出文的物理模型。
 func GetBranchSelection(branch []icodingagent.SessionEntry, getModel func(provider, modelID string) *ai.Model) *ModelSelection {
 	for i, entry := range slices.Backward(branch) {
 		switch entry.Base().Type {
@@ -310,6 +315,11 @@ type ResolveModelOptions struct {
 // Previous reports the latest successful response in messages. A retry passes the failed response as options.Failed; messages no longer contains it.
 //
 // upstream: model-runtime.ts:973-1012 (resolveModel)
+//
+// 每次请求的路由判决：组装 ModelRouteRequest（reason=首次/续接/
+// 重试、上次成功响应、失败响应、router 持久化的 State、完整消息
+// 列表）→ 调 definition.Route（扩展注册的路由函数）→ 校验返回的
+// 必须是物理模型且 provider 有凭据 → thinking level 钳到目标上限。
 func (runtime *ModelRuntime) ResolveModel(ctx context.Context, model *ai.Model, messages []ai.Message, options ResolveModelOptions) (ModelRoute, error) {
 	name := fmt.Sprintf("Virtual model %s/%s", model.ProviderMeta.ProviderID, model.ID)
 	definition := runtime.virtuals.definition(model.ProviderMeta.ProviderID, model.ID)
@@ -797,6 +807,11 @@ func lastModelBefore(models []ai.AnyModel, provider string, order []string) int 
 // streamVirtual routes a request made outside the agent loop. Callers sized it before routing, so the output budget is capped to the routed model. Caller credentials were resolved for the virtual model's provider; another provider resolves its own, so they are not sent to the wrong vendor.
 //
 // upstream: model-runtime.ts:715-737 (streamSimple, virtual branch)
+//
+// agent 循环外的直发路由：先在后台 goroutine 里跑 ResolveModel，
+// 成功后把 MaxTokens 钳到路由目标的输出上限、清空跨 provider 的
+// 凭据字段（虚拟 provider 的 key 不能发给路由到的另一厂商），
+// 然后递归走 StreamSimple 并 ForwardStream 转发事件。
 func (runtime *ModelRuntime) streamVirtual(ctx context.Context, model *ai.Model, request ai.Context, options ai.StreamOptions) *ai.AssistantMessageEventStream {
 	transcript := ai.NormalizeContext(request)
 	outer := ai.NewAssistantMessageEventStream()

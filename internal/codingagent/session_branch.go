@@ -12,6 +12,13 @@ import (
 
 // Ports packages/coding-agent/src/core/session-manager.ts (createBranchedSession).
 // Removing label entries rechains the retained path and moves compaction boundaries to the next retained entry. Resolved labels retain their original timestamps.
+//
+// 分支快照的"重链"语义：label 条目不进克隆（它们是展示层标注），
+// 路径上其余条目按顺序把 parentId 改指向前一条保留条目，树就塌成
+// 直线；若压缩条目的 firstKeptEntryId 恰指向被剔除的 label，则改写
+// 到其后第一条保留条目。第二遍从源会话收齐"仍在生效的 label"
+// （后写覆盖先写、空值即删除），对被保留的目标重新发新 ID、挂在
+// 克隆末尾——原条目不搬，避免 label 的 targetId 在克隆里悬空。
 func branchedSessionEntries(source *Session, path []SessionEntry) ([]json.RawMessage, []FileEntry, error) {
 	records := make([]json.RawMessage, 0, len(path))
 	decoded := make([]FileEntry, 0, len(path))

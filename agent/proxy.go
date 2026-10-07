@@ -42,6 +42,11 @@ const (
 
 // ProxyAssistantMessageEvent is one compact event returned by a proxy server.
 // Partial assistant messages are omitted and reconstructed by StreamProxy.
+//
+// 代理协议的线上事件：代理服务端在 SSE `data:` 行里发送的紧凑 JSON。
+// 与 provider 原生流不同，它不重复携带 partial 消息——本侧用
+// proxyEventConverter 把 delta 累积进一个共享 partial，再转换成与直连
+// provider 完全一致的 ai.AssistantMessageEvent 序列。
 type ProxyAssistantMessageEvent struct {
 	Type                  ProxyAssistantMessageEventType `json:"type"`
 	ContentIndex          int                            `json:"contentIndex"`
@@ -260,6 +265,12 @@ type proxyRequestContext struct {
 // Each toolcall_start replaces the indexed tool and its accumulated JSON.
 // It returns immediately; request, protocol, and cancellation failures are
 // delivered as terminal error events.
+//
+// 代理模式的 StreamFn：模型元信息+消息上下文+选项打包成一次 POST
+// 发到 {ProxyURL}/api/stream，响应是 SSE 行流。同步部分只做请求体
+// 构建（失败直接入 stream 报错），然后立即返回事件流；goroutine 里
+// 读行、转换、Push，直到 done/error 或连接断开——未收到终结事件就
+// EOF 也算 error 事件，保证消费方总能等到终止信号。
 func StreamProxy(ctx context.Context, model *ai.Model, transcript ai.TranscriptContext, options ProxyStreamOptions) *ai.AssistantMessageEventStream {
 	stream := ai.NewAssistantMessageEventStream()
 	partial := newProxyPartial(model)
@@ -383,6 +394,7 @@ type proxyEventConverter struct {
 func readProxyEvents(ctx context.Context, body io.Reader, converter *proxyEventConverter, stream *ai.AssistantMessageEventStream) error {
 	reader := bufio.NewReader(body)
 	for {
+		// SSE 逐行读：每行可能是一个 data: 事件；ctx 取消立即退出。
 		line, readErr := reader.ReadString('\n')
 		if ctx.Err() != nil {
 			return errors.New("Request aborted by user")
@@ -410,6 +422,8 @@ func readProxyEvents(ctx context.Context, body io.Reader, converter *proxyEventC
 	if ctx.Err() != nil {
 		return errors.New("Request aborted by user")
 	}
+	// 连接干净关闭但没收到 done/error：视为服务端半途断线，补一个
+	// error 终结事件——消费方（consumeStream）必须见到终结事件。
 	converter.partial.StopReason = ai.StopReasonError
 	converter.partial.ErrorMessage = "Connection closed by proxy server before the response completed"
 	return stream.Push(ai.ErrorEvent{Reason: ai.StopReasonError, Error: converter.partial})
@@ -417,6 +431,7 @@ func readProxyEvents(ctx context.Context, body io.Reader, converter *proxyEventC
 
 func processProxyLine(line string, converter *proxyEventConverter, stream *ai.AssistantMessageEventStream) (bool, error) {
 	// upstream: packages/agent/src/proxy.ts:processLine
+	// 只认 `data: ` 前缀的 SSE 行，其他行（注释、事件名行）忽略。
 	if !strings.HasPrefix(line, "data: ") {
 		return false, nil
 	}
@@ -429,6 +444,8 @@ func processProxyLine(line string, converter *proxyEventConverter, stream *ai.As
 	if err := json.Unmarshal([]byte(data), &proxyEvent); err != nil {
 		return false, err
 	}
+	// 把代理紧凑事件累积进 partial 并还原成标准 provider 事件；
+	// 返回 nil 表示该行不产生事件（未知类型）。
 	event, err := converter.process(proxyEvent)
 	if err != nil || event == nil {
 		return false, err
@@ -498,6 +515,8 @@ func (converter *proxyEventConverter) process(proxyEvent ProxyAssistantMessageEv
 		partial.Content[proxyEvent.ContentIndex] = thinking
 		return ai.ThinkingEndEvent{ContentIndex: proxyEvent.ContentIndex, Content: thinking.Thinking, Partial: partial}, nil
 	case "toolcall_start":
+		// 新工具调用块：重置该 index 的参数 JSON 累积器——同一 index
+		// 可能被复用，旧累积必须清掉。
 		toolCall := ai.ToolCall{ID: proxyEvent.ID, Name: proxyEvent.ToolName, Arguments: ai.JsonObject{}}
 		toolCall.SetPartialJson("")
 		if err := setProxyContent(partial, proxyEvent.ContentIndex, toolCall); err != nil {
@@ -507,6 +526,8 @@ func (converter *proxyEventConverter) process(proxyEvent ProxyAssistantMessageEv
 		converter.streamed.Release(proxyEvent.ContentIndex)
 		return ai.ToolCallStartEvent{ContentIndex: proxyEvent.ContentIndex, Partial: partial}, nil
 	case "toolcall_delta":
+		// 参数 JSON 按 delta 逐段累积进 toolJSON，再喂给 ToolCall 的
+		// 流式参数解析（尽力而为的部分解析）。
 		content, err := proxyContent(partial, proxyEvent.ContentIndex)
 		toolCall, ok := content.(ai.ToolCall)
 		if err != nil || !ok {

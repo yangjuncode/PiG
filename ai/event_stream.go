@@ -75,6 +75,15 @@ func (s *AssistantMessageEventStream) Push(event AssistantMessageEvent) error {
 }
 
 // push is Push for a producer that assigned new nested objects to its partial since the last push. Earlier shallow copies keep the objects they retained.
+//
+// 入流唯一关口：先做合法性校验（done 只允许 stop/length/toolUse/
+// deferred，error 只允许 error/aborted——这两族是上游关闭联合的
+// 终态判别），再让事件里指向 partial 的字段经 publishPartialLocked
+// 换成发送时刻的快照视图。分发策略：有等待者就把事件直接交给队
+// 首 waiter（不等它消费——ready 通道的交接点即 FIFO 里的交付点，
+// cancelWaiter 里"已赢得交付位"不回退保证这点）；无等待者入
+// queue 供后来的迭代器补读。终态事件顺带先唤醒 resultWaiters、
+// 再给所有残余 waiter 发 done 标记。
 func (s *AssistantMessageEventStream) push(event AssistantMessageEvent, replacements assistantMessageReplacements) error {
 	if event == nil {
 		return errors.New("assistant message stream event is nil")

@@ -15,6 +15,11 @@ import (
 
 // convert follows TypeBox 1.3.27 value/convert. Only TypeBox's non-enumerable
 // ~kind metadata selects this pass; plain JSON schemas use coerce instead.
+//
+// TypeBox "convert" 通道：只在 schema 带 ~kind 元数据（TypeBox 编译器
+// 生成的非枚举标记）时启用，比 coerce 更激进——native=true 的矫正接受
+// "1"→1、null→0 这类 TypeBox 专有转换。~kind 按节点类型分发到各分支；
+// 普通 JSON Schema（无 ~kind）走 validate.go 里的 coerce。
 func (s *argumentSchema) convert(value any) any {
 	switch s.text("~kind") {
 	case "Number", "Integer", "Boolean", "String", "Null":

@@ -20,6 +20,12 @@ const (
 // configurable drain policy. Used for steering and follow-up queues.
 //
 // Mirrors upstream packages/agent/src/agent.ts:113 (class PendingMessageQueue).
+//
+// steering（运行中插话）和 followUp（回合后跟进）共用的队列。
+// Drain 是唯一被 runLoop 调用的消费点，策略由 mode 决定：all 一次取空，
+// one-at-a-time 每次只取最旧一条（默认值——用户连发三条插话会分三个
+// 回合依次送达，而不是揉成一个请求）。Peek/Messages 只读不取，给 UI
+// 预览"还有几条排队"。
 type PendingMessageQueue struct {
 	mu       sync.Mutex
 	messages []AgentMessage

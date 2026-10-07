@@ -21,6 +21,13 @@ import (
 //
 // JSON tags carry upstream's exact camelCase. The parity gates in
 // test/upstream-parity/ enforce both.
+//
+// 本文件是"数据形状"文件：每个事件的载荷与结果类型原样镜像上游。
+// 事件本身的触发时机/排序语义在 runner.go（Emit/dispatch）与
+// coding/session_extension_hooks.go 里；这里只需记住若干 Go 化点：
+// 上游联合类型落为带 isXxxEvent() 密封方法的小接口；结果里有
+// "继续/改写/拦截"语义的字段（如 InputEventResult、
+// ToolResultEventResult）由 runner 按返回值消费。
 
 // ─── Project Trust (upstream types.ts ProjectTrust*) ─────────────────────
 

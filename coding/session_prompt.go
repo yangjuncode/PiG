@@ -60,6 +60,8 @@ func (s *Session) FollowUp(ctx context.Context, text string, images []ai.ImageCo
 }
 
 func (s *Session) queueUserInput(ctx context.Context, text string, images []ai.ImageContent, behavior extension.DeliverAs, options *QueueInputOptions) (QueuedInputDisposition, error) {
+	// 扩展命令不能排队（命令不是给模型的话术），/开头且注册了
+	// 命令的输入直接报错。
 	if strings.HasPrefix(text, "/") {
 		name, _, _ := strings.Cut(text[1:], " ")
 		if runner := s.currentRunner(); runner != nil {
@@ -72,6 +74,8 @@ func (s *Session) queueUserInput(ctx context.Context, text string, images []ai.I
 	if options != nil && options.Source != "" {
 		source = options.Source
 	}
+	// 输入处理链：扩展 input 钩子（可改写/吞掉）→ 技能与模板展开 →
+	// 按 behavior 进 steering 或 followUp 队列。
 	text, images, handled, err := s.RunInputHandlers(ctx, text, images, source, string(behavior))
 	if err != nil {
 		return "", err
@@ -185,6 +189,10 @@ func (s *Session) preparePromptInvocation(ctx context.Context, text string, opti
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	// 处置链按序裁决：扩展命令（/cmd 已注册→handled）→ 手动压缩中
+	// → input 钩子（吞掉→handled）→ 模板展开 → 运行中（按
+	// StreamingBehavior 排队→queued，无声明→报错）→ 模型/auth 校验 →
+	// prepareContentRun 进入运行（→started）。
 	expand := options.ExpandPromptTemplates == nil || *options.ExpandPromptTemplates
 	if expand && strings.HasPrefix(text, "/") {
 		name, args, _ := strings.Cut(strings.TrimPrefix(text, "/"), " ")
@@ -274,6 +282,11 @@ type ExtensionRunStage struct {
 }
 
 // SendExtensionUserMessage is the bound extension action. The Session owns its continuation and reports failures without making the extension await the model turn.
+// SendExtensionUserMessage 扩展发用户消息的"即发即返"路径：返回时
+// 运行只保证已受理，不等模型回合结束。settling 期间挂起等派发完；
+// 预检通过后把运行权交给后台任务跑 Run（Close 会取消并等待），
+// 调用方先 Start 再 close(started) 放行后台 Run——保证 agent_start
+// 事件先于后台消费发出。
 func (s *Session) SendExtensionUserMessage(content any, options *extension.SendUserMessageOptions) error {
 	return s.SendExtensionUserMessageStaged(content, options, nil)
 }

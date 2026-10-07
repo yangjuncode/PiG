@@ -35,6 +35,13 @@ func withInstructionBaseline(current, messages []agent.AgentMessage) []agent.Age
 	return messages
 }
 
+// preparePrompt validates the Session's native model and applies its instruction
+// baseline when the first user prompt runs. The agent adds active tool declarations.
+//
+// Agent.PreparePrompt 回调（首个用户 prompt 进 agent 循环前调用）：
+// 校验模型已选 → 取出暂存的 before_agent_start 自定义消息 → 有用户
+// 消息时检查系统提示段落是否要更新（工具/指令变化），有则插一条
+// 系统消息差分在最前。
 // preparePrompt validates the Session's native model and records the run's prompt
 // sections ahead of its starting messages, whether a user prompt or a custom message
 // starts the run (agent-session.ts _prepareRun, _preparePromptAndToolLoadout). The
@@ -225,6 +232,11 @@ func (s *Session) contextFromProjection(projection codingagent.SessionProjection
 // prepareRequest re-projects the Session before every provider request, so
 // context edits and compactions written during a run reach the next request
 // (agent-session.ts _installAgentRequestProjection).
+//
+// Agent.PrepareRequest 回调（每次向模型发请求前）：以磁盘投影为准重建
+// 上下文——运行中写入的 context_edit/compaction 即时生效。虚拟模型
+// （路由选择）先路由出物理模型，再按该模型的窗口查要不要先压缩。
+// failedResponse 是"上一次失败待重放"的凭证，取走即清空。
 func (s *Session) prepareRequest(ctx context.Context, request agent.PrepareRequestContext) (*agent.AgentRequestUpdate, error) {
 	failed := s.failedResponse.Swap(nil)
 	// prepare projects the Session and passes the projection through the hook the supplied Agent had before the Session installed its own.
@@ -310,6 +322,7 @@ func (s *Session) prepareNextTurn(ctx context.Context, turn agent.PrepareNextTur
 	// The projection is the session's own messages, as Pi's buildSessionContext returns the entries' objects: the loop reads them and the request that follows projects the session again, so a deep copy of every message before each request only grows with the history.
 	projection := s.inner.BuildSessionProjectionView()
 	// A virtual selection is checked in prepareRequest, against the model the request is routed to.
+	// 非虚拟模型：后续回合开始前查阈值，超了先自动压缩再重建投影。
 	if model := s.Model(); model != nil && !IsVirtualModel(model) {
 		exceeds, err := s.exceedsCompactionThreshold(model, projection)
 		if err != nil {
@@ -344,6 +357,8 @@ func (s *Session) prepareNextTurn(ctx context.Context, turn agent.PrepareNextTur
 		update.Messages = slices.Clip(previous.Messages)
 	}
 	// agent-session.ts:697-709 refreshes the run's options before each later turn and keeps them.
+	// run 配置快照随回合滚动（工具装载可能已变，下一回合用新
+	// 选项渲染系统提示差分）。
 	if run := s.runPrompt.Load(); run != nil {
 		next := *run
 		next.Options = run.NextTurnOptions(*s.GetSystemPromptOptions())

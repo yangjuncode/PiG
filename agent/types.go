@@ -12,6 +12,10 @@ type ThinkingLevel = ai.ModelThinkingLevel
 // AgentTurnContext is passed to completed-turn callbacks (FinishTurn and
 // PrepareNextTurn). Mirrors upstream packages/agent/src/types.ts
 // AgentTurnContext.
+//
+// 一个已结束回合的快照，交给 FinishTurn（裁决继续/结束）和
+// PrepareNextTurn（改写下一轮上下文）两个钩子消费。NewMessages 只含
+// 本次运行新增的消息；Context 是循环上下文的完整视图。
 type AgentTurnContext struct {
 	// Message is the assistant message that completed the turn.
 	Message *AssistantMessage
@@ -53,6 +57,10 @@ type AgentTurnDecision struct {
 // otherwise the loop continues once with the current context. Error and
 // aborted responses remain hard exits. ctx is the run's context (upstream's
 // abort signal). A rejected callback enters the owning failed-turn lifecycle. Mirrors upstream FinishTurn.
+//
+// 回合收尾裁决钩子：返回 nil=按自然规则走（有工具/排队消息才继续），
+// AgentTurnContinue=无条件再请求一次，AgentTurnEnd=立即终止本次运行。
+// 扩展用它实现"连续工作直到目标达成"类的自主循环。
 type FinishTurn func(ctx context.Context, turn AgentTurnContext) (*AgentTurnDecision, error)
 
 // AgentLoopTurnUpdate carries optional next-turn overrides returned by

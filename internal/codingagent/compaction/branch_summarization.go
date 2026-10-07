@@ -163,6 +163,10 @@ Keep each section concise. Preserve exact file paths, function names, and error 
 // If oldLeafID is empty, returns an empty result (nothing to summarize).
 //
 // Mirrors upstream collectEntriesForBranchSummary (branch-summarization.ts:104).
+//
+// "被离开的那一段"的定义：从旧叶子回溯到新旧两条路径最深公共祖先
+// （不含祖先本身）。公共祖先及之前的历史在新分支上依然可见，只有
+// 老叶子独有的尾巴需要浓缩成摘要带过去。
 func CollectEntriesForBranchSummary(session ReadonlySession, oldLeafID, targetID string) CollectEntriesResult {
 	if oldLeafID == "" {
 		return CollectEntriesResult{}
@@ -277,6 +281,9 @@ func entryTimestampMs(timestamp string) int64 {
 //
 // Mirrors upstream prepareBranchEntries (branch-summarization.ts:196).
 //
+// 要点：文件操作清单覆盖整段（即使消息被预算截断，动过哪些文件
+// 不能丢）；消息从新到旧优先保留最近的，摘要类条目在预算将满时
+// 仍优先挤入（一段嵌套分支的摘要比单条消息信息密度高得多）。
 // Entries may be lazy (sessionentry.LazyEntry): the walk from newest to oldest reads and decodes them in growing runs as it reaches them, so
 // a long abandoned branch costs the entries within the budget, and a record that changed on disk is the error.
 func PrepareBranchEntries(entries []codingagent.SessionEntry, tokenBudget int) (BranchPreparation, error) {

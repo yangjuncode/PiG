@@ -247,6 +247,15 @@ func nestedTextOf(result agent.AgentToolResult) string {
 // Execute runs name on behalf of the call callerID. The nested call gets the id `<callerID>/<n>`. It never fails for tool failures: they come back as an outcome with IsError set. It returns the first error of options.OnUpdate, as upstream's promise rejects; the call then records no result and emits no `tool_execution_end`. args must be a JSON object; null or empty arguments are `{}`.
 //
 // upstream: nested-tool-calls.ts:171-248 (execute)
+//
+// 并发模型：父调用 callerID 下每个嵌套调用的 id 分配、scope 建
+// 立、start 事件和 MutationTicket 预约在锁内按发起顺序完成——上
+// 游单线程天然有序，Go 里显式串行化这段前缀。执行段的独占性由
+// queueTail 通道接力实现：持独占权的调用把自己的 release 通道接
+// 到队尾再 <-previous 等前任；已经持队列的父调用（holdsQueue）
+// 发起的子调用不再等，防止自死锁。结束后 close(release) 放行后
+// 继、删 scope、记 Finish+usage（嵌套结果不持久化，用量只能靠
+// recorder 计入父调用）。
 func (r *NestedToolCallRunner) Execute(ctx context.Context, callerID, name string, args json.RawMessage, options NestedToolCallOptions) (agent.AgentToolCallOutcome, error) {
 	// The caller's next call waits for the prefix below (id, start event, reservation),
 	// which Pi's single thread runs in call order without any wait.

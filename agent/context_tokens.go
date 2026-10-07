@@ -41,7 +41,15 @@ func CalculateContextTokens(usage ai.Usage) int {
 // (upstream getAssistantUsage), plus a chars/4 estimate of the messages
 // trailing it; falls back to a full estimate when no usage is present.
 // Mirrors upstream estimateContextTokens (compaction.ts:186).
+//
+// 压缩决策的输入：从后往前找最近一条"有效 usage"的 assistant 消息
+// （provider 报告的精确值），再加上其后消息的字节估算（chars/4 启发式）。
+// 没有任何 usage 时退化为全文估算。调用方拿 Tokens 与模型上下文窗口
+// 比较，决定是否触发 auto-compaction。
 func EstimateContextTokens(messages []AgentMessage) ContextUsageEstimate {
+	// 从后往前找最近一条带有效 usage 的 assistant 消息——provider 报的
+	// 数比估算准，越新越接近当前真实占用；error/aborted 的回复 usage
+	// 不可信，跳过。
 	lastUsageIdx := -1
 	var lastUsage *ai.Usage
 	for i, m := range slices.Backward(messages) {
@@ -59,6 +67,7 @@ func EstimateContextTokens(messages []AgentMessage) ContextUsageEstimate {
 	}
 
 	if lastUsageIdx < 0 {
+		// 一条 usage 都没有：退化为全文 chars/4 估算。
 		estimated := 0
 		for _, m := range messages {
 			estimated += EstimateTokens(m)
@@ -70,6 +79,7 @@ func EstimateContextTokens(messages []AgentMessage) ContextUsageEstimate {
 		}
 	}
 
+	// 精确值只反映到那条消息为止的占用；其后新增的消息靠估算补齐。
 	usageTokens := CalculateContextTokens(*lastUsage)
 	trailing := 0
 	for i := lastUsageIdx + 1; i < len(messages); i++ {

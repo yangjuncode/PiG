@@ -507,6 +507,15 @@ func (runtime *ModelRuntime) CompleteSimple(ctx context.Context, model *ai.Model
 	return runtime.StreamSimple(ctx, model, request, options...).Result()
 }
 
+// start 是 Stream/StreamSimple 的公共发射路径（后台 goroutine）：
+// prepare 解析认证与请求选项（API 请求走 prepareAPIRequest 旁路且
+// 每次调用用完即关 provider）→ registry 构造的 provider 视 simple
+// 与否做裁剪（simple 模式补 Thinking=off、MaxTokens 按窗口钳制）
+// → 包装链：apiStreamProvider 按 model.api 分派到 API 实现、
+// composedStreamProvider 挂 model 级组合 → RunStreamContinuation
+// 里创建 provider 流并立即 ForwardStream 到 outer——两段在同一个
+// continuation 里完成，对应上游 setup().then(forwardStream) 的
+// microtask 边界语义。
 func (runtime *ModelRuntime) start(ctx context.Context, model *ai.Model, transcript ai.TranscriptContext, options ai.StreamOptions, outer *ai.AssistantMessageEventStream, simple bool) {
 	stackprime.Prime()
 	if ctx == nil {
@@ -593,6 +602,13 @@ func (runtime *ModelRuntime) knowsProvider(model *ai.Model, provider ai.Provider
 	return runtime.GetProvider(id) != nil
 }
 
+// prepareRequest 是每个模型请求的认证/选项装配：扩展 API 直发请求
+// 走旁路；registry 注册的 native provider 走 prepareNativeRequest；
+// 其余分两支——provider 自带 Auth()（原生 Go provider）就直接解析
+// 其声明的认证；registry 构造的条目经 ResolveRegistryModelAuth 拿凭
+// 据（拿不到且 provider 需要认证时重建模型或报"未配置"）。最后合并
+// header/env、跑 TransformHeaders（扩展的 before_provider_headers）
+// 得到最终请求选项。
 func (runtime *ModelRuntime) prepareRequest(ctx context.Context, model *ai.Model, options ai.StreamOptions) (*ai.Model, ai.Provider, ai.StreamOptions, error) {
 	if model == nil {
 		return nil, nil, ai.StreamOptions{}, fmt.Errorf("model runtime: model is nil")

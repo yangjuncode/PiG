@@ -39,6 +39,12 @@ import (
 // NormalizeMessages filters and normalizes msgs before they are converted to
 // the provider wire format by convertToLLM. Two guarantees are provided:
 //
+// 这是每次模型请求前的"转录清洗"步骤（ConvertToLLM 第一个调用），解决
+// 三类会把 provider 请求打挂的脏数据：中止/出错的半成品回复、缺结果的
+// 孤儿 tool_use、跨模型重放时的思维块签名。返回切片可能变短（丢消息）
+// 也可能变长（补合成结果）；只有被动过的 assistant 消息才拷贝，其余
+// 共享原指针。
+//
 //  1. Assistant messages with StopReason "error" or "aborted" are dropped.
 //     Replaying them causes API errors (partial reasoning, orphaned tool
 //     calls, OpenAI "reasoning without following item").
@@ -82,6 +88,9 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 	// across a conversation: a provider may number its calls per response, so
 	// the same id reappears each turn. Taking the first match globally would
 	// answer a later turn's call with an earlier turn's output.
+	// 先全量登记所有 toolResult（按 call ID 排队）：后面遇到孤儿
+	// tool_use 时，可以从这里"借"一份迟到的真实结果补上，而不是只能
+	// 写错误占位——乱序到达的结果由此归位。
 	//
 	// The queues are built at the first call that is missing its result: a
 	// history whose results arrive in order never needs them. Every result
@@ -106,6 +115,9 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 		return queued[0]
 	}
 
+	// flushSynthetic：在助理回复边界（新 assistant/user 消息出现、或
+	// 消息流结束）把上一段收集的未兑现 tool_use 补上 toolResult。优先
+	// 借用队列里真实迟到的结果，其次才写 "No result provided" 占位。
 	// A system message that lands between a tool call and its results is held
 	// back and emitted after the results, synthetic ones included (upstream
 	// transformMessages heldSystemMessages): providers reject anything between
@@ -148,12 +160,14 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 		seenResultIDs = map[string]bool{}
 	}
 
+	// 第一遍：丢坏回复、给孤儿调用补结果。
 	for i, msg := range msgs {
 		position = i
 		switch {
 		case msg.Assistant != nil:
 			// Flush orphaned tool calls from the PREVIOUS assistant message
 			// before we start tracking this one.
+			// 新 assistant 出现 = 上一段的工具窗口关闭，先结算孤儿。
 			flushSynthetic()
 
 			// Drop errored/aborted assistant messages: they represent
@@ -174,6 +188,7 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 			}
 
 			// Collect tool_use IDs for orphan detection.
+			// 记录本条 assistant 发出的全部 tool_use，等下一条消息结算。
 			pendingToolUseIDs = pendingToolUseIDs[:0]
 			pendingToolNames = pendingToolNames[:0]
 			seenResultIDs = map[string]bool{}
@@ -187,6 +202,7 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 
 		case msg.ToolResult != nil:
 			// Record fulfilled tool IDs.
+			// 兑现一笔：从待结算集合和借用队列同时核销。
 			seenResultIDs[msg.ToolResult.ToolCallID] = true
 			if unconsumedResults != nil {
 				consumeResult(msg.ToolResult.ToolCallID)
@@ -195,6 +211,7 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 
 		case msg.User != nil:
 			// User message interrupts any pending tool flow: flush first.
+			// user 消息打断工具流：先把孤儿结算掉再进。
 			flushSynthetic()
 			result = append(result, msg)
 
@@ -224,6 +241,7 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 	}
 
 	// Flush trailing orphaned tool calls.
+	// 结尾还有未兑现的调用（比如转录被截断）：同样补洞。
 	position = len(msgs)
 	flushSynthetic()
 
@@ -243,6 +261,7 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 	// Counting alone is not enough either: it keeps the first N results for an
 	// id, which lets a duplicate of an early call consume the allowance that
 	// belonged to a later one.
+	// 快速预检：没有任何 tool_use 也没有 toolResult 就跳过第二遍。
 	anyToolUse := false
 	for _, msg := range result {
 		if msg.Assistant == nil {
@@ -259,6 +278,9 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 		}
 	}
 	// Drop repeated results. The first result closes the open call.
+	// 第二遍：用"开着的调用计数"配对——每条 assistant 的 tool_use 打开
+	// 一笔，每条 toolResult 核销一笔；核销不了的就是孤儿结果（调用被
+	// 丢弃或重复到达），直接丢掉。
 	if anyToolUse || hasToolResults(result) {
 		filtered := make([]AgentMessage, 0, len(result))
 		openCalls := map[string]int{}
@@ -289,6 +311,10 @@ func NormalizeMessages(msgs []AgentMessage, model *ai.Model) []AgentMessage {
 // model. Mirrors upstream transform-messages.ts isSameModel using provider,
 // API, and model ID. A nil target model (contextless or test path) is treated
 // as same-model so signed content passes through unchanged.
+//
+// 判断历史消息是不是"当前要请求的模型"产出的——三元组（provider ID +
+// API + model ID）全等才算同模型。会话中切换过模型后，旧回复里的签名
+// 思维块对新模型不可识别，必须降级（见 normalizeAssistantReplayBlocks）。
 func sameModel(a *AssistantMessage, model *ai.Model) bool {
 	if model == nil || model.Provider == nil {
 		return true
@@ -333,8 +359,13 @@ func normalizeAssistantReplayBlocks(blocks []ai.AssistantContentBlock, isSameMod
 			out = append(out, block)
 			continue
 		}
+		// 加密/隐藏思维：同模型保留，跨模型必须丢——另一家的密文
+		// 这里解不了，provider 也会拒绝陌生 blob。
+		// 同模型带签名：保留——签名是 provider 验证思维链的手段。
+		// 空思维（无论同异模型、无签名）：没有内容可留，丢弃。
 		// Another model's thinking is dropped (transform-messages.ts:129-137, Pi #11000). The same model's redacted or signed thinking stays even
 		// when its text is empty (encrypted reasoning).
+		// 思维块按"是否同模型 + 是否带签名/加密/空文本"分五种处置：
 		switch {
 		case !isSameModel:
 			changed = true
@@ -343,6 +374,7 @@ func normalizeAssistantReplayBlocks(blocks []ai.AssistantContentBlock, isSameMod
 		case jsstring.Trim(thinking.Thinking) == "": // String.prototype.trim: U+FEFF counts as whitespace, U+0085 does not
 			changed = true
 		default:
+			// 跨模型但有可读文本：降级成普通文本块，语义不丢、签名不进。
 			out = append(out, block)
 		}
 	}

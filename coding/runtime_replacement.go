@@ -270,6 +270,12 @@ func beforeResultCancelled(result any) bool {
 	return json.Unmarshal(encoded, &decoded) == nil && decoded.Cancel
 }
 
+// teardownCurrent 是替换前对旧 Session 的完整收尾，顺序严格：
+// 模式注册的 drain（放行模式侧排队输入等）→ Session.Abort（等
+// 在途工作静止）→ session_shutdown 事件（带 reason 和目标文件）
+// → beforeSessionInvalidate 摘 UI → runner.Invalidate（之后的扩展
+// 调用全部拒绝）→ Session.Close（关运行时）→ retireResources（
+// 工厂级资源回收）。任何一步失败替换中止，旧会话仍归当前。
 // It disposes the outgoing Session as Pi's session.dispose() does, which leaves the Session able to run a prompt, so a replacement that then fails keeps the disposed Session as the Runtime's, as Pi does. The caller closes it once the replacement applied.
 func (rt *Runtime) teardownCurrent(ctx context.Context, reason, target string) error {
 	current := rt.replacement.current.Load()
@@ -538,6 +544,10 @@ func (rt *Runtime) Fork(ctx context.Context, entryID string, options *extension.
 	if err != nil {
 		return RuntimeForkResult{}, err
 	}
+	// 分叉执行两路：无持久化会话在原地换底（teardown 后把 inner
+	// 重建成到 leaf 的内存分支，同一 *Session 壳）；有文件则用
+	// Clone 出独立 JSONL 再替换。两条路殊途同归到
+	// createReplacement+finishSessionReplacement。
 	if source := forkFrom.inner; !source.IsPersisted() {
 		outgoing := rt.Session()
 		previous := source.Path()

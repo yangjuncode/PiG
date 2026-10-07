@@ -44,6 +44,11 @@ func ParseSessionEntries(content string) []FileEntry {
 
 // Ports packages/coding-agent/src/core/session-manager.ts (loadEntriesFromFile).
 // LoadEntriesFromFile skips malformed and JSON-falsy lines and requires a session header before accepting records.
+//
+// 读文件的容错策略：逐行解析，坏行/JSON 假值行直接跳过（崩溃写入的
+// 半成品不毁整个会话）；首行必须是合法 session header 否则整个文件
+// 不算会话；结尾若有未以换行结尾的残行（进程崩溃留下的截断写），
+// 读完后补写一个空行把它"封口"，让后续追加正常对齐。
 func LoadEntriesFromFile(path string) ([]FileEntry, error) {
 	records, unterminated, err := readSessionFileEntries(path)
 	if err != nil {
@@ -227,6 +232,10 @@ func resolveSessionCWD(cwd string) string {
 	return absCleanDir(cwd)
 }
 
+// restoreSessionFileEntries 把读出的记录落成 Session：版本迁移在
+// newSessionFromEntries 里完成；迁移过的旧版本文件随后整体重写回
+// 磁盘（header 版本号更新 + 全部迁移后的条目），让文件格式随读
+// 升级而非惰性混存。
 func restoreSessionFileEntries(path string, records []FileEntry) (*Session, error) {
 	return restoreSessionEntries(path, records, true)
 }

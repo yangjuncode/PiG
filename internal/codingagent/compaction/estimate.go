@@ -177,6 +177,11 @@ func EstimateContextTokens(messages []agent.AgentMessage) agent.ContextUsageEsti
 // branch (compaction.ts estimateProjectedContextTokens). Without trusted
 // usage, it counts the replayed current system state once plus every
 // non-system projected message.
+//
+// 可信度判定：provider 自报的 usage 只在"产出该 usage 的条目位于
+// 分支上最后一次 context_edit/compaction 之后"时才可信——否则那次
+// 编辑/压缩已改变了上下文内容，旧 usage 描述的是另一份历史。不可信
+// 时退回逐条估算（当前系统态算一次 + 每条非系统消息 chars/4）。
 func EstimateProjectedContextTokens(projection codingagent.SessionProjection, branchEntries []codingagent.SessionEntry) agent.ContextUsageEstimate {
 	estimate := EstimateContextTokens(projection.Messages)
 	if estimate.LastUsageIndex >= 0 {

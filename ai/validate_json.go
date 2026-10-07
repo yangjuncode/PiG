@@ -10,6 +10,11 @@ import (
 
 // stringifyArgumentJSON mirrors JSON.stringify for the received JSON value,
 // retaining object order without HTML escaping or rewriting literal backslashes.
+//
+// "报错时把模型原始参数原样回显"的序列化器：手写而不是用 encoding/json
+// 的 Marshal，因为要复现 JS JSON.stringify 的键序规则（数字索引键排在
+// 最前并升序——见 argumentObjectKeys），且不做 Go 默认的 HTML 转义，
+// 使错误消息里收到的参数与上游字节级一致。
 func stringifyArgumentJSON(raw json.RawMessage) ([]byte, error) {
 	schema, err := parseArgumentSchema(raw)
 	if err != nil {

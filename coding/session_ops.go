@@ -13,6 +13,11 @@ import (
 // /new exposed to the user, but as direct Go API calls so SDK consumers
 // can drive sessions without going through the slash layer. They also
 // underpin DispatchSlash's session-related callbacks below.
+//
+// 这组方法管"会话文件与分支"：Fork 挪叶子、ForkToNewSession 分叉到
+// 新文件、NewSession/SwitchSession 换底、Clone 复制分支、SetName
+// 写名、ListSessions/Tree/Entries 读历史。Fork/Clone 等"换 inner"
+// 的操作统一走 ReplaceInner 收尾。
 
 // Fork moves the session leaf to entryID. The next Send creates a new
 // branch off that point. The agent's in-memory message history is
@@ -129,6 +134,10 @@ func (s *Session) Clone() (*Session, error) {
 	// The clone is built through NewSession, so it has the same extension and
 	// caller hooks, thinking budgets, model runtime and event buffer as any
 	// other Session; its agent state is the cloned path-to-leaf.
+	// 克隆的选项继承：工具注册表、钩子、runner（标记共享不归新
+	// 会话所有）、资源加载器、系统提示三态（默认重建/结构段落/
+	// 纯文本）按源会话当前形态复制；existing=cloned 让 NewSession
+	// 直接用已写好的磁盘文件而不再建。
 	opts := SessionOptions{
 		ScopedModels:       s.ScopedModels(),
 		Model:              s.Model(),
@@ -320,6 +329,7 @@ func (s *Session) DispatchSlash(line string) ([]string, error) {
 
 	registry := icodingagent.NewSlashRegistry()
 	internalSC := sc.toInternal()
+	// Dispatch 同步执行，handler 的 Append/AppendText 累积进 output。
 	if err := registry.DispatchHeadless(internalSC, line, nil); err != nil {
 		return output, err
 	}

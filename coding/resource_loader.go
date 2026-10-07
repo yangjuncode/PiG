@@ -213,6 +213,11 @@ func (l *DefaultResourceLoader) ReloadWith(ctx context.Context, options ...Resou
 }
 
 // discover rediscovers every resource from the settings as they currently are.
+//
+// 发现顺序与失败语义照上游：先校验并安装缺失的 Packages → 收
+// 包内的技能/模板条目 → 加载技能（成功后立即发布——之后模板
+// 失败也要保住新技能）→ 模板、上下文文件、SYSTEM.md/
+// APPEND_SYSTEM.md，最后整体提交。每步出错回上游的半截状态。
 func (l *DefaultResourceLoader) discover(ctx context.Context, preTrust *LoadExtensionsResult) error {
 	trusted := l.settings.IsProjectTrusted()
 	manager := packagemanager.NewPackageManager(packagemanager.PackageManagerOptions{CWD: l.cwd, SettingsManager: l.settings})

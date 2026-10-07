@@ -13,6 +13,11 @@ import (
 // starts. Upstream's bash tool exports it as PI_SESSION_ID, PI_SESSION_FILE,
 // PI_PROVIDER, PI_MODEL, and PI_REASONING_LEVEL. Empty fields are not exported.
 // Image metadata supplies the selected model profile to read tools.
+//
+// 注入到每个工具调用 ctx 里的会话环境包（tool_execution.go 的 toolCtx
+// 在每个批次前组装）。bash 之类会起子进程的工具把它落成 PI_* 环境
+// 变量；read 这类读文件工具用 SupportsImages/InputLimits 判断当前模型
+// 能不能吃图片、尺寸上限是多少。
 type ToolEnvironment struct {
 	SessionID      string
 	SessionFile    string

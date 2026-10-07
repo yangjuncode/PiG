@@ -31,6 +31,10 @@ func NewFileOps() FileOperations {
 // ExtractFileOpsFromMessage records read/write/edit tool calls in an assistant message, or the nested calls recorded on a tool result. Calls made from codemode scripts are recorded on the script's result.
 //
 // upstream: .upstream/current/packages/coding-agent/src/core/compaction/utils.ts (extractFileOpsFromMessage, addFileOp)
+//
+// 两类来源：assistant 消息里的 tool call 块；以及 tool_result 上的
+// NestedCalls（扩展/codemode 脚本在工具内发起的嵌套调用，真正的
+// 文件操作发生在那层）。read/write/edit 三个工具按 path 参数归集。
 func ExtractFileOpsFromMessage(msg agent.AgentMessage, ops *FileOperations) {
 	if result := msg.ToolResult; result != nil {
 		if result.NestedCalls == nil {

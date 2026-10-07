@@ -127,6 +127,12 @@ func (s *Session) Accounting() SessionAccounting {
 	return s.stats.snapshot()
 }
 
+// add 是 /session 面板的增量账房：加载或追加时逐条目喂进来。
+// assistant 消息归账到"实际出文的模型"（ResponseModel 优先——虚拟
+// 模型路由后真实 provider 记在这里）；usage 类旁路条目（缓存预热）
+// 单独按 provider/model 记账并推进 cachePrev；compaction/branch_summary
+// 归到 Tools/summaries 且重置 cachePrev——摘要请求不算缓存预热链的
+// 一环；cacheWaste 跟踪"上一次请求本可命中缓存而本次没读"的浪费。
 func (a *sessionAccountingAccumulator) add(raw json.RawMessage, wireType string) {
 	_, _ = a.addRecord(raw, wireType)
 }

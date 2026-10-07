@@ -19,6 +19,10 @@ type sessionCompactionData struct {
 	Details          any
 }
 
+// extensionCompaction 让 session_before_compact 扩展先裁决压缩：
+// 返回值三态——nil（无接管，走默认摘要）、cancel（取消本次压缩）、
+// 完整 Compaction（扩展自备摘要，fromExtension=true 记入条目）。
+// 事件携带压缩规划+全分支条目+指令/原因/willRetry 供处理器决策。
 func (s *Session) extensionCompaction(
 	ctx context.Context,
 	preparation *compaction.CompactionPreparation,

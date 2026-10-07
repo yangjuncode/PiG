@@ -1,3 +1,7 @@
+// message_json.go 处理 AgentMessage 的 JSON 序列化/反序列化。
+// 持久化文件（session 转录）要与上游字节级兼容，所以这里不做
+// "能解析就行"的宽松处理：字段顺序、details:null 显式值、自定义角色
+// 成员顺序、UTF-16 孤单元保留，全部按上游写入形状还原。
 // Ports packages/agent/src/types.ts.
 package agent
 
@@ -77,7 +81,14 @@ func (m ToolResultMessage) AppendStringify(dst []byte) ([]byte, error) {
 }
 
 // MarshalJSON emits the upstream flat role-discriminated AgentMessage union. User strings and text blocks retain their JavaScript UTF-16 units.
+//
+// 序列化出口：先校验恰好一个变体非空（联合类型完整性），再按 role 拍平
+// 成上游的扁平均线格式——Go 的信封结构在 JSON 里不留下任何痕迹。
+// assistant 走 Observe() 取流式视图当前状态；custom 消息按角色查表
+// 决定成员顺序。
 func (m AgentMessage) MarshalJSON() ([]byte, error) {
+	// 联合完整性检查：信封里必须恰好装一种消息，多装/空装都是程序
+	// bug，直接报错而不是写出歧义 JSON。
 	value, err := m.wire(true)
 	if err != nil {
 		return nil, err
@@ -525,6 +536,11 @@ func withEmptyContent(source *messageSource, empty string) *messageSource {
 // UnmarshalJSON decodes the upstream flat role-discriminated AgentMessage union and retains lone UTF-16 units in user content as WTF-8. When the decoded fields would encode to other text than JSON.stringify writes for data (member order, members PiG does not model, or a spelling the fields cannot keep), the message keeps that text: Pi holds the parsed object and writes it unchanged.
 //
 // The fields decode JSON.stringify's text of data, so a number keeps the message in any spelling, as JSON.parse keeps it: an integral value spelled with a fraction or exponent decodes as the integer in every nested record too, and a fraction or a value beyond the range of a nested record's integer field leaves that field zero. A member of another JSON type than its field holds reads as absent (decodeLax).
+//
+// 反序列化入口：先读公共字段探出 role，再按角色把同一份 data 解码进
+// 对应变体；role 不在已知集合就落进 Custom map 原样保留。details 出现
+// 过但解析为 null 时置 DetailsNull——区分"没写"与"写了 null"。
+// "tool_use"/"tool_result" 两种历史拼写也在此归一（见内部注释）。
 func (m *AgentMessage) UnmarshalJSON(data []byte) error {
 	data = bytes.TrimSpace(data)
 	text, canonical := data, jsonstringify.IsCanonical(data)
@@ -623,6 +639,7 @@ func (m *AgentMessage) decode(data []byte) (bool, error) {
 	}
 
 	*m = AgentMessage{}
+	// 按 role 分流：已知角色解码进对应变体；未知角色整体落 Custom。
 	switch wire.Role {
 	case "system":
 		message, err := decodeSystemMessage(data)
@@ -659,6 +676,8 @@ func (m *AgentMessage) decode(data []byte) (bool, error) {
 			Details: orderedjson.Value(wire.Details), Usage: usageFromWire(wire.Usage), NestedCalls: wire.NestedCalls,
 			IsError: wire.IsError, DurationMs: wire.DurationMs.ptr(), Timestamp: int64(wire.Timestamp),
 		}
+		// "details 出现过且解析成 nil" = 显式的 details:null，置位标记
+		// 让序列化时能还原这个键。
 		m.ToolResult.DetailsNull = wire.Details != nil && m.ToolResult.Details == nil
 	default:
 		var custom map[string]any

@@ -41,6 +41,9 @@ func (s *Session) ImportFromJsonl(ctx context.Context, inputPath, cwdOverride st
 	if err := icodingagent.MkdirSessionDir(sessionDir); err != nil {
 		return extension.CancelledResult{}, err
 	}
+	// 目标位置裁决先于扩展取消点：源文件已在会话目录就原地打开，
+	// 否则按"同名 -N 递增"挑空位；before_switch 在还没复制任何东西
+	// 前让扩展否决。
 	destinationPath, sourceAlreadyStored := importDestination(sessionDir, resolvedPath)
 	cancelled, err := s.beforeExtensionReplacement(ctx, extension.SessionBeforeSwitchEvent{Type: "session_before_switch", Reason: "resume", TargetSessionFile: destinationPath})
 	if err != nil || cancelled {

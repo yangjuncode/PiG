@@ -199,8 +199,11 @@ type sessionProjector struct {
 
 // newSessionProjector projects path, with room for spare more message entries in its slab.
 func newSessionProjector(path []SessionEntry, decode messageDecoder, clone bool, spare int) *sessionProjector {
+	// 第一步：buildContextEntries 把路径裁剪到最新压缩点之后。
 	contextEntries := buildContextEntries(path, decode)
 	p := &sessionProjector{decode: decode, clone: clone, edits: make(map[string]ContextEditEntry)}
+	// 第二步：收集本分支全部 context_edit——同一目标多条编辑时
+	// 后写者覆盖先写者（map 赋值顺序即 append 顺序）。
 	hasContextEdits := false
 	for _, entry := range contextEntries {
 		if entry.Base().Type != "context_edit" {
@@ -212,6 +215,7 @@ func newSessionProjector(path []SessionEntry, decode messageDecoder, clone bool,
 			p.edits[edit.TargetID] = edit
 		}
 	}
+	// 第三步：每条非编辑条目产出其消息，先过 context_edit 替换/删除。
 	p.projection = SessionProjection{Entries: make([]ProjectedSessionEntry, 0, len(contextEntries)+spare), Messages: make([]agent.AgentMessage, 0, len(contextEntries)+spare), HasContextEdits: hasContextEdits}
 	// One backing array holds the one-message slices of the message entries, so a projection of n entries allocates one slab and not n slices. Each slice is capped at its length: an append to one cannot overwrite its neighbor.
 	p.slab = make([]agent.AgentMessage, 0, len(contextEntries)+spare)
@@ -284,6 +288,11 @@ func (p *sessionProjector) view() SessionProjection {
 // (session-manager.ts buildContextEntries): the latest compaction, the entries
 // from its firstKeptEntryId up to it (system messages excluded), then every
 // entry after it.
+//
+// 裁剪规则：压缩条目本身放最前（它在投影里产出"系统快照+摘要"），
+// 然后回填压缩点之前从 firstKeptEntryId 起被保留的条目（旧系统消息
+// 除外——快照已经带了当时的系统态），最后是压缩之后的全部条目。
+// 压缩点之前的保留区是"压缩没来得及压进摘要的尾部"。
 func buildContextEntries(path []SessionEntry, decode messageDecoder) []SessionEntry {
 	compactionIdx := -1
 	for i, entry := range path {

@@ -205,6 +205,12 @@ func (rt *Runtime) ModelFallbackMessage() string {
 func (rt *Runtime) SetBeforeSessionInvalidate(fn func()) { rt.beforeSessionInvalidate = fn }
 
 // Close releases Runtime-level resources. Services supplied by the caller remain caller-owned and must be closed separately.
+//
+// 关闭顺序（与上游 teardown 对齐）：有当前 Session 时先发 quit 广播
+// → 模式侧的 beforeSessionInvalidate（先摘 UI 绑定，趁扩展上下文还
+// 活着）→ Invalidate runner（此后扩展调用拒绝）→ Session.Close
+// （取消并 drain 所有运行中工作）→ retireResources 回收 → 取消共享
+// extCtx。没有 Session 则只收 runner 级资源。
 func (rt *Runtime) Close() error {
 	if current := rt.replacement.current.Load(); current != nil {
 		if !rt.replacement.closed.CompareAndSwap(false, true) {
@@ -283,6 +289,10 @@ func (rt *Runtime) startSession(opts SessionStartOptions) (*Session, error) {
 	return rt.startSessionWithFactory(opts, NewSession)
 }
 
+// 恢复路径先在外层完成：ResumePath → Open 成 inner（含迁移与
+// 容错），校验存储 cwd 仍存在（否则换 cwdOverride），然后作为
+// SessionOptions.resumed 交给 NewSession——inner 已经在磁盘态，
+// 外层只管在其上重建运行时。
 func (rt *Runtime) startSessionWithFactory(opts SessionStartOptions, create func(*AgentSessionServices, SessionOptions) (*Session, error)) (*Session, error) {
 	var resumed *icodingagent.Session
 	if opts.SessionManager == nil && opts.ResumePath != "" {

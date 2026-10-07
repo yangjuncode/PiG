@@ -374,6 +374,11 @@ func (r *Runner) ExtensionCount() int { return len(r.extensions) }
 // surface a specific reason in error reporting.
 //
 // upstream: runner.ts:461-466 (invalidate)
+// Invalidate 是会话替换/reload 后让旧 runner 变"陈旧"的开关。
+// invalidateOnce 保证首个失效理由赢；三件事一起发生：写
+// staleMessage（之后 assertActive 全拒）、cancelBackground（在
+// 排队的事件交付随 runner 而死）、取消挂着的 UI prompt（否则
+// 阻塞在对话框上的 handler 永远醒不来）。
 func (r *Runner) Invalidate(message string) {
 	r.invalidate(message, true)
 }
@@ -423,6 +428,14 @@ func (r *Runner) Shutdown() {
 // invariant: "called once during runtime initialization".
 //
 // upstream: runner.ts:265-294
+//
+// 装配顺序：host 传进来的 contextActions 逐字段与 runner 已有
+// 值合并——Session 在建 Session 时先绑的 ExecuteTool/
+// GetCallableTools/AppendEntry/ModelRegistry/RefreshTools 若模式
+// 侧没给新的就保留（对应上游"mode 的 bindExtensions 只经
+// _bindExtensionCore 换这几个"）。然后 SessionManager 单独原子
+// 绑定、UI/mode getter 接管、flag 查询先模式后本地默认，
+// 最后把 provider 注册动作接进共享 ExtensionRuntime。
 func (r *Runner) BindCore(
 	actions extension.ExtensionActions,
 	contextActions extension.ContextActions,
@@ -1881,6 +1894,14 @@ func (r *Runner) EmitContext(ctx context.Context, messages []extension.AgentMess
 // system message.
 //
 // upstream: runner.ts emitContext, sameMessages, restoreSystemMessages
+//
+// 链式上下文改写：每个 handler 收到的是前一个 handler 产出的列表
+// （given = current 的浅拷贝）。handler 返回值若带新列表就替换
+// current；没返回列表但原地改了 given（重排/删条目）也生效。
+// replaced 标记区分"内容字段改"与"列表被换"——只有后者会让
+// restoreSystemMessages 把 system 消息收拢到开头，这就是上游
+// sameMessages 按身份比较的意图。子进程扩展无法传对象身份，靠
+// _pigContextUnchanged 报告或值比较近似。
 func (r *Runner) EmitContextTracked(ctx context.Context, messages []extension.AgentMessage) ([]extension.AgentMessage, bool, error) {
 	out, replaced, _, err := r.emitContext(ctx, messages)
 	return out, replaced, err
@@ -2808,6 +2829,17 @@ func typedDetails[T any](details any) (*T, bool) {
 // system can't express this, so the result is `any` and callers
 // type-assert. The 4 SessionBefore* event types are documented as the
 // only types whose result is non-nil in the godoc above.
+// Emit 是通用事件分发器：从事件结构体反射出 Type 字段（上游的
+// 判别字段），按扩展加载序→注册序逐 handler 调用。
+// 失败处理：handler 返回错误经 recordHandlerError 变成
+// ExtensionError 上报给 error listener，不中断后续 handler；
+// panic 被 callHandler 捕获成同样的错误。每次 handler 结束都
+// Acknowledge 一次——对齐上游 `await handler` 的微任务边界（让
+// 队列中的 host 调用有机会插入）。
+// 结果语义：一般事件返回最后一个非 nil 结果；session_before_*
+// 事件（switch/fork/compact/tree）支持 Cancel 短路——某个
+// handler 返回 cancel:true 立即终止分发并把结果上交调用方取消
+// 操作。
 func (r *Runner) Emit(ctx context.Context, event extension.ExtensionEvent) (any, error) {
 	if event == nil {
 		return nil, nil

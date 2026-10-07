@@ -123,6 +123,12 @@ type sessionListResult struct {
 	valid bool
 }
 
+// summarizeSessionFilesWithOptions 是选择器列表的并行摘要引擎：
+// 最多 10 个 worker 从共享序号取文件做流式摘要（每个文件只扫描
+// 不驻留条目对象）；结果按到达顺序累计，每 publishInterval 个或
+// 首个/最后一个时把当前已收的快照排序后推给 OnProgress——选择器
+// 渐进出列表而不是等全部读完。waitForFirst（跨目录列举）先等
+// index 0 的头部会话出来再发布，避免首屏闪出非最新会话。
 func summarizeSessionFilesWithOptions(files []string, options SessionListOptions, publishInterval int, waitForFirst bool) ([]SessionInfo, error) {
 	ctx, cancel := context.WithCancel(options.Context)
 	if err := ctx.Err(); err != nil {

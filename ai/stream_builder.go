@@ -10,6 +10,16 @@ import (
 	"time"
 )
 
+// assistantStreamBuilder 是所有 provider 流式解析共用的"增量→事件
+// 生命周期"翻译器：provider 每解析出一块 SSE/帧增量就调这里一个
+// 方法（textDelta/thinkingDelta/toolCallDelta…），builder 维护
+// partial 这个唯一的 AssistantMessage 现场——text/thinking/tool
+// 三类块各有 active 游标（provider 索引→contentIndex 映射解决
+// OpenAI 并行 tool call 的 index 寻址）；上游的幂等语义靠
+// "start 类方法可重入、delta 触发隐式 start"实现。
+// push() 每次先发当前 partial 的视图快照再发事件——消费侧拿到
+// 的 Partial 是发送时刻冻结的，builder 内部的 mutation 不会串进
+// 已发出的事件。
 type assistantStreamBuilder struct {
 	ctx          context.Context
 	stream       *AssistantMessageEventStream
@@ -343,6 +353,11 @@ func (builder *assistantStreamBuilder) setUsage(usage *Usage) {
 	}
 }
 
+// done/fail 是流的两种终态：done 先补发所有未结束块的 end 事件
+// （finishBlocks 按 contentIndex 升序——与模型产出的内容序一致），
+// 再落 usage 与 StopReason 发 DoneEvent；fail 同样收尾但发
+// ErrorEvent 且 ErrorMessage 可经 provider 的 errorMessage 钩子改
+// 写（如把 provider 错误归一化成用户可读文本）。
 func (builder *assistantStreamBuilder) done(reason StopReason, usage *Usage, errorMessage string) {
 	builder.start()
 	builder.finishBlocks()

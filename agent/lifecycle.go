@@ -10,6 +10,10 @@ import (
 	"github.com/MichaelKinsy/PiG/internal/jsloop"
 )
 
+// lifecycle.go 管理 Agent 的运行生命周期对外接口：事件订阅
+// （Subscribe）、运行取消信号（Signal/Abort/WaitForIdle）、运行状态
+// 派生（reduceEventState、StreamingMessage/PendingToolCalls/
+// ErrorMessage）以及运行开始/结束时的观察者通知。
 // Ports packages/agent/src/agent.ts.
 
 // agentListener retains subscription identity independently of callback values.
@@ -25,6 +29,11 @@ type agentListener struct {
 // Subscribe registers a lifecycle listener. Listeners run in subscription order
 // with the active run context; the run waits for each callback to return.
 // The returned function removes this subscription and can be called repeatedly.
+//
+// 同步监听器注册：回调在 emit 里被逐个 await（同步调用），返回 error
+// 会以 runFailure 终止本次运行——监听器不是"发了就忘"的，它参与运行
+// 的控制流。注销走惰性删除：打 removed 标记，运行结束或下次非 streaming
+// 状态时统一清扫，避免在事件派发中途改切片。
 func (a *Agent) Subscribe(listener func(context.Context, AgentEvent) error) func() {
 	return a.SubscribeObserving(listener, nil)
 }
@@ -143,6 +152,8 @@ func (a *Agent) Signal() context.Context {
 }
 
 // Abort cancels the active run. Calling Abort on an idle agent does nothing.
+// 触发当前运行的取消（等价于上游 abort signal）：流迭代、工具执行、
+// 钩子里的 ctx.Err() 都会看到。已结束的空闲 agent 调用是空操作。
 func (a *Agent) Abort() {
 	a.stateMu.RLock()
 	cancel := a.runCancel
@@ -154,6 +165,8 @@ func (a *Agent) Abort() {
 
 // WaitForIdle waits for the current run and its synchronous listeners to settle.
 // It returns immediately when no run is active.
+// 阻塞到本次运行彻底收尾（runDone 关闭于 releaseRun 末尾，即所有
+// 状态清理完成之后）——用于"发了 Abort 后等它真的停稳"这类场景。
 func (a *Agent) WaitForIdle() {
 	a.stateMu.RLock()
 	done := a.runDone
@@ -212,6 +225,11 @@ func (a *Agent) ErrorMessage() string {
 
 // runDeadlineContext preserves the caller's deadline while cancellation forwarding
 // is detached when the run settles. A successfully settled Pi signal is not aborted.
+//
+// 运行 ctx 的包装：active=true 期间把父 ctx 的取消透传出去（父取消 ⇒
+// 运行取消）；运行落定后 active=false，只剩自身 cancel 状态——这样
+// "父 ctx 恰好在运行成功结束的同时被取消"不会把已完成回合误标为
+// aborted。Deadline 始终沿用调用方的，保证超时语义不丢。
 type runDeadlineContext struct {
 	context.Context
 	parent      context.Context
@@ -231,6 +249,10 @@ func (ctx *runDeadlineContext) Err() error {
 	return ctx.Context.Err()
 }
 
+// reduceEventState 把事件流折叠成可查询的瞬时状态：streamingMessage
+// （当前流式中的消息快照）、pendingToolCalls（进行中的工具调用 ID）、
+// errorMessage（最近失败回合的错误）。在 emit 内、监听器之前执行，
+// 所以监听器看到的状态总是"当前事件已应用后"的值。
 func (a *Agent) reduceEventState(ev AgentEvent) {
 	a.stateMu.Lock()
 	defer a.stateMu.Unlock()
@@ -260,6 +282,10 @@ func (a *Agent) reduceEventState(ev AgentEvent) {
 	}
 }
 
+// notifyListeners 按注册顺序逐个同步调用监听器。每次取下一个监听器
+// 都重新拿锁读下标——监听器回调可能注册新监听器（切片会变），按
+// "每次重新读第 index 个"遍历就不会越界也不漏掉新加的。回调出错
+// panic(runFailure) 终止运行，与上游 await 监听器抛异常同语义。
 func (a *Agent) notifyListeners(ev AgentEvent) {
 	for index := 0; ; index++ {
 		a.stateMu.RLock()

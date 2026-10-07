@@ -59,6 +59,10 @@ func (s *Session) toolCallHook(ctx context.Context, toolCallID, parentToolCallID
 		_ = json.Unmarshal(args, &input) // invalid JSON yields a nil input, as validation already ran
 	}
 	// The event carries the members in the order the model wrote them (JSON.stringify of Pi's input), and a subprocess handler's edit replaces these bytes. The agent loop runs the tool with whatever order they hold afterwards.
+	// 事件同时携带两个形态的参数：input 是解码后的 map（进程内
+	// 处理器的对象），wireInput 是按模型写入顺序规范化的原始字节
+	// （子进程处理器编辑后按字节回传）。beforeValues/wire 两份
+	// "改写前"快照用于判断处理器是否动过参数。
 	var wireInput *json.RawMessage
 	if canonical, err := jsonstringify.Canonicalize(args); err == nil && input != nil {
 		wire := json.RawMessage(canonical)
@@ -79,6 +83,8 @@ func (s *Session) toolCallHook(ctx context.Context, toolCallID, parentToolCallID
 		return agent.ToolCallHookResult{Err: err}
 	}
 	var hook agent.ToolCallHookResult
+	// 处理器若在 input map 或 wireInput 上任一处改写了参数，取最终
+	// wire 形态回填给执行——改写不再走校验（校验已在钩子前完成）。
 	if afterValues, err := json.Marshal(input); err == nil && (!bytes.Equal(beforeValues, afterValues) || (wireInput != nil && string(*wireInput) != before)) {
 		if after, err := event.InputJSON(); err == nil {
 			hook.Args = after
@@ -151,6 +157,10 @@ func (s *Session) toolResultHook(ctx context.Context, toolCallID, parentToolCall
 // phase (runner.ts:1190-1223): handlers see only the non-system messages, an
 // unchanged conversation keeps every system message in place, and a changed
 // one gets the current prompt and tool state as one leading system message.
+//
+// 上下文钩子两段式：context（只给非系统消息，系统消息原地保留或
+// 整体被替换时重置为一条）→ context_with_system（含系统消息的完整
+// 视图，可整体替换）。Agent 每次请求前都会调它。
 func (s *Session) extensionContextHook(ctx context.Context, messages []agent.AgentMessage) ([]agent.AgentMessage, error) {
 	runner := s.currentRunner()
 	if runner == nil {
@@ -176,6 +186,7 @@ func (s *Session) contextPhase(ctx context.Context, runner *inproc.Runner, messa
 	if !runner.HasHandlers(icodingagent.EventContext) {
 		return messages, nil
 	}
+	// 系统消息先摘出来不给处理器看——context 钩子只面向"对话部分"。
 	visible := make([]agent.AgentMessage, 0, len(messages))
 	var systems []ai.Message
 	for _, message := range messages {
@@ -199,6 +210,8 @@ func (s *Session) contextPhase(ctx context.Context, runner *inproc.Runner, messa
 	if !replaced && len(converted) == len(visible) {
 		// upstream restoreSystemMessages: an unchanged conversation (edited in
 		// place) keeps every system message where it was.
+		// 逐条合并而非整体替换：处理器没动过的消息保留原对象（保持
+		// 引用/entry ID 映射不失效），系统消息一律原位插回。
 		out := make([]agent.AgentMessage, 0, len(messages))
 		next := 0
 		for _, message := range messages {
@@ -215,6 +228,7 @@ func (s *Session) contextPhase(ctx context.Context, runner *inproc.Runner, messa
 		}
 		return out, nil
 	}
+	// 列表被整体替换（或长度变化）：系统消息折叠成一条基线放最前。
 	if head := ai.GetCurrentSystemMessage(systems); head != nil {
 		return append([]agent.AgentMessage{{System: head}}, converted...), nil
 	}
@@ -328,12 +342,17 @@ func (s *Session) extensionEventHook(ev agent.AgentEvent) {
 	}
 	end, ok := ev.(agent.MessageEndEvent)
 	if !ok {
+		// 非 message_end：常规事件直接转给扩展（DispatchAgentLoopEvent
+		// 内部按类型分发到对应处理器）。
 		icodingagent.DispatchAgentLoopEvent(runner, ev, &s.extCurrentMessage)
 		return
 	}
 	if !runner.HasHandlers(icodingagent.EventMessageEnd) {
 		return
 	}
+	// message_end 特殊：处理器可以返回"替换消息"改写最终落盘/转录的
+	// 内容（比如给 assistant 消息追加元数据），替换是原地写进共享
+	// 指针——持久化和转录看到的是改写后的同一份。
 	replacement, err := runner.EmitMessageEnd(icodingagent.AgentEventContext(ev), extension.MessageEndEvent{Type: "message_end", Message: end.Message})
 	if err != nil || replacement == nil {
 		return
@@ -380,6 +399,10 @@ func replaceMessageInPlace(target, replacement agent.AgentMessage) {
 // returned; the next prompt carries them as custom messages after the user
 // message and any next-turn messages (agent-session.ts prompt()). Every mode
 // that emits before_agent_start hands its result here.
+//
+// 暂存 before_agent_start 返回的自定义消息引用，转成 AgentMessage
+// 的 Custom 形态（role:"custom" + customType/content/display/details
+// 字段），挂在 agentStartMessages 等下次 prompt 时取走注入。
 func (s *Session) QueueAgentStartMessages(messages []extension.CustomMessageRef) {
 	if len(messages) == 0 {
 		return
