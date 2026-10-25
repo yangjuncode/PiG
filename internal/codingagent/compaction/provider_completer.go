@@ -69,6 +69,11 @@ func (c ProviderCompleter) CompleteSimple(
 	if err != nil {
 		return "", nil, fmt.Errorf("compaction completer: stream: %w", err)
 	}
+	// 等终态结果再分类：error 透传 provider 的错误文案；
+	// length（输出被 max_tokens 截断）单独报错——半份摘要
+	// 不能当完整摘要用；toolCall 块说明模型没有按要求只产
+	// 文本，记 invalid-summary 错误。thinking 等非 text 块
+	// 静默跳过，只把 text 块拼成摘要正文。
 	message := stream.Result()
 	if ctx.Err() != nil {
 		return "", nil, ctx.Err()

@@ -33,6 +33,10 @@ func completeSimpleWithRetries(ctx context.Context, policy *ai.RetryPolicy, call
 		callErr       error
 		abortedInCall bool
 	)
+	// 把摘要调用包成 RetryAssistantCall 认得的 AssistantMessage
+	// 结果：成功→stop、ctx 取消→aborted（abortedInCall 标记区分
+	// "调用中取消"与"退避等待中被取消"）、其他→error 供
+	// IsRetryable 判定。callErr 留在闭包变量里，最后按终态还原。
 	response, err := ai.RetryAssistantCall(ctx, func() (ai.AssistantMessage, error) {
 		text, usage, callErr = call()
 		switch {
@@ -47,6 +51,9 @@ func completeSimpleWithRetries(ctx context.Context, policy *ai.RetryPolicy, call
 	if err != nil {
 		return "", nil, err
 	}
+	// 终态还原：abortedInCall=true 时原始调用错误优先（它含
+	// 真实失败原因）；否则是退避 sleep 中被 ctx 取消，返回
+	// ctx.Err()；error 终态交还最后一次的 callErr。
 	switch response.StopReason {
 	case ai.StopReasonAborted:
 		if abortedInCall {
