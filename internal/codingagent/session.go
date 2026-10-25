@@ -1289,6 +1289,11 @@ func (s *Session) BuildSessionProjectionView() SessionProjection {
 	s.projMu.Lock()
 	defer s.projMu.Unlock()
 	path := s.ctxPath
+	// 增量投影复用：上下文代数没换（ctxGen 不变）且上次投影
+	// 覆盖到的前缀仍是当前路径前缀时，只把新增尾部喂给既有
+	// projector——一次投影 O(新增条目数) 而非 O(全路径)。
+	// extend 返回 false（遇到 context_edit 要重写旧消息）或
+	// 前缀不连续 → 落到下面整支重投。
 	if s.projView != nil && s.projGen == s.ctxGen && s.projCovered <= len(path) &&
 		(s.projCovered == len(path) || s.projView.extend(s.entriesAtLocked(path[s.projCovered:]))) {
 		s.projCovered = len(path)

@@ -303,6 +303,8 @@ func (p *sessionProjector) view() SessionProjection {
 // 除外——快照已经带了当时的系统态），最后是压缩之后的全部条目。
 // 压缩点之前的保留区是"压缩没来得及压进摘要的尾部"。
 func buildContextEntries(path []SessionEntry, decode messageDecoder) []SessionEntry {
+	// 找路径上最后一次压缩：取最新一个 compactionIdx（遍历
+	// 覆盖，最后一个赢）。无压缩 → 整路径直通。
 	compactionIdx := -1
 	for i, entry := range path {
 		if entry.Base().Type == "compaction" {
@@ -321,6 +323,10 @@ func buildContextEntries(path []SessionEntry, decode messageDecoder) []SessionEn
 	} else {
 		_ = json.Unmarshal(path[compactionIdx].Raw(), &compaction)
 	}
+	// 输出三段拼装：压缩条目本身 → 压缩点之前从 firstKeptEntryId
+	// 起保留的尾部（非系统消息，系统态已被压缩快照取代）→
+	// 压缩点之后的全部条目。旧系统消息被排除是因为压缩摘要
+	// 里已含当时的系统快照，保留会造成重复。
 	out := make([]SessionEntry, 0, len(path)-compactionIdx)
 	out = append(out, path[compactionIdx])
 	foundFirstKept := false
