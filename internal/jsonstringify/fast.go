@@ -90,6 +90,11 @@ func (state *scanner) array(i, depth int) int {
 	}
 }
 
+// 对象成员扫描：重复键检测分两档——前
+// maxLinearObjectKeys 个成员逐一线性比对（小对象零分配），
+// 超过则推迟到 '}' 时排序比对（大对象 O(n log n) 仍快于
+// O(n²)）。integerLike 键直接拒收：重写器可能把它当数组
+// 下标重排，快路径判不出就放弃快路径保正确性。
 func (state *scanner) object(i, depth int) int {
 	if i < len(state.text) && state.text[i] == '}' {
 		return i + 1
@@ -217,6 +222,12 @@ func (state *scanner) str(i int) int {
 						return -1
 					}
 				}
+				// \u 转义白名单复刻 stringify 的输出形态：
+				// 能被 \b\t\n\f\r 简写的控制字符若被写成
+				// \u00xx 就不是 stringify 产物；高代理位记录
+				// highEnd，紧随其后的低代理位说明是成对编码
+				// ——stringify 会把对写成真实字符，所以这里
+				// 拒收；孤立代理位才是合法输出。
 				switch {
 				case value < 0x20:
 					switch value {
@@ -285,6 +296,10 @@ func (state *scanner) number(i int) int {
 			return -1
 		}
 	}
+	// 三档有效性判定：纯 "0"（拒绝 "-0"）；小数部分前导
+	// 零超过 5 即 |x|<1e-6，ECMAScript 在此切换指数形式，
+	// 非指数小数字面量必非 stringify 产物；最后有效位数
+	// 须在可精确范围内，超出说明文本可能被改写过。
 	if integerIsZero && fracDigits == 0 {
 		return skipIf(!negative, i)
 	}
