@@ -1,3 +1,4 @@
+// 中文导读：cell 打包：node_cell。
 package cellpack
 
 import (

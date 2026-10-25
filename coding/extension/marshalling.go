@@ -20,6 +20,7 @@
 //   - .upstream/current/packages/coding-agent/src/core/extensions/types.ts
 //     lines 750 (InputEventResult), 869 (ToolResultEvent)
 
+// 中文导读：扩展线形 marshal/unmarshal。
 package extension
 
 import (

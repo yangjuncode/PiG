@@ -1,3 +1,4 @@
+// 中文导读：provider 运行时类型；对应上游 packages/coding-agent/src/core/extensions/loader.ts。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/loader.ts

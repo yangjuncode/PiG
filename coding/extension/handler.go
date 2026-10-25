@@ -1,3 +1,4 @@
+// 中文导读：ExtensionHandler 类型（types.ts 的 handler 签名）。
 package extension
 
 import "context"

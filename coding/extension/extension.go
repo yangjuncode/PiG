@@ -1,3 +1,4 @@
+// 中文导读：Extension/ExtensionFactory：扩展状态容器与 Go 工厂签名。
 package extension
 
 import (

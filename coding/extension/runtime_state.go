@@ -1,3 +1,4 @@
+// 中文导读：扩展运行时状态；对应上游 packages/coding-agent/src/core/extensions/loader.ts createExtensionRuntime (assertActive, invalidate, pendingNativeProviderRegistrations)。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/loader.ts createExtensionRuntime (assertActive, invalidate, pendingNativeProviderRegistrations).

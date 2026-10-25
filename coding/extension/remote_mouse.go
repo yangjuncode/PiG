@@ -1,3 +1,4 @@
+// 中文导读：远端鼠标事件。
 package extension
 
 // RemoteMouseEvent is pi-tui's TuiMouseEvent as it crosses to an extension:

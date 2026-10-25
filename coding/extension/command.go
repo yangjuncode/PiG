@@ -1,3 +1,4 @@
+// 中文导读：扩展命令注册类型。
 package extension
 
 import "context"

@@ -1,3 +1,4 @@
+// 中文导读：扩展工具注册表；对应上游 packages/coding-agent/src/core/extensions/types.ts。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/types.ts.

@@ -1,3 +1,4 @@
+// 中文导读：工具过滤；对应上游 packages/coding-agent/src/core/mcp-servers.ts (createToolNameMatcher, isMcpToolName) and the `--tools` and。
 package extension
 
 import "strings"

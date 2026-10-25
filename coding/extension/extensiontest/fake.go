@@ -10,6 +10,8 @@
 //	if len(api.RegisterToolCalls) != 1 {
 //	    t.Fatalf("expected one tool registered, got %d", len(api.RegisterToolCalls))
 //	}
+//
+// 中文导读：扩展测试支持：fake。
 package extensiontest
 
 import (

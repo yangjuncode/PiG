@@ -1,3 +1,4 @@
+// 中文导读：内置 codemode 扩展：tool；对应上游 packages/coding-agent/src/extensions/codemode/index.ts (CodemodeExtensionOptions.mode)。
 package codemode
 
 import (

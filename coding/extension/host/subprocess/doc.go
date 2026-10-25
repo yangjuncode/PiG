@@ -53,4 +53,5 @@
 // This entire package is pig-specific. Upstream pi uses TypeScript extensions
 // loaded via jiti in-process. The subprocess protocol exists to support compiled
 // extensions in Go, Rust, or any language that can speak Unix socket + JSON.
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：doc。
 package subprocess

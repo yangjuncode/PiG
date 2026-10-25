@@ -1,3 +1,4 @@
+// 中文导读：视图表面类型。
 package extension
 
 import (

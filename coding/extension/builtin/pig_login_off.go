@@ -1,5 +1,6 @@
 //go:build pig_strip_pig_login
 
+// 中文导读：内置扩展：pig_login_off。
 package builtin
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

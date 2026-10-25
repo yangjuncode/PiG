@@ -1,5 +1,6 @@
 // Package noderuntimepeers generates the host peer packages of the Node runtime archive: package.json and entry modules under runtime-node/harness/node_modules. The
 // generator writes them into the archive and the archive test recomputes them, so both use this one table.
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：peers。
 package noderuntimepeers
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：对话框 settle 语义。
 package extension
 
 import "context"

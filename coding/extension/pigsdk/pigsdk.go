@@ -35,6 +35,8 @@
 //	  sdk-py-<hash16>/   pig_sdk/__init__.py + ...  (Python)
 //	  sdk-rs-<hash16>/   Cargo.toml + src/*.rs      (Rust)
 //	each with a .pig-sdk-version content-hash marker.
+//
+// 中文导读：扩展 SDK 桥接：pigsdk。
 package pigsdk
 
 import (

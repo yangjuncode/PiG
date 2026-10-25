@@ -1,3 +1,4 @@
+// 中文导读：运行时注册项集合；对应上游 packages/coding-agent/src/core/extensions/loader.ts (registerMcpServer, unregisterMcpServer, getMcpServers, registerVirtualModel, unregisterVirtualModel)。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/loader.ts (registerMcpServer, unregisterMcpServer, getMcpServers, registerVirtualModel, unregisterVirtualModel).

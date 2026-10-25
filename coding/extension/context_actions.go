@@ -1,3 +1,4 @@
+// 中文导读：ExtensionContext 的动作集（types.ts ExtensionCommandContextActions）；对应上游 upstream ExtensionCommandContextActions (types.ts:1484-1506)。
 package extension
 
 import "context"

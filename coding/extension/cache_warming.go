@@ -1,3 +1,4 @@
+// 中文导读：cache warming 事件类型；对应上游 packages/coding-agent/src/core/cache-warmer.ts。
 package extension
 
 // Ports packages/coding-agent/src/core/cache-warmer.ts

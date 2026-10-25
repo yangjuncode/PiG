@@ -1,3 +1,4 @@
+// 中文导读：项目信任 context；对应上游 packages/coding-agent/src/core/extensions/types.ts ProjectTrustContext and ProjectTrustHandler。
 package extension
 
 import "context"

@@ -1,3 +1,4 @@
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：view_kit_branch_summary。
 package subprocess
 
 // view_kit_branch_summary.go: the branch-summary kind, coding-agent's

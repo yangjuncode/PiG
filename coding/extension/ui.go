@@ -1,3 +1,4 @@
+// 中文导读：UIContext 接口与 ErrUIUnavailable；对应上游 the unavailable-UI result at runner.ts:214: `{ success: false,。
 package extension
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：只读 SessionManager 面。
 package extension
 
 import (

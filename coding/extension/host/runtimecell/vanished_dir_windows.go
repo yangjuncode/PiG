@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：运行时 cell：packed/fused 扩展运行单元（D20），对扩展观察上与 isolated 一致：vanished_dir_windows。
 package runtimecell
 
 import (

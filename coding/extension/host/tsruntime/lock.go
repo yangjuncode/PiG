@@ -1,3 +1,4 @@
+// 中文导读：Node/TS 扩展运行时宿主侧：lock。
 package tsruntime
 
 // LockEntry pins one executable PiG runs as a Bun runtime. A Bun runtime whose executable digest is not in the lock for its version

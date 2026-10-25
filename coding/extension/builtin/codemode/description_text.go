@@ -1,3 +1,4 @@
+// 中文导读：内置 codemode 扩展：description_text；对应上游 packages/coding-agent/src/extensions/codemode/tool.ts (describeGlobals)。
 package codemode
 
 import "strings"

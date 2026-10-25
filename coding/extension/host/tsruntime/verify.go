@@ -1,3 +1,4 @@
+// 中文导读：Node/TS 扩展运行时宿主侧：verify。
 package tsruntime
 
 import (

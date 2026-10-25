@@ -7,6 +7,7 @@
 // package-reinstall callbacks.
 //
 // pig additive (D18): product-neutral install and Piglet source resolver seams.
+// 中文导读：扩展安装解析：registry。
 package installresolver
 
 import (

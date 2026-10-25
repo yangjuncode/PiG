@@ -1,3 +1,4 @@
+// 中文导读：扩展测试支持：membus。
 package extensiontest
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

@@ -1,5 +1,6 @@
 //go:build !pig_strip_extension_sdk_python
 
+// 中文导读：扩展 SDK 桥接：sdk_python_on。
 package pigsdk
 
 import (

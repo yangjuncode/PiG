@@ -1,3 +1,4 @@
+// 中文导读：内置 codemode 扩展：models；对应上游 packages/coding-agent/src/extensions/codemode/execute.ts (createModelGlobals)。
 package codemode
 
 import (

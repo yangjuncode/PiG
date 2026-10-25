@@ -1,3 +1,4 @@
+// 中文导读：工具输入的 JSON 处理。
 package extension
 
 import (

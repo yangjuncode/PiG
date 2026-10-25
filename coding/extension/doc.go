@@ -34,4 +34,5 @@
 // in PiG. Types that cross the current dynamic JSON or renderer boundaries are
 // explicit opaque aliases in opaque_types.go. Concrete events and SDK methods
 // use typed Go values where the contract is stable.
+// 中文导读：扩展 API 契约包：镜像上游 types.ts 的 ExtensionAPI 面，只含公共契约（类型、API、context）。
 package extension

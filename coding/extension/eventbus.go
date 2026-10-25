@@ -1,3 +1,4 @@
+// 中文导读：EventBus：扩展间事件总线。
 package extension
 
 import (

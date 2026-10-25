@@ -1,3 +1,4 @@
+// 中文导读：extension factory 加载：api。
 package factoryload
 
 import (

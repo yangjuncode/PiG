@@ -1,3 +1,4 @@
+// 中文导读：bug 报告摘要生成（bug-report.ts）：GenerateBugReportSummary 用调用方给的模型与请求认证（APIKey/Headers/Env）跑一次总结请求，产出 /bug 的会话摘要。
 package compaction
 
 import (

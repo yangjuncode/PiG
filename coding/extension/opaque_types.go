@@ -1,3 +1,4 @@
+// 中文导读：不透明类型（handle 等）；对应上游 upstream `{ consume?: boolean; data?: string }`。
 package extension
 
 import (

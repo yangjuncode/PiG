@@ -1,3 +1,4 @@
+// 中文导读：ProviderCompleter——从调用方的 stream 覆盖或模型自带 provider 收集一次摘要响应；保留 provider 错误、usage 与 invalid-summary 诊断。
 package compaction
 
 import (

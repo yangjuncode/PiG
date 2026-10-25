@@ -1,3 +1,4 @@
+// 中文导读：sprite 渲染相关。
 package extension
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：自定义组件类型。
 package extension
 
 import "github.com/MichaelKinsy/PiG/tui"

@@ -4,6 +4,7 @@
 // user may request another runtime that an extension or Piglet installed into the runtime slot; PiG itself downloads nothing. The
 // slot is a directory per runtime under Root, each holding a runtime.json Manifest. A requested runtime that cannot be used falls
 // back to Node once, with a typed Reason.
+// 中文导读：Node/TS 扩展运行时宿主侧：tsruntime。
 package tsruntime
 
 import (

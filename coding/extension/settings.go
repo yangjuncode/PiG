@@ -1,3 +1,4 @@
+// 中文导读：扩展侧 settings 类型。
 package extension
 
 // Settings is the effective settings object [API.GetSettings] returns: the JSON object of the global and project settings merged, with overrides. It is a copy, so a change to it does not change the settings.

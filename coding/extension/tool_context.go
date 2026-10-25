@@ -1,3 +1,4 @@
+// 中文导读：ToolContext：单次工具调用的上下文；对应上游 packages/coding-agent/src/core/extensions/types.ts (ExecuteToolOptions, ExtensionToolContext)。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/types.ts (ExecuteToolOptions, ExtensionToolContext).

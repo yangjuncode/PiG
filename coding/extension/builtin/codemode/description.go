@@ -11,6 +11,7 @@
 // model; nested results do not.
 //
 // Ports packages/coding-agent/src/extensions/codemode/{tool,execute,renderer,index}.ts.
+// 中文导读：内置 codemode 扩展：description；对应上游 packages/coding-agent/src/extensions/codemode/{tool,execute,renderer,index}.ts。
 package codemode
 
 import (

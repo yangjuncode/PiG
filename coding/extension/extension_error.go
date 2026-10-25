@@ -1,3 +1,4 @@
+// 中文导读：扩展错误类型。
 package extension
 
 import "errors"

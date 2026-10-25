@@ -3,6 +3,7 @@
 // share one definition.
 //
 // Ports packages/coding-agent/src/modes/interactive/components/markdown-transform.ts
+// 中文导读：markdown 转换扩展：markdowntransform；对应上游 packages/coding-agent/src/modes/interactive/components/markdown-transform.ts。
 package markdowntransform
 
 import "context"

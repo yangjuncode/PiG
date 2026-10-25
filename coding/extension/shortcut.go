@@ -1,3 +1,4 @@
+// 中文导读：扩展快捷键注册类型。
 package extension
 
 import "context"

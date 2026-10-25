@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：进程执行（unix）。
 package extension
 
 import (

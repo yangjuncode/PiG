@@ -1,3 +1,4 @@
+// 中文导读：tool_call 事件的 JSON 编解码。
 package extension
 
 import (

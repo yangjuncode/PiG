@@ -1,3 +1,4 @@
+// 中文导读：系统提示词选项；对应上游 packages/coding-agent/src/core/system-prompt.ts。
 package extension
 
 import (

@@ -1,5 +1,6 @@
 //go:build pig_strip_tool_search
 
+// 中文导读：内置扩展：tool_search_off。
 package builtin
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

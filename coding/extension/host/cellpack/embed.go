@@ -1,3 +1,4 @@
+// 中文导读：cell 打包：embed。
 package cellpack
 
 import (

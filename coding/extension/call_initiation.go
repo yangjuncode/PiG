@@ -1,3 +1,4 @@
+// 中文导读：调用发起类型。
 package extension
 
 import "context"

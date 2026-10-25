@@ -1,3 +1,4 @@
+// 中文导读：宿主动作（HostActions：扩展可调用的宿主操作）。
 package extension
 
 import (

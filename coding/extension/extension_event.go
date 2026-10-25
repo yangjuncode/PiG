@@ -1,3 +1,4 @@
+// 中文导读：ExtensionEvent 封闭联合（types.ts:1377）：扩展 handler 可收到的全部事件类型。
 package extension
 
 // ExtensionEvent is the union of every event an extension handler receives (types.ts:1377 ExtensionEvent). It is a closed union: only the

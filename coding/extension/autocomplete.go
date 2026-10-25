@@ -1,3 +1,4 @@
+// 中文导读：自动补全类型；对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package extension
 
 import (

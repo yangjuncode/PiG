@@ -1,3 +1,4 @@
+// 中文导读：虚拟模型类型；对应上游 packages/coding-agent/src/core/virtual-models.ts (the routing types)。
 package extension
 
 // Ports packages/coding-agent/src/core/virtual-models.ts (the routing types).

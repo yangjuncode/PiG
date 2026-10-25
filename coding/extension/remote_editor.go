@@ -1,3 +1,4 @@
+// 中文导读：远端编辑器接口。
 package extension
 
 import (

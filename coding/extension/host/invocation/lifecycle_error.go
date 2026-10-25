@@ -1,3 +1,4 @@
+// 中文导读：扩展调用确认（ack）机制：lifecycle_error。
 package invocation
 
 // LifecycleError preserves an invocation failure whose diagnostic belongs to the subprocess lifecycle handler. Callers still receive an error; the runner must not emit a second notification for the same failed connection.

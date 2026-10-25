@@ -1,3 +1,4 @@
+// 中文导读：MCP server 注册与变更事件类型；对应上游 packages/coding-agent/src/core/mcp-servers.ts。
 package extension
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：扩展能力位。
 package extension
 
 // Capability is a typed string for well-known extension capability names.

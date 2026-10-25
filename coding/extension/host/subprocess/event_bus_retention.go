@@ -1,3 +1,4 @@
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：event_bus_retention。
 package subprocess
 
 // EventBusRetention counts the Host state the shared pi.events bus and the cross-process reference ledger retain. It is a product-neutral diagnostic of Stock mechanisms (D19): Pi's bus keeps one listener array per channel and nothing per emit (event-bus.ts:12-33), so a count that grows with the number of emits is a leak.

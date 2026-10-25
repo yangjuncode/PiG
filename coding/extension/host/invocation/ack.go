@@ -1,3 +1,4 @@
+// 中文导读：扩展调用确认（ack）机制：ack。
 package invocation
 
 import (

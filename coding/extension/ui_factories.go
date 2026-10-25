@@ -1,3 +1,4 @@
+// 中文导读：UI 工厂类型。
 package extension
 
 import "github.com/MichaelKinsy/PiG/tui"

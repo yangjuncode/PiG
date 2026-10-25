@@ -1,3 +1,4 @@
+// 中文导读：渲染器注册表。
 package extension
 
 import "maps"

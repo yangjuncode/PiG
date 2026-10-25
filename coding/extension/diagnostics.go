@@ -1,3 +1,4 @@
+// 中文导读：扩展诊断类型。
 package extension
 
 // ResourceCollision describes two resources that claim the same name: the winner is kept and the loser is skipped. ResourceType is

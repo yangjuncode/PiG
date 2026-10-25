@@ -1,5 +1,6 @@
 //go:build !pig_strip_codemode
 
+// 中文导读：内置扩展：codemode_on。
 package builtin
 
 import (

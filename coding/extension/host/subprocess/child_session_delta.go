@@ -1,3 +1,4 @@
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：child_session_delta。
 package subprocess
 
 // The message_update events of a child session reach the extension as the payloads of one numbered sequence, as a message_update of the main session does (message_update_delta.go): the first is a keyframe, each later one the operations that turn the payload the extension last received into the new one. The session's events are already JSON here, so the payload is parsed from the event's own bytes rather than from the typed event: a text that grew is sent as an append of the bytes it grew by, without decoding it.

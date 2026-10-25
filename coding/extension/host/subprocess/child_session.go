@@ -1,3 +1,4 @@
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：child_session；对应上游 packages/coding-agent/src/core/sdk.ts createAgentSession for the Go, Python and Rust SDKs, with the lifetime the Node runtime gives Pi's own implementation (runtime-node/shims/independent-session.mjs, independent-session-owner.mjs): an independent Session belongs to its extension connection, not to the command that created it, and it ends with the connection。
 package subprocess
 
 // Ports packages/coding-agent/src/core/sdk.ts createAgentSession for the Go, Python and Rust SDKs, with the lifetime the Node runtime gives Pi's own implementation (runtime-node/shims/independent-session.mjs, independent-session-owner.mjs): an independent Session belongs to its extension connection, not to the command that created it, and it ends with the connection.

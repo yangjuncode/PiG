@@ -1,4 +1,5 @@
 // Package noderuntimepack stores the embedded Node runtime as a few solid zstd blocks. The runtime's package copies repeat one another (an SDK bundle contains the modules it was built from), and a block compresses those repeats away, which a per-file archive cannot. Blocks decode independently, so extraction runs them in parallel.
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：pack。
 package noderuntimepack
 
 import (

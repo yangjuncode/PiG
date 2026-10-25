@@ -1,3 +1,4 @@
+// 中文导读：before_agent_start 事件选项。
 package extension
 
 import (

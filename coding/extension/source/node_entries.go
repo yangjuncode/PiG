@@ -1,3 +1,4 @@
+// 中文导读：扩展源：node_entries。
 package source
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内置 toolsearch 扩展：tool；对应上游 packages/coding-agent/src/extensions/tool-search/tool.ts (createToolSearchToolDefinition)。
 package toolsearch
 
 import (

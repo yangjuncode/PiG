@@ -1,5 +1,6 @@
 //go:build pig_strip_mcp
 
+// 中文导读：内置扩展：mcp_off。
 package builtin
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

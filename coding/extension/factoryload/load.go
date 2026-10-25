@@ -5,6 +5,7 @@
 // the loader, the registering API and the built-in rows do not.
 //
 // Ports packages/coding-agent/src/core/extensions/loader.ts (createExtensionAPI, initializeExtension, loadExtensionFromFactory).
+// 中文导读：extension factory 加载：load；对应上游 packages/coding-agent/src/core/extensions/loader.ts (createExtensionAPI, initializeExtension, loadExtensionFromFactory)。
 package factoryload
 
 import (

@@ -4,6 +4,7 @@
 // FusedResolver so the host loads those extensions in-process (D31).
 //
 // Stock Pig compiles this package with an empty registry, so Register is a no-op.
+// 中文导读：fused 扩展打包：fusepack。
 package fusepack
 
 import (

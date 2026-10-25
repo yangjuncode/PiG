@@ -1,3 +1,4 @@
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：facet_bridge；对应上游 packages/coding-agent/src/experimental/plugins/bundled.ts (isolated Node host connection)。
 package subprocess
 
 // Ports packages/coding-agent/src/experimental/plugins/bundled.ts (isolated Node host connection).

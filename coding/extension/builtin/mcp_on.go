@@ -1,5 +1,6 @@
 //go:build !pig_strip_mcp
 
+// 中文导读：内置扩展：mcp_on。
 package builtin
 
 import (

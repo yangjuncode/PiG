@@ -1,3 +1,4 @@
+// 中文导读：扩展登录类型。
 package extension
 
 import (

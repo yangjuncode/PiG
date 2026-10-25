@@ -1,3 +1,4 @@
+// 中文导读：远端 overlay。
 package extension
 
 import (

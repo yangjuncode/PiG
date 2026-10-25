@@ -5,6 +5,7 @@
 // support.
 //
 // upstream: coding-agent/src/core/exec.ts (107 LOC)
+// 中文导读：进程执行类型；对应上游 upstream core/exec.ts. Provides the implementation backing。
 package extension
 
 import (

@@ -6,6 +6,7 @@
 // in the transcript like any other tool change.
 //
 // Ports packages/coding-agent/src/extensions/tool-search/tool.ts.
+// 中文导读：内置 toolsearch 扩展：toolsearch；对应上游 packages/coding-agent/src/extensions/tool-search/tool.ts。
 package toolsearch
 
 import (

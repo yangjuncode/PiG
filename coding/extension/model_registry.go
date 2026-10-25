@@ -1,3 +1,4 @@
+// 中文导读：扩展侧 ModelRegistry 接口；对应上游 packages/coding-agent/src/core/model-registry.ts。
 package extension
 
 // Ports packages/coding-agent/src/core/model-registry.ts.

@@ -9,6 +9,7 @@
 // which is stable across machines, rather than the host's from-source build
 // hash, which embeds the toolchain version and is not reproducible on a
 // toolchain-less consumer.
+// 中文导读：cell 打包：manifest。
 package cellpack
 
 import (

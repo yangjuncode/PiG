@@ -1,3 +1,4 @@
+// 中文导读：扩展 flag 注册类型；对应上游 upstream's "boolean" | "string" union。
 package extension
 
 // FlagType is the value type of a CLI flag registered by an extension.

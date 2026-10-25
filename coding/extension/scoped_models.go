@@ -1,3 +1,4 @@
+// 中文导读：扩展 scoped 模型类型；对应上游 packages/coding-agent/src/core/model-resolver.ts。
 package extension
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：模型流类型。
 package extension
 
 import (

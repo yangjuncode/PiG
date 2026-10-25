@@ -1,3 +1,4 @@
+// 中文导读：扩展工具装载；对应上游 packages/coding-agent/src/core/extensions/types.ts (ToolLoadout, ToolLoadoutChanges)。
 package extension
 
 // Ports packages/coding-agent/src/core/extensions/types.ts (ToolLoadout, ToolLoadoutChanges).

@@ -1,3 +1,4 @@
+// 中文导读：扩展工具类型（ToolDefinition/RegisteredTool 等，对应 types.ts 工具面）。
 package extension
 
 import (

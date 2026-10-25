@@ -1,5 +1,6 @@
 //go:build pig_strip_extension_sdk_rust
 
+// 中文导读：扩展 SDK 桥接：sdk_rust_off。
 package pigsdk
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

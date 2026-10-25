@@ -1,3 +1,4 @@
+// 中文导读：ExtensionMode（tui/rpc/json/print）。
 package extension
 
 // ExtensionMode is the run mode pi is operating in, exposed to

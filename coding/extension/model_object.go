@@ -1,3 +1,4 @@
+// 中文导读：模型对象类型。
 package extension
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：native provider 类型。
 package extension
 
 import (

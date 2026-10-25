@@ -2,6 +2,7 @@
 // `builtin:<name>` extension paths of codemode and tool-search (docs/specs/builtin-codemode-tool-search.md).
 //
 // Ports packages/coding-agent/src/extensions/index.ts (builtInExtensions).
+// 中文导读：内置扩展：builtin；对应上游 packages/coding-agent/src/extensions/index.ts (builtInExtensions)。
 package builtin
 
 import (

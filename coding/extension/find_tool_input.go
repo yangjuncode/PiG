@@ -1,3 +1,4 @@
+// 中文导读：find 工具输入。
 package extension
 
 import "encoding/json"

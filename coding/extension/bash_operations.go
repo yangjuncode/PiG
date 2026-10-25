@@ -1,3 +1,4 @@
+// 中文导读：bash 操作类型。
 package extension
 
 import "context"

@@ -2,4 +2,5 @@
 //
 // Stock Pig ships this file empty. A Piglet Binary build may temporarily
 // generate imports for compatible extension packages and restores this file.
+// 中文导读：fused 扩展打包：registry_generated。
 package fusepack

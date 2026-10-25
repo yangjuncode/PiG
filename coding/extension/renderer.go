@@ -1,3 +1,4 @@
+// 中文导读：扩展渲染器类型。
 package extension
 
 import "github.com/MichaelKinsy/PiG/coding/extension/markdowntransform"

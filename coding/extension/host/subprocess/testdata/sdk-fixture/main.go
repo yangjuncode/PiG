@@ -5,6 +5,7 @@
 // The wire format mismatch bug (schema vs parameters, []string vs
 // []HandlerDecl) was only caught in production because no integration
 // test exercised the real SDK path. This fixture exists to close that gap.
+// 中文导读：子进程扩展宿主（D19）：扩展跑在独立进程，经 socket 帧协议与宿主通信；本目录是协议与宿主侧实现：main。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：聚合结果类型。
 package extension
 
 // BeforeAgentStartCombinedResult is the aggregated result from all

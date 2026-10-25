@@ -1,3 +1,4 @@
+// 中文导读：自定义消息类型。
 package extension
 
 import "encoding/json"

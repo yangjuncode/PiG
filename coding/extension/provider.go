@@ -1,3 +1,4 @@
+// 中文导读：扩展 Provider 类型（ProviderConfig/ProviderModelConfig 等）；对应上游 upstream's ProviderConfig 1:1。
 package extension
 
 import (

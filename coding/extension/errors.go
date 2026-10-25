@@ -1,3 +1,4 @@
+// 中文导读：扩展包错误定义。
 package extension
 
 import "errors"

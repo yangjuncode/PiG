@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：进程执行（windows）。
 package extension
 
 import "os"

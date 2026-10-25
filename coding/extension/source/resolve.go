@@ -1,5 +1,6 @@
 // Package source resolves an authorized extension path into one conventional
 // factory or exact isolated standalone definition.
+// 中文导读：扩展源：resolve。
 package source
 
 import (

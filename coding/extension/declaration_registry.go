@@ -1,3 +1,4 @@
+// 中文导读：声明注册表。
 package extension
 
 import (
