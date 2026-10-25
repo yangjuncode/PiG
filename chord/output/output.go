@@ -114,6 +114,10 @@ func lastIndexFrom(data []byte, from int) int {
 	return bytes.LastIndexByte(data[:from+1], outputNewline)
 }
 
+// 头保留窗口：先按行数截（扫到第 MaxLines 个 \n
+// 的位置），超字节上限再从 MaxBytes 处往回找最
+// 后一个 \n 按行切；没有 \n 就退到字符边界（不
+// 劈 UTF-8 序列）。
 func headRange(data []byte, limits OutputLimits) (int, int) {
 	if limits.MaxLines == 0 || limits.MaxBytes == 0 {
 		return 0, 0
@@ -138,6 +142,10 @@ func headRange(data []byte, limits OutputLimits) (int, int) {
 	return 0, end
 }
 
+// 尾保留窗口：先回扫行数——结尾 \n 是末行终结符
+// 不算新行起点，所以从 len-2 起扫；行数没截够再
+// 按字节窗口，窗口内第一个 \n 之后起步（取整行），
+// 整段无 \n 则对齐到字符起点。
 func tailRange(data []byte, limits OutputLimits) (int, int) {
 	if limits.MaxLines == 0 || limits.MaxBytes == 0 {
 		return len(data), len(data)
@@ -335,6 +343,10 @@ func (buffer *OutputBuffer) End() {
 	buffer.accept(buffer.decoder.decode(nil, false))
 }
 
+// 收块两路：先累计全流总量（统计 dropped 用）。
+// head 保留窗口满即 full——之后只计数不存储；
+// tail 保留逐块扔前导 chunk：剩余若仍超过窗口
+// +1（那 1 是留给窗口找行首的余量）就丢首块。
 func (buffer *OutputBuffer) accept(text string) bool {
 	if text == "" {
 		return false
