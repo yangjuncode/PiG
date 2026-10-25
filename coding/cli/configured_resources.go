@@ -229,6 +229,11 @@ func cliExtensionConfigs(resolved string, resolvers ...extsource.ResolveFunc) []
 		// extension, and a Package that yields none loads nothing.
 		return withCLISourceInfo(packageExtensionConfigs(resolved, resolvers...))
 	}
+	// -e 路径三级形态：文件直接解析成功→单扩
+	// 展；目录非 Package→按"目录内 extensions
+	// 集合"展开逐文件装载；两种都失败→带原始
+	// 错误的 configs（让上层报 "Extension path
+	// does not exist" 而非静默吞掉）。
 	configs := pathToExtConfigs(resolved, resolvers...)
 	if len(configs) > 0 && configs[0].ResolveError() == nil {
 		return withCLISourceInfo(configs)

@@ -690,6 +690,19 @@ func resolveToolSelection(flags Args, defaultTools, registryToolNames []string) 
 		toolModifiers = flags.Tools
 	}
 	// An explicit --tools list outranks --no-tools and --no-builtin-tools, as sdk.ts allowedToolNames = tools ?? (noTools === "all" ? [] : undefined) and initialActiveToolNames = tools ?? (noTools ? [] : defaults).
+	// 工具选择四路（与上游 sdk.ts 同构）：
+	// 1) 全是 +name/-name 修饰符 → 在默认集合
+	//    上增减，且可与 --no-tools/--no-builtin
+	//    叠加（以空集为底再增）；
+	// 2) --tools 显式列表（名字或 * 模式）→
+	//    列表即白名单，先按列表序取精确名，
+	//    模式命中的按注册表序补在后；
+	// 3) 仅 --no-tools → 全空但内建仍注册
+	//    （allowed 空集，后续修饰可开回）；
+	// 4) 默认 → 默认集合激活，--no-builtin
+	//    只是不激活内建而非不注册。
+	// 注意：显式 --tools 优先级高于 no-flags
+	// （上游 `tools ?? ...` 的短路语义）。
 	switch {
 	case toolModifiers != nil:
 		base := agentToolNames
