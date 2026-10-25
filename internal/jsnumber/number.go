@@ -152,6 +152,12 @@ func Parse(text string) float64 {
 			return parseInteger(text[2:], base)
 		}
 	}
+	// 十进制分支：剥符号后先特判 Infinity，再用
+	// decimalLiteral 做 ECMAScript StrUnsignedDecimalLiteral
+	// 文法检查（JS 的 Number() 不接受 Go ParseFloat 认的
+	// 部分形态如 "5." 之外的杂形/十六进制浮点），过文法
+	// 再转 Go 解析。ParseFloat 溢出到 Inf 时不算错误——
+	// ECMAScript 同样溢出为 ±Infinity。
 	unsigned := text
 	sign := 1.0
 	switch text[0] {

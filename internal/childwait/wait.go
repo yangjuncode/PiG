@@ -163,6 +163,12 @@ func waitIdle(done, activity <-chan struct{}, mayHoldOutput func() bool, hooks H
 		expired = wall.C
 		defer wall.Stop()
 	}
+	// 等待循环三路：done（所有 reader 到 EOF）→ 全读完
+	// 返回 true；activity（还有数据进）→ 重置宽限计时；
+	// expired（宽限到期）→ 查 mayHoldOutput：还有活的持有
+	// 者就放弃等待（返回 false，Wait 会丢弃未交付数据），
+	// 无持有者则说明管已关、readers 排完剩余即 EOF，等
+	// done 后仍按全读完返回。
 	for {
 		select {
 		case <-done:
