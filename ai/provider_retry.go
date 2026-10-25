@@ -123,6 +123,10 @@ func ConfiguredProviderRetry() (maxRetries, maxRetryDelayMs int) {
 // response was received (network failure), which upstream treats as an
 // undefined status and retries.
 func isRetryableProviderResponse(status int, headers http.Header) bool {
+	// 判定链（与上游 isRetryableProviderError 同序）：
+	//  1. x-should-retry 显式头优先——服务端可强制可重试或禁止；
+	//  2. status==0（无响应的网络失败）默认可重试；
+	//  3. 408/409/429/5xx 可重试，其余（4xx 认证/参数类）不可。
 	switch headers.Get("x-should-retry") {
 	case "true":
 		return true
@@ -184,6 +188,11 @@ func jsParseFloat(value string) float64 {
 // through to the next source. Server-requested delays are cap-validated; the exponential fallback is not (it never
 // exceeds 8s).
 func providerRetryDelay(headers http.Header, retryIndex, maxRetryDelayMs int, providerMsg string) (time.Duration, error) {
+	// 延迟来源三级仲裁：retry-after-ms（毫秒数）→ retry-after
+	// （秒或 HTTP 日期）→ 指数退避兜底 min(0.5*2^i, 8)s 向下
+	// 抖动 25%。服务器指定的延迟过 maxRetryDelayMs 上限直接
+	// 报错让用户可见；指数兜底永不超 8s 故不需要上限校验。
+	// 头值非有限数（NaN/Inf）视为"没提供"落到下一级。
 	if v := headers.Get("retry-after-ms"); v != "" {
 		if ms := jsParseFloat(v); !math.IsNaN(ms) && !math.IsInf(ms, 0) {
 			return validateServerRetryDelay(ms, maxRetryDelayMs, providerMsg)
@@ -267,6 +276,10 @@ func RetryProviderRequest[T any](ctx context.Context, request func() (T, error),
 		if err == nil {
 			return value, nil
 		}
+		// 失败分类链：ctx 已取消 → AbortError（不重试，把上游
+		// 的"取消不是可重试错误"语义钉死）；预算耗尽或非
+		// ProviderRequestError → 原样返回；判定不可重试或在
+		// NoRetryStatuses 黑名单 → 原样返回；否则按退避睡后重试。
 		if ctx.Err() != nil {
 			return zero, errProviderRequestAborted
 		}
@@ -322,6 +335,9 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// response (a 503 with Connection: close). Each retry therefore sends its
 	// own clone with a fresh body and never writes req.Body.
 	attemptReq := req
+	// 重试循环（镜像上游 retryProviderRequest）：取消优先于可
+	// 重试分类；2xx 直接成功；预算/可重试性/可重放 body 三道
+	// 闸门都过了才计算延迟、排空响应、克隆请求重发。
 	for {
 		resp, err := t.base.RoundTrip(attemptReq)
 
@@ -349,6 +365,7 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 
 		// Retrying re-sends the request body; skip if it cannot be rewound.
+		// 不能倒带的 body（GetBody==nil）放弃重试——重发会送空体。
 		if req.Body != nil && req.GetBody == nil {
 			return resp, err
 		}
@@ -362,6 +379,8 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		retryIndex := maxRetries - retriesRemaining
 		delay, delayErr := providerRetryDelay(headers, retryIndex, maxRetryDelayMs, providerMsg)
 		if delayErr != nil {
+			// 服务器要求的延迟超限：错误要带上响应状态码和 body
+			// 原文——上层按"服务端消息+请求详情"格式拼错误。
 			if exceeded, ok := errors.AsType[*providerRetryDelayError](delayErr); ok && resp != nil {
 				exceeded.status = resp.StatusCode
 			}
@@ -387,6 +406,9 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			return nil, delayErr
 		}
 
+		// 重试前的三件固定动作：排空并关闭响应体（连接复用
+		// 前提）、克隆请求并重建 body（GetBody 保证可重放）、
+		// 可中断的退避睡眠。
 		drainClose(resp)
 		attemptReq = req.Clone(req.Context())
 		if req.GetBody != nil {
