@@ -1,3 +1,4 @@
+// 中文导读：早期模型流：Session 完全就绪前即可启动的模型流路径。
 package coding
 
 import (

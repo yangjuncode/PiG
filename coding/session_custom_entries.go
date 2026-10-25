@@ -1,3 +1,4 @@
+// 中文导读：AppendCustomEntry：把扩展自有数据记为 custom 条目并发 entry_appended 事件——pi.appendEntry() 的 session 侧。
 package coding
 
 import "github.com/MichaelKinsy/PiG/agent"

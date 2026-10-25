@@ -1,3 +1,4 @@
+// 中文导读：ModelRegistry 的同步门面（model-registry.ts constructor(runtime)）：对 runtime 持有的异步注册表提供同步访问。
 package coding
 
 // Ports packages/coding-agent/src/core/model-registry.ts.

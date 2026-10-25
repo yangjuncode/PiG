@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/session-manager.ts.
 
+// 中文导读：session-manager.ts 的移植：会话文件的创建/枚举/切换门面。
 package coding
 
 import (

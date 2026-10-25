@@ -1,3 +1,4 @@
+// 中文导读：Session 扩展核心绑定的一部分（agent-session.ts）：把 session 能力挂到扩展上下文。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts.

@@ -1,3 +1,4 @@
+// 中文导读：Session 替换路径（agent-session.ts）：替换时取消并 drain 旧工作、迁移扩展绑定——coding/AGENTS.md 的核心契约。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts.

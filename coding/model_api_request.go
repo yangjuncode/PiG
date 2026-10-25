@@ -1,3 +1,4 @@
+// 中文导读：按模型/API 发请求的公共路径。
 package coding
 
 import (

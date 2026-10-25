@@ -1,3 +1,4 @@
+// 中文导读：Session 的图像处理：输入图片经 imageprocessing 归一后进入消息。
 package coding
 
 import (

@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/agent-session.ts extendResourcesFromExtensions and buildExtensionResourcePaths.
 
+// 中文导读：extendResourcesFromExtensions 与 buildExtensionResourcePaths（agent-session.ts）：把扩展声明的资源并入会话资源。
 package coding
 
 import (

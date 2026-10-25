@@ -1,3 +1,4 @@
+// 中文导读：Session 扩展 runner 的装配入口。
 package coding
 
 import (

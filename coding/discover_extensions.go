@@ -1,3 +1,4 @@
+// 中文导读：扩展发现：扫描 Packages/settings 声明与附加路径下的扩展源，交给 subprocess host 加载。
 package coding
 
 import (

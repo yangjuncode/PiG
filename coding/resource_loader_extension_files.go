@@ -1,3 +1,4 @@
+// 中文导读：resource-loader.ts reload(:513-600) 的扩展半边：Packages 与 settings 声明的扩展路径连同附加路径作为同一批加载。
 package coding
 
 // Ports the extension half of packages/coding-agent/src/core/resource-loader.ts reload (:513-600): the extension paths of the Packages and

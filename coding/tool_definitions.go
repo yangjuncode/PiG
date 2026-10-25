@@ -1,3 +1,4 @@
+// 中文导读：内置工具定义工厂（tools/{edit,find,grep,ls,powershell,read,write}.ts 的 create<Tool>ToolDefinition；bash 走 tools.CreateBashToolDefinition）。
 package coding
 
 // Ports packages/coding-agent/src/core/tools/{edit,find,grep,ls,powershell,read,write}.ts create<Tool>ToolDefinition for the tools whose definition has no extra shape; createBashToolDefinition is tools.CreateBashToolDefinition.

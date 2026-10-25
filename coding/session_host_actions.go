@@ -1,3 +1,4 @@
+// 中文导读：Session 宿主动作：扩展在 Session 就绪前调用时返回 ErrSessionNotReady。
 package coding
 
 import (

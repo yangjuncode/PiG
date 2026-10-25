@@ -1,3 +1,4 @@
+// 中文导读：Session 为其扩展绑定的核心集合（agent-session.ts _bindExtensionCore :3275-3408）：CLI 各模式与 createAgentSession 建的 Session 共享这套绑定——UI context、命令动作、模型/工具/资源回调等。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts _bindExtensionCore (:3275-3408): what a Session binds for its extensions in every mode. The CLI modes and a Session created by createAgentSession share these bindings.

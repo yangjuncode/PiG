@@ -1,3 +1,4 @@
+// 中文导读：ExtensionBindings：session_start 派发前 mode 提供的 UI/命令动作/处理器（agent-session.ts:300-307）。零值字段等价 Pi 的 undefined——BindExtensions 为其保留旧值。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts.

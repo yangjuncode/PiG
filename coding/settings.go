@@ -1,3 +1,4 @@
+// 中文导读：coding 层 settings 入口。
 package coding
 
 import icodingagent "github.com/MichaelKinsy/PiG/internal/codingagent"

@@ -1,3 +1,4 @@
+// 中文导读：ObserveReplicatedState：扩展运行时复制的 Session 状态（活跃模型、思考等级、会话名、settings）发生未经扩展调用通报的变化时回调观察者。观察者必须立即返回且不得回调 Session/settings；多次调用返回的移除函数安全。
 package coding
 
 // ObserveReplicatedState registers observe to run after a change to Session state that an extension runtime replicates and that no extension call announced: the active model (set, cycled, restored with a replaced Session, or refreshed from the registry), the thinking level, the session name (set, or replaced with the Session) and the settings.

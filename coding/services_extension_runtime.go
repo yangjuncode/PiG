@@ -1,3 +1,4 @@
+// 中文导读：Services 层把扩展运行时接进模型运行时：provider 注册表等的合并视图。
 package coding
 
 import (

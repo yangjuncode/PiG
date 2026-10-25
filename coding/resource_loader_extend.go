@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.getExtensions, getThemes, extendResources and loadProjectTrustExtensions, with the themes half of reload.
 
+// 中文导读：DefaultResourceLoader 的扩展/主题资源加载（resource-loader.ts 的 getExtensions、getThemes、extendResources、loadProjectTrustExtensions 与 reload 的主题半边）。
 package coding
 
 import (

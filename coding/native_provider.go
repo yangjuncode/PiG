@@ -1,3 +1,4 @@
+// 中文导读：native provider 的运行时注册（model-runtime.ts）：把 Go 实现的 provider 挂到运行时供模型使用。
 package coding
 
 // Ports packages/coding-agent/src/core/model-runtime.ts

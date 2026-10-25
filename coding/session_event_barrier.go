@@ -1,3 +1,4 @@
+// 中文导读：sessionEventBarrier：内部 FIFO 栅格标记（非 agent/wire 事件），用于让事件消费者在某点之前对齐。
 package coding
 
 import (

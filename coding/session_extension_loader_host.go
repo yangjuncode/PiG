@@ -1,3 +1,4 @@
+// 中文导读：为 resource loader 启动的 Extension Host 绑定 _bindExtensionCore（agent-session.ts:3275-3408）。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts _bindExtensionCore (:3275-3408) for the Extension Host a resource loader started.

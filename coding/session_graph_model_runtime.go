@@ -1,5 +1,6 @@
 // pig-specific: serves Pi's ModelRuntime (packages/coding-agent/src/core/model-runtime.ts) to the Go, Python and Rust extension SDKs as a host-owned object an extension names by handle. The object is this package's ModelRuntime, the one the Session uses, built over its own credential and model files. Every method answers Pi's result in the JSON shape Pi's types have. A Provider object (getProviders, getProvider, getRegisteredNativeProvider, registerNativeProvider) and a provider configuration with functions are not served: they hold code the host cannot run on the extension's behalf (the Provider surface D78 records).
 
+// 中文导读：把 Session 的 ModelRuntime 以 host 持有的对象形式服务给 Go/Python/Rust 扩展 SDK（扩展按 handle 引用）。pig 特有：对象即本包的 ModelRuntime，方法返回 Pi 类型的 JSON 形状；Provider 对象与带函数的 provider 配置不服务——那是 D78 记录的宿主无法代扩展执行代码的面。
 package coding
 
 import (

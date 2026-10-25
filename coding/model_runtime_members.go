@@ -1,3 +1,4 @@
+// 中文导读：model-runtime.ts 的 provider/注册/凭证/auth 成员（getProviders、getAllAvailable、getAuth、getCompatibilityRequestConfig、register/unregister 系列）与 ModelRegistry.isUsingOAuth。
 package coding
 
 // Ports the provider, registration, credential and auth members of packages/coding-agent/src/core/model-runtime.ts (getProviders, getAllAvailable, getAuth, getCompatibilityRequestConfig, getRegisteredNativeProvider, getRegisteredProviderConfig, getRegisteredProviderIds, listCredentials, setRuntimeApiKey, removeRuntimeApiKey, unregisterProvider) and ModelRegistry.isUsingOAuth of model-registry.ts.

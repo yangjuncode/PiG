@@ -1,3 +1,4 @@
+// 中文导读：agentEventHold：把 Agent 停在 Session 事件监听器处直到放行——用于会话替换等需要在旧监听器排出事件后再继续的同步点。
 package coding
 
 import "sync"

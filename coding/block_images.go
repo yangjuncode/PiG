@@ -1,3 +1,4 @@
+// 中文导读：images.blockImages 的实现（sdk.ts convertToLlmWithBlockImages）：user/toolResult 中的图片替换为 'Image reading is disabled.' 文本。
 package coding
 
 import "github.com/MichaelKinsy/PiG/ai"

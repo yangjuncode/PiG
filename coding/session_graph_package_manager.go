@@ -1,5 +1,6 @@
 // pig-specific: serves Pi's DefaultPackageManager (packages/coding-agent/src/core/package-manager.ts) to the Go, Python and Rust extension SDKs as a host-owned object an extension names by handle. The object is the runtime's own package manager over the settings object it was given. The Node runtime serves Pi's own class in the extension process.
 
+// 中文导读：把运行时的 DefaultPackageManager 以 host 对象形式服务给扩展 SDK；Node 运行时服务 Pi 自己的类。
 package coding
 
 import (

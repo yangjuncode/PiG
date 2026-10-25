@@ -109,4 +109,9 @@
 //   - examples/sdk/main.go: minimal embedding example
 //   - [agent]: agent loop + tool primitives
 //   - [ai]: provider-agnostic LLM types and OAuth flows
+//
+// 中文导读：coding 是把 pig 编码代理嵌入为 Go 库的公共 SDK——
+// Session/ModelRuntime/资源加载/扩展绑定都在这里组装（内部实现
+// 大量复用 internal/codingagent）。一个 Session 对应一个
+// ModelRuntime（coding/AGENTS.md），会话替换要取消并 drain 旧工作。
 package coding

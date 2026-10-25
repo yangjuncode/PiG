@@ -1,5 +1,6 @@
 // pig-specific: serves Pi's DefaultResourceLoader (packages/coding-agent/src/core/resource-loader.ts) to the Go, Python and Rust extension SDKs as a host-owned object an extension names by handle. The object is the runtime's own *DefaultResourceLoader, so a session created from it reads the resources it loaded. The Node runtime serves Pi's own class in the extension process.
 
+// 中文导读：把运行时的 DefaultResourceLoader 以 host 对象形式服务给扩展 SDK（按 handle 引用）；由它创建的 Session 读到的是它加载的资源。Node 运行时则直接服务 Pi 自己的类。
 package coding
 
 import (

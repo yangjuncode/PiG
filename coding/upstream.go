@@ -3,6 +3,10 @@
 // them. The pin lives in .upstream/pin; `make pin-bump PI_UPSTREAM_REF=<tag|commit>`
 // regenerates internal/coding/pigversion/pigversion.go and every other derived file,
 // then the upgrade workflow in piglets/porter/skills/pig-porter/SKILL.md applies.
+//
+// 中文导读：上游 pin 的常量出口。.upstream/pin 是唯一事实源；
+// `make pin-bump PI_UPSTREAM_REF=<tag|commit>` 重新生成
+// pigversion.go 及所有派生文件，本文件只做 re-export。
 package coding
 
 import "github.com/MichaelKinsy/PiG/internal/coding/pigversion"

@@ -1,3 +1,4 @@
+// 中文导读：扩展 flag 值应用：把 ServicesOptions.ExtensionFlagValues 按已加载扩展注册的 flag 校验并下发。
 package coding
 
 import (

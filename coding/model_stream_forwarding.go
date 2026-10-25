@@ -1,3 +1,4 @@
+// 中文导读：provider-composer.ts 与 ai lazy.ts 的移植：组合 provider 的事件转发。
 package coding
 
 // Ports packages/coding-agent/src/core/provider-composer.ts

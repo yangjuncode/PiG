@@ -1,5 +1,6 @@
 // pig-specific: serves the classes an extension builds around a Pi session (SessionManager, SettingsManager, DefaultResourceLoader, DefaultPackageManager, ProjectTrustStore, ModelRuntime) to the Go, Python and Rust extension SDKs. The Node runtime serves Pi's own classes.
 
+// 中文导读：把围绕一个 Pi 会话的各管理器（SessionManager、SettingsManager、DefaultResourceLoader、DefaultPackageManager、ProjectTrustStore、ModelRuntime）服务给扩展 SDK。
 package coding
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime/ModelRegistry 的 classify 操作：用 classifier 模型跑分类任务。
 package coding
 
 // Ports the classifier operation of packages/coding-agent/src/core/model-runtime.ts (classify) and packages/coding-agent/src/core/model-registry.ts (classify).

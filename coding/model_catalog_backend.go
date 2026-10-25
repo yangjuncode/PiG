@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 的目录后端接线（model-runtime.ts）。
 package coding
 
 // Ports packages/coding-agent/src/core/model-runtime.ts.

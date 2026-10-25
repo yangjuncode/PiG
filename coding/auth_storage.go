@@ -1,3 +1,4 @@
+// 中文导读：readStoredCredential 的导出（auth-storage.ts，index.ts:26）。
 package coding
 
 import (

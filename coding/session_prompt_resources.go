@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/agent-session.ts.
 
+// 中文导读：prompt 资源的扩展绑定（agent-session.ts）：提示词相关资源路径经扩展回调解析。
 package coding
 
 import (

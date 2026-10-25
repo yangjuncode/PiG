@@ -1,3 +1,4 @@
+// 中文导读：model-runtime.ts 与 model-registry.ts 的 native provider 注册部分：ProviderConfigInput 等注册入口。
 package coding
 
 // Ports packages/coding-agent/src/core/model-runtime.ts and packages/coding-agent/src/core/model-registry.ts.

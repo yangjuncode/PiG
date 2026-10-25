@@ -1,3 +1,4 @@
+// 中文导读：Session 状态访问器（agent-session.ts state accessors）：SteeringMode/FollowUpMode 等透传到 agent。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session.ts (state accessors).

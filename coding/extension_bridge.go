@@ -15,6 +15,7 @@
 // Ports packages/coding-agent/src/core/extensions/wrapper.ts.
 // Ports packages/coding-agent/src/core/tools/tool-definition-wrapper.ts.
 
+// 中文导读：extension.RegisteredTool → agent.AgentTool 的适配桥：两接口参数/结果形状不同（TypeBox json.RawMessage vs AgentToolResult），本文件负责 schema marshal。适配器持有工具的值拷贝而不持 runner 引用——staleness 是 runner 的职责。
 package coding
 
 import (

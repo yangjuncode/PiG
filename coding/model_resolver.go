@@ -1,3 +1,4 @@
+// 中文导读：模型范围解析（model-resolver.ts）：resolveCliModel 与 resolveModelScope(+Diagnostics)——把 'provider/model' 或 scope 模式解析为具体模型，带诊断。
 package coding
 
 // Ports packages/coding-agent/src/core/model-resolver.ts (resolveCliModel, resolveModelScopeWithDiagnostics, resolveModelScope).

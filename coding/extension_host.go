@@ -1,3 +1,4 @@
+// 中文导读：ExtensionHost：Session 所持 runner 背后的扩展宿主。Pi 的扩展跑在同进程，mode 只经 AgentSession 触及；Pig 的文件扩展跑在子进程（D19），进程控制（EndInput/HoldRetirements/TerminateProcesses）作用于创建该 Session 的进程的全部宿主，含已替换 Session 的宿主（D70）——Pi 单进程无对应物。
 package coding
 
 import (

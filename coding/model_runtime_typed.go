@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 的 typed 访问器与图像生成（model-runtime.ts 的 getModelsOfType/getModelOfType/getAllModels/getAvailableOfType/getProvider/getAuth(model)/generateImages）。
 package coding
 
 // Ports the typed model accessors and image generation of packages/coding-agent/src/core/model-runtime.ts (getModelsOfType, getModelOfType, getAllModels, getAvailableOfType, getProvider, getAuth(model), generateImages).

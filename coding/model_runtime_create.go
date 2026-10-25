@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 的构造（model-runtime.ts:67-82,173-226）：文件路径、目录存储与初始刷新行为的选项与装配。
 package coding
 
 // Ports packages/coding-agent/src/core/model-runtime.ts:67-82,173-226.

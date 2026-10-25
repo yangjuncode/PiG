@@ -1,3 +1,4 @@
+// 中文导读：已注册 stream provider 的适配：extension 注册的 provider 接到 ai.ModelsStreamFunction。
 package coding
 
 import (

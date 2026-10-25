@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 的模型选择辅助。
 package coding
 
 import "github.com/MichaelKinsy/PiG/tui"

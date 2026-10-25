@@ -1,3 +1,4 @@
+// 中文导读：Session 的 scoped 模型：会话内可选模型子集的维护与快照（jsstring 处理 JS 字符串语义）。
 package coding
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：SummarizeForBugReport：让会话模型生成 bug 报告摘要（compaction 包实现）。
 package coding
 
 import (

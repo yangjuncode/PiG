@@ -1,3 +1,4 @@
+// 中文导读：client-identity.ts 的移植：请求带 PiG 版 User-Agent，安装遥测开启时归因为 PiG CLI agent。
 package coding
 
 // Ports packages/coding-agent/src/core/client-identity.ts.

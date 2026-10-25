@@ -1,3 +1,4 @@
+// 中文导读：createAgentSession 的实现：模型选择（已保存且有 auth 的模型，否则初始模型）、工具选择（tools/excludeTools/noTools 与 +/-name 修饰符）与 Session 构造——对应 agent-session-services.ts 与 sdk.ts 委托的步骤。
 package coding
 
 // Ports packages/coding-agent/src/core/agent-session-services.ts createAgentSessionFromServices and the createAgentSession steps of sdk.ts

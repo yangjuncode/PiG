@@ -1,3 +1,4 @@
+// 中文导读：内置工具定义注册辅助。
 package coding
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

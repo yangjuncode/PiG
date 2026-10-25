@@ -1,3 +1,4 @@
+// 中文导读：compaction 公共类型的 re-export（CompactionSettings 等，对应 upstream index.ts 导出）。
 package coding
 
 import (
