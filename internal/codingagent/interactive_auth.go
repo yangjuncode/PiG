@@ -273,6 +273,12 @@ func (m *InteractiveMode) selectOAuthLoginMethod(provider ai.OAuthProviderInterf
 	return prompt.Options[index].ID, true
 }
 
+// 登录入口三级能力探测：provider 实现的接口
+// 越具体给它越多的上下文——能收交互对象的
+// （浏览器/设备码回调）走 LoginInteraction
+// 并附 LoginOptions；只能收回调集合的走
+// LoginContext；最基础的只给 callbacks。
+// 逐级回退保证老 provider 不被新接口要求卡死。
 func runOAuthProviderLogin(ctx context.Context, provider ai.OAuthProviderInterface, callbacks ai.OAuthLoginCallbacks, interaction ai.AuthInteraction) (ai.OAuthCredentials, error) {
 	if native, ok := provider.(oauthInteractionLogin); ok {
 		// Pi passes the app's LoginOptions with the interaction (interactive-mode.ts:6331, models.ts:776).

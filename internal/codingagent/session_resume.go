@@ -263,6 +263,13 @@ func nanToZero(v float64) float64 {
 }
 
 // feed applies one line (without terminator) in file order, as Pi's buildSessionInfo does per line. sawName is set when a session_info line sets the name.
+// 喂行两级快路：空行早退；header 已见且开
+// fast 时，toolResult 消息行只做 count++
+// 不解码——会话列表要的是计数和首尾文本，
+// 工具结果正文大又不影响摘要，跳过全量
+// JSON 解析省 99% 的解码成本。非快路先走
+// feedMessageLine 的流式识别，识别不了再
+// 整行解码兜底。
 func (p *summaryPartial) feed(line []byte, fast bool, sawName *bool) error {
 	if len(bytes.TrimFunc(line, isJSWhitespace)) == 0 {
 		return nil
@@ -302,6 +309,11 @@ func (p *summaryPartial) feedDecoded(line []byte, hasHeader bool, sawName *bool)
 			return nil
 		}
 	}
+	// 头行把关：第一个非空解码行必须是
+	// {"type":"session"} 对象——不是则整个
+	// 文件视为已损坏/非会话文件，返回
+	// errSessionDropped 让汇总器丢弃它（上游
+	// buildSessionInfo 同样以首行类型判活）。
 	entry, isObject := value.(map[string]any)
 	if !hasHeader {
 		if !isObject || entry["type"] != "session" {
