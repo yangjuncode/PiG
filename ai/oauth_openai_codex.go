@@ -361,6 +361,21 @@ func pollCodexDeviceAuth(ctx context.Context, device codexDeviceAuthInfo) (codex
 }
 
 // codexPollStep is one poll of the device token endpoint (the poll callback of pollOpenAICodexDeviceAuth).
+// 单轮轮询分派四档：
+//   - 2xx：批准完成，但授权码+校验器缺一
+//     即视为畸形响应失败（拿半份换不出
+//     token）；
+//   - 403/404：用户还没在浏览器里批准，
+//     继续等；
+//   - 错误体再分 deviceauth_authorization
+//     _pending（继续等）和 slow_down（服
+//     务端要求拉长间隔——通用轮询器按它
+//     退避）；
+//   - 其余状态：失败并带状态码+正文摘要。
+//
+// 注意"等"有两种来源：HTTP 状态码本身
+// 和错误体里的 code，两者都归一到
+// Pending。
 func codexPollStep(ctx context.Context, device codexDeviceAuthInfo) (DeviceCodePollResult[codexDeviceToken], error) {
 	{
 		{

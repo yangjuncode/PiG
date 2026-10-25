@@ -642,6 +642,13 @@ func convertResponsesToolResultOutput(content []ToolResultMessageContent, modelS
 	var first string
 	var images []ImageContent
 	textBlocks := 0
+	// 文本拼接延迟写：第一块先存 first 不
+	// 进 Builder——只有一个文本块时 joined
+	// 就是 first 本身，字符串身份不变，
+	// requestStrings 缓存按身份命中同一
+	// 字符串（拷贝一份就命不中）。第二块
+	// 出现才把 first 写进 Builder 并开始
+	// 逐块 \n 拼接。
 	for _, block := range content {
 		switch block := block.(type) {
 		case TextContent:
