@@ -59,6 +59,13 @@ func discoverExtensionPaths(configuredPaths []string, cwd, agentDir string) ([]s
 			}
 		}
 	}
+	// 加载顺序：项目 <cwd>/<configdir>/extensions → 全局
+	// <agentDir>/extensions → 各配置路径。seen 按解析后的
+	// 绝对路径去重但保留首次出现的写法（上游语义：第一
+	// 处声明胜出）。
+	// 配置路径的目录有三种形态：package.json pi.extensions
+	// 声明入口 → 只取声明的；普通扩展目录 → 一层扫描；
+	// 否则当单文件直接加入。
 	addPaths(discoverExtensionsInDir(filepath.Join(resolvedCwd, icodingagent.ConfigDirName(), "extensions")))
 	addPaths(discoverExtensionsInDir(filepath.Join(resolvedAgentDir, "extensions")))
 	for _, p := range configuredPaths {

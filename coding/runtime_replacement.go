@@ -280,6 +280,13 @@ func beforeResultCancelled(result any) bool {
 // 调用全部拒绝）→ Session.Close（关运行时）→ retireResources（
 // 工厂级资源回收）。任何一步失败替换中止，旧会话仍归当前。
 // It disposes the outgoing Session as Pi's session.dispose() does, which leaves the Session able to run a prompt, so a replacement that then fails keeps the disposed Session as the Runtime's, as Pi does. The caller closes it once the replacement applied.
+// teardownCurrent 按序拆旧会话：先 drain 模式持有的收尾
+// 工作（TUI 挂起的对话框等），再 Abort 正在跑的请求，
+// 然后对扩展发 session_shutdown（reason+目标文件供诊断），
+// beforeSessionInvalidate 让 UI 先摘掉旧视图引用，
+// runner.Invalidate 断开扩展→旧会话的回链，Dispose 释放
+// 会话资源，最后 retireResources 把旧实例登记为退休。
+// 任一步失败即中止替换——上游同样不允许半拆的会话继续。
 func (rt *Runtime) teardownCurrent(ctx context.Context, reason, target string) error {
 	current := rt.replacement.current.Load()
 	session := current.Session

@@ -75,6 +75,10 @@ type treeBranchSummary struct {
 // labels that entry; otherwise it moves the leaf (nil resets it to the root)
 // and labels the target. It returns the summary entry id, if one was created.
 // The caller holds s.mu.
+// 树导航落点两路：有摘要 → BranchWithSummary 新分支（摘要
+// 条目成为新叶子，label 标在它上）；无摘要 → 仅 SetLeafID
+// 挪动现有分支指针，label 挂在导航目标条目上。label 追加
+// 失败时摘要分支已建——返回 summaryID 让上层仍能引用它。
 func (s *Session) moveTreeLeaf(targetID string, newLeafID *string, summary *treeBranchSummary, label string) (string, error) {
 	if summary != nil && summary.Summary != "" {
 		summaryID, err := s.inner.BranchWithSummary(newLeafID, summary.Summary, summary.Details, summary.FromExtension, summary.Usage)
