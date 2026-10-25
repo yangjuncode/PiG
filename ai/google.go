@@ -533,6 +533,12 @@ func geminiConvertMessages(messages []Message, providerID, modelID string, suppo
 	// An empty conversation is `contents: []` in the request, not null.
 	contents := []geminiContent{}
 	// pig divergence (D115): Pi pushes a Gemini 2.x result's image turn before the next result, which splits the function-response turn of parallel calls; the image turns wait until the next turn that is not a function response and keep result order.
+	// D115：旧版 Gemini（不支持多模态 functionResponse）的
+	// 工具结果图片拆成独立 user 轮次，但必须先等本组
+	// functionResponse 轮次完整发出——否则图片轮会插进并行
+	// 调用结果中间，把本应连续的 functionResponse 组劈开。
+	// imageTurns 缓存这些图片轮，flushImageTurns 在下一个
+	// 非 functionResponse 消息前释放。
 	var imageTurns []geminiContent
 	flushImageTurns := func() {
 		contents = append(contents, imageTurns...)
@@ -560,6 +566,10 @@ func geminiConvertMessages(messages []Message, providerID, modelID string, suppo
 				contents = append(contents, geminiContent{Role: "user", Parts: parts})
 			}
 		case AssistantMessage:
+			// sameProviderAndModel 是 thoughtSignature 可信的前提：
+			// 签名是 provider 加密绑定到具体模型的，跨 provider/
+			// 模型回放过去会被拒绝——非本模型产出的 thinking/
+			// textSignature 一律剥掉（thinking 降级为纯 text）。
 			sameProviderAndModel := message.Provider == providerID && message.Model == modelID
 			var parts []geminiPart
 			for _, block := range message.Content {
@@ -649,6 +659,9 @@ func geminiConvertMessages(messages []Message, providerID, modelID string, suppo
 					response.ID = result.ToolCallID
 				}
 				responsePart := geminiPart{FunctionResponse: response}
+				// 连续 functionResponse 合并进同一个 user content：
+				// Gemini 要求一次并行工具调用的所有结果在同一个
+				// functionResponse 组里，不能拆成多条 content。
 				last := len(contents) - 1
 				if last >= 0 && contents[last].Role == "user" && len(contents[last].Parts) > 0 && contents[last].Parts[0].FunctionResponse != nil {
 					contents[last].Parts = append(contents[last].Parts, responsePart)
