@@ -75,10 +75,13 @@ func newJSAsyncGenerator[T any](executor *continuationExecutor, body func(*jsGen
 // next is generator.next(). The body starts or resumes synchronously in the caller's stack when the generator is suspended; otherwise the request queues.
 func (generator *jsAsyncGenerator[T]) next() *jsPromise[jsIterResult[T]] {
 	promise := newJSPromise[jsIterResult[T]](generator.executor)
+	// 已完成的 generator 对 next() 立即返回 {done:true}（spec 快速路径）。
 	if generator.state == jsGeneratorCompleted {
 		promise.resolve(jsValue(jsIterResult[T]{done: true}))
 		return promise
 	}
+	// 请求一律先入队；只有 generator 处于挂起点（启动前或 yield 处）
+	// 才立刻恢复——正在执行时 next() 只排队，由后续 drainQueue 兑现。
 	request := &jsGeneratorRequest[T]{kind: jsGeneratorNext, promise: promise}
 	generator.queue = append(generator.queue, request)
 	if generator.state == jsGeneratorSuspendedStart || generator.state == jsGeneratorSuspendedYield {
@@ -92,6 +95,9 @@ func (generator *jsAsyncGenerator[T]) returnWith(value jsOperand[T]) *jsPromise[
 	promise := newJSPromise[jsIterResult[T]](generator.executor)
 	request := &jsGeneratorRequest[T]{kind: jsGeneratorReturn, value: value, promise: promise}
 	generator.queue = append(generator.queue, request)
+	// 三种状态三条路径：未启动/已完成 → 不需碰 body，直接 await
+	// 返回值并完成（AwaitReturn）；挂在 yield → 以 return 完成
+	// 恢复 body（body 的 finally 会先跑）；执行中 → 排队即可。
 	switch generator.state {
 	case jsGeneratorSuspendedStart, jsGeneratorCompleted:
 		generator.state = jsGeneratorAwaitingReturn
@@ -134,6 +140,10 @@ func (generator *jsAsyncGenerator[T]) resume(request *jsGeneratorRequest[T]) {
 	if generator.co == nil {
 		var result T
 		var failure error
+		// body 退出时按失败类型分路：正常返回 → 用返回值兑现；
+		// return 完成（包成 jsGeneratorReturnCompletion）→ 用
+		// await 过的返回值兑现；真错误 → reject。然后 drainQueue
+		// 兑现排队请求。
 		generator.co = newJSCoroutine(generator.executor, func(co *jsCoroutine) {
 			result, failure = generator.body(&jsGeneratorBody[T]{jsCoroutine: co, generator: generator})
 		}, func() {
@@ -201,11 +211,16 @@ func (generator *jsAsyncGenerator[T]) awaitReturn() {
 
 // yield is `yield operand`. It awaits the operand, resolves the oldest request with it, and then either continues at once when another request is queued or suspends. It returns nil for next, the thrown error for throw, and a *jsGeneratorReturnCompletion for return, after awaiting the returned value. An awaiting failure at the yield returns the rejection.
 func (body *jsGeneratorBody[T]) yield(operand jsOperand[T]) error {
+	// yield 先 await 操作数（15.6.2：async generator 的 yield
+	// 会 await 其操作数，失败则以 rejection 返回）。
 	value, err := jsAwait(body, operand)
 	if err != nil {
 		return err
 	}
 	generator := body.generator
+	// suspend 的 step 决定挂起还是立即续跑：先兑现队首请求
+	// （{value,done:false}），队列还有请求就把恢复方式记到
+	// resumption 并立即续跑；否则标记 SuspendedYield 真正挂起。
 	body.suspend(func() bool {
 		generator.completeStep(value, nil, false)
 		if len(generator.queue) != 0 {
@@ -215,6 +230,10 @@ func (body *jsGeneratorBody[T]) yield(operand jsOperand[T]) error {
 		generator.state = jsGeneratorSuspendedYield
 		return false
 	})
+	// 恢复方式在 body 视角的体现：next → nil 继续执行；
+	// throw → 返回错误（像异常在 yield 点抛出）；return →
+	// 先 await 返回值再包装成 return 完成上抛（body 的 defer
+	// 像 finally 一样先跑）。
 	switch request := generator.resumption; request.kind {
 	case jsGeneratorThrow:
 		return request.err

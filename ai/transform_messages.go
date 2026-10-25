@@ -54,6 +54,8 @@ func SplitErrorToolResultImages(message ToolResultMessage) *SplitErrorToolResult
 
 func replaceImagesWithPlaceholder[T ContentBlock](content []T, placeholder string) []TextContent {
 	result := make([]TextContent, 0, len(content))
+	// 连续图片块合并成一个占位符；内容里已有同文占位符的文本块
+	// 也算占位（previousWasPlaceholder 避免占位符后跟图再补一个）。
 	previousWasPlaceholder := false
 	for _, value := range content {
 		switch block := any(value).(type) {
@@ -135,6 +137,7 @@ func TransformMessages(messages []Message, model *Model, normalizeToolCallId fun
 			}
 			transformed = append(transformed, message)
 		case ToolResultMessage:
+			// 快路径：内容无需改写且 ID 未被改写 → 原值透传。
 			if id := toolCallIdMap[message.ToolCallID]; (supportsImages && message.Content != nil || textBlocksOnly(message.Content)) && (id == "" || id == message.ToolCallID) {
 				transformed = append(transformed, value)
 				continue
@@ -150,11 +153,15 @@ func TransformMessages(messages []Message, model *Model, normalizeToolCallId fun
 				}
 				message.Content = result
 			}
+			// tool call 的 ID 可能已被 normalizeToolCallId 改写
+			// （换 provider 时 ID 格式不同）——result 跟随映射。
 			if id := toolCallIdMap[message.ToolCallID]; id != "" && id != message.ToolCallID {
 				message.ToolCallID = id
 			}
 			transformed = append(transformed, message)
 		case AssistantMessage:
+			// "同模型"判定三连：provider、API、model ID 全等才算——
+			// 签名/加密 thinking 只对产生它的模型有效。
 			sameModel := message.Provider == model.ProviderMeta.ProviderID && message.API == model.ProviderMeta.API && message.Model == model.ID
 			if sameModel && sameModelBlocksUnchanged(message.Content) {
 				transformed = append(transformed, value)
@@ -167,6 +174,9 @@ func TransformMessages(messages []Message, model *Model, normalizeToolCallId fun
 					// Another model's thinking is dropped: signatures and encrypted reasoning only work for the model that produced them, and
 					// readable thinking sent as text makes the new model treat it as part of its reply (transform-messages.ts:129-137, Pi #11000).
 					// Redacted and signed thinking of the same model stays even when its text is empty (encrypted reasoning).
+					// thinking 处置：跨模型一律丢弃（签名/密文失效、
+					// 纯文本会让新模型当成自己的回复）；同模型保留
+					// redacted/带签名的，空白 thinking 也丢。
 					switch {
 					case !sameModel:
 					case block.Redacted || block.ThinkingSignature != "":
@@ -182,6 +192,8 @@ func TransformMessages(messages []Message, model *Model, normalizeToolCallId fun
 					blocks = append(blocks, block)
 				case ToolCall:
 					if !sameModel {
+						// 跨模型：签名作废，ID 按目标模型格式归一，
+						// 原 ID→新 ID 记入映射供后续 tool result 跟随。
 						block.ThoughtSignature = ""
 						if normalizeToolCallId != nil {
 							id := normalizeToolCallId(block.ID, model, message)

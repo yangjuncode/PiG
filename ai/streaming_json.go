@@ -58,6 +58,11 @@ func parseStreamingJsonValue(input string) (JsonObject, schemaObjectOrder, json.
 // parseStreamingJsonValueAfterFastPath is parseStreamingJsonValue for text parseValidJSONObject did not read: the strict
 // parse of the text and of its repair, then the partial parse.
 func parseStreamingJsonValueAfterFastPath(input string) (JsonObject, schemaObjectOrder, json.RawMessage) {
+	// 解析分三级（原文与修复文本各试一遍）：
+	//   1. 非对象的合法 JSON（裸数字/字符串/数组等）→ 按非对象参数包装；
+	//   2. 完整对象：encoding/json 能解就用它，解不动但 json.Valid
+	//      的（超出 float64 的数，JSON.parse 读成 Infinity）走 JS 解析；
+	//   3. 都不是完整 JSON → partial-json 宽松解析（见下）。
 	candidates := []string{input, repairJSON(input)}
 	for _, candidate := range candidates {
 		if trimmed := jsstring.Trim(candidate); trimmed != "" && trimmed[0] != '{' && json.Valid([]byte(trimmed)) {
@@ -237,6 +242,9 @@ func (parser *partialJSONParser) parseAny(path string) (any, bool) {
 		return parser.parseArr(path)
 	}
 	rest := text[parser.index:]
+	// 宽松字面值匹配的精髓：rest 是字面量前缀（如 "tru"）也算
+	// 匹配成功——流式场景下未写完的 true/false/null 按完整值处理。
+	// 注意 index 按完整字面量长度推进，可能越过 input 末尾。
 	literal := func(name string, value any) (any, bool) {
 		if strings.HasPrefix(rest, name) || (len(rest) < len(name) && strings.HasPrefix(name, rest)) {
 			parser.index += len(name)
@@ -300,6 +308,9 @@ func (parser *partialJSONParser) parseStrText() (any, bool) {
 // unterminatedStr is the tail of parseStr for a string that runs to the end of the input; escape is whether the input ends inside an escape.
 func (parser *partialJSONParser) unterminatedStr(start int, escape bool) (any, bool) {
 	text := parser.input
+	// 未闭合字符串的修复策略：先砍掉末尾半个转义（escape 时
+	// 末尾的 \ 不属于字符串内容）再补引号解析；仍失败就退到
+	// 最后一个反斜杠之前——partial-json 把无法判断的尾巴整个舍弃。
 	if value, ok := jsonParseValue(jsSubstring(text, start, parser.index-boolToInt(escape)) + `"`); ok {
 		return value, true
 	}
@@ -350,6 +361,8 @@ func (parser *partialJSONParser) parseMembers(path string, object map[string]any
 		var replaced schemaObjectOrder
 		if repeated && parser.order != nil {
 			// obj[key] = value keeps the first position and the new value's member order replaces the old one's.
+			// 重复键：JS obj[key]= 保留首次位置但替换值；成员顺序
+			// 记录里对应子树也要换（先存 replaced 备份，失败可还原）。
 			replaced = parser.order.dropSubtree(schemaPath(path, name))
 		}
 		value, ok := parser.parseAny(parser.childPath(path, name))
@@ -358,6 +371,10 @@ func (parser *partialJSONParser) parseMembers(path string, object map[string]any
 			maps.Copy(parser.order, replaced)
 			return object, true
 		}
+		// "__proto__" 成员走 JS 原型链 setter 语义而非普通属性：
+		// null → 原型置空（之后的 __proto__ 变普通成员）；对象 →
+		// 换原型（其自身 protoNull 状态决定 setter 是否还可达）；
+		// 其他值 → 忽略。protoNull 跟踪该状态。
 		if name != "__proto__" || protoNull {
 			if !repeated {
 				keys = append(keys, name)
@@ -375,6 +392,8 @@ func (parser *partialJSONParser) parseMembers(path string, object map[string]any
 		parser.skipBlank()
 		if character, ok := parser.charAt(parser.index); ok && character == ',' {
 			parser.index++
+			// ',' 提交点：成员已完整落定（且值没有向后看），
+			// 增量解析器从这里继续而不必重扫。
 			if onMember != nil && !parser.readBeyond {
 				onMember(object, keys, protoNull)
 			}
@@ -431,6 +450,10 @@ func (parser *partialJSONParser) parseNum() (any, bool) {
 	if literal == "-" {
 		return nil, false
 	}
+	// 数字不完整（如 "1e" 或 "1e+"）：退到最后一个 'e' 前截断
+	// 再解析——partial-json 用 lastIndexOf("e") 恢复出合法前缀。
+	// 该结果依赖整个 input 的最后一个 e，属于"向后看"：记
+	// readBeyond 使增量提交不采纳它。
 	parser.readBeyond = true
 	return jsonParseValue(jsSubstring(text, start, strings.LastIndex(text, "e")))
 }
