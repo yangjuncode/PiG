@@ -254,6 +254,14 @@ func ApplyImmutableBatches(target JsonValue, batches [][]Op) (JsonValue, error) 
 }
 
 // ApplyImmutableBatchesSeq is Pi's applyImmutableBatches: it applies decoded batches as one final-result-only replay. Containers copied for an earlier batch may be mutated while applying a later one, so no intermediate revision is exposed or safe to retain. A failure, from validation or from a batch source that panics, leaves the target untouched.
+// 重放逐 op 三态："r"（整根替换）直接换根不拷贝；
+// "p" 先走 appendCopy 快路（纯尾插一次建成新数组）；
+// 其余按 path 先 copyContainers 把路径上的祖先容器
+// 各拷一份（写时复制——只动路径上的，兄弟分支与
+// 旧版本共享），再 applyOp 就地改拷贝。路径裁尾是
+// 因为非 p/m 的 op 作用于"路径的父容器"（如 "d"
+// 删成员、数组 splice 改父数组）。failure 时整批
+// 作废返回原 target——中间态不外泄。
 func ApplyImmutableBatchesSeq(target JsonValue, batches iter.Seq[[]Op]) (JsonValue, error) {
 	root := target
 	sc := newScope()
