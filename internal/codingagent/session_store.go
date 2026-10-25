@@ -108,6 +108,9 @@ const (
 )
 
 // coldChunkOf locates cold part number ref: its chunk and its place in it.
+// 前 7 个 chunk 容量 8,16,32,...翻倍（小会话不浪费），之后
+// 固定 1024——等价 append 扩容但每 chunk 定长、绝不搬移，
+// 所以 cold part 地址稳定可存 4 字节编号而不必存指针。
 func coldChunkOf(ref uint32) (chunk int, at uint32) {
 	if ref < coldSmallParts {
 		k := bits.Len32(ref/8+1) - 1
@@ -171,6 +174,10 @@ var slotKinds struct {
 }
 
 // internSlotKind returns the code of kind.
+// 双查模式：先走无锁的 sync.Map 快路径；miss 才加锁注册。
+// table 用 copy-on-write 发布（append 新切片 + atomic store），
+// kindOf 的读路径完全无锁——一个会话的 kind 组合数很小，
+// 注册是冷路径。
 func internSlotKind(kind slotKind) uint32 {
 	if code, ok := slotKinds.codes.Load(kind); ok {
 		return code.(uint32)
@@ -246,6 +253,10 @@ func (s *Session) addSlotLocked(slot entrySlot, parent *string, raw []byte) int 
 // appendSlotLocked is addSlotLocked of a slot whose search text is indexed already. The caller holds s.mu for writing.
 func (s *Session) appendSlotLocked(slot entrySlot, parent *string, raw []byte) int {
 	idx := len(s.slots)
+	// parentId 三种归宿：已见条目 → 直接指到其 slot 序号；
+	// 自引用（parentId == 自身 id，上游允许）→ 指向自己；
+	// 未见 → danglingParent 占位并记入 danglingParents，等待
+	// 目标条目后续出现时再接上。
 	slot.parent = noParent
 	if parent != nil {
 		if p, ok := s.slotOf(*parent); ok {
@@ -667,10 +678,16 @@ const retainTailEntries = 256
 // that are not resident from the backing file. Entries without a line in the file always stay resident. The caller holds s.mu for writing.
 func (s *Session) retainLocked() {
 	// Only the tail of the context path stays resident; older messages keep their lazy slots and are read from the file when first used (the transcript, a prompt, /tree), which yields the same decoded entries.
+	// 保留策略：只有上下文路径末尾 retainTailEntries 条常驻内存，
+	// 更早的条目退回 lazy 状态——用文件行或压缩块按需重读，
+	// 解码结果完全相同（D112 内存优化）。
 	keep := make(map[int32]struct{}, retainTailEntries)
 	for _, idx := range s.ctxPath[max(0, len(s.ctxPath)-retainTailEntries):] {
 		keep[idx] = struct{}{}
 	}
+	// 单遍扫描做三种处理：需要但缺席 → 重读（load）；
+	// 不需要且无文件行 → 编码进压缩块（pack）；
+	// 不需要但有文件行 → 直接释放 entry（读文件即可还原）。
 	var load []int32
 	var pack []packedRecord
 	for i := range s.slots {
@@ -696,6 +713,7 @@ func (s *Session) retainLocked() {
 		slot := &s.slots[load[k]]
 		slot.entry = residentEntryOf(entry, &scratch)
 		// A resident entry's search text is read from the entry.
+		// 常驻后搜索文本改从 entry 直接读，缓存的 searchAt 作废。
 		if cold := s.coldPart(slot); cold.searchAt != 0 {
 			s.searchTexts.drop(cold.searchAt)
 			cold.searchAt = 0
@@ -733,6 +751,9 @@ func (s *Session) packLocked(records []packedRecord) {
 		s.blocks = &blockCache{}
 	}
 	block := &recordBlock{data: data, cache: s.blocks}
+	// spill 兜底策略：能开匿名临时文件就把压缩块写盘上（内存
+	// 只剩 offset+size）；开不了或写失败就退化保留在内存
+	// （block.data），spillFailed 只试一次。
 	if s.spill == nil && !s.spillFailed {
 		if file, err := anonymousFile(os.TempDir()); err == nil {
 			s.spill = &sessionSnapshot{file: file}
@@ -808,6 +829,9 @@ func (r *recordReader) record(cold *slotCold) (record []byte, ok bool) {
 		}
 		return r.buf, true
 	}
+	// window 模式：顺序读大量记录时按 ≥1MB 窗口读一次服务
+	// 窗口内所有记录——对 transcript 回放这类顺序访问把 N 次
+	// ReadAt 合成约一次。
 	end := cold.off + int64(cold.size)
 	if cold.off < r.at || end > r.at+int64(len(r.buf)) {
 		r.buf = slices.Grow(r.buf[:0], max(int(cold.size), recordWindow))
