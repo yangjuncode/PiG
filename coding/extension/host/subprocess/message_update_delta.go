@@ -336,6 +336,11 @@ func (p *deltaParser) parse() (*deltaNode, error) {
 		return nil, errDeltaUnsupported
 	}
 	// Every long string appears once: a placeholder the encoder dropped would leave its text out of the payload.
+	// 全量占位校验：稀疏表每个长字符串都必须
+	// 在编码体里出现恰好一次——有没引用到的
+	// 占位说明编码丢了文本（比如重复字符串
+	// 被合并），这种帧不能按增量还原，退回
+	// 全量发送。
 	for _, used := range p.used {
 		if !used {
 			return nil, errDeltaUnsupported

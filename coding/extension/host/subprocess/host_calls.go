@@ -147,6 +147,11 @@ func (l *callLanes) pushCall(lane string, initiated <-chan struct{}, run func())
 	go l.drain(lane, current)
 }
 
+// 排水循环：逐条摘队头执行。每项先取
+// starts.Reserve() 占位再等前位完成——保证
+// 同 lane 的"开始序"= 排队序（上游单线程
+// 天然给的顺序这里用闸门显式保）；跑完
+// Release 放下一位。
 func (l *callLanes) drain(lane string, current *callLane) {
 	for {
 		l.mu.Lock()
@@ -176,6 +181,10 @@ func (l *callLanes) barrier() {
 
 // barrierMark marks the calls queued so far, on the caller's goroutine, and returns the function that waits until they have run. A caller that reads frames in
 // order marks before it reads the next one, so a call the extension sent after the frame the caller marks for is not waited for.
+// 栅栏实现：给每条 lane 队尾塞一个 Done 哨兵，
+// 等所有哨兵都被 drain 跑到=之前排队的全执行
+// 完。标记时刻之后的入队不被等——读帧序语义
+// 只需要保证"这一帧之前发出的调用已生效"。
 func (l *callLanes) barrierMark() func() {
 	var reached sync.WaitGroup
 	l.mu.Lock()
