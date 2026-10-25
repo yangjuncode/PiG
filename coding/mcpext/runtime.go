@@ -75,6 +75,11 @@ func signInRequiredMessage(entry McpServerEntry) string {
 
 // isTransientError: network failures and overloaded or restarting servers,
 // which are worth another attempt.
+// 瞬时错误判定（重连依据）：HTTP 408/429/5xx
+// 是可重试（501 未实现除外——那是能力缺失
+// 不是故障）；传输层的 url.Error/net.Error/
+// UnexpectedEOF 也算瞬时。401/403 之类明确
+// 拒绝不算——重试也过不了。
 func isTransientError(err error) bool {
 	if httpErr, ok := errors.AsType[*mcp.McpHttpError](err); ok {
 		return httpErr.Status == 408 || httpErr.Status == 429 || (httpErr.Status >= 500 && httpErr.Status != 501)
@@ -86,6 +91,10 @@ func isTransientError(err error) bool {
 
 // usesOAuth: HTTP servers authenticate with OAuth unless the config supplies
 // an `Authorization` header or `auth`.
+// OAuth 需求推断：仅 HTTP 传输且没显式给
+// auth 配置、headers 里也没 Authorization
+// （大小写不敏感）才走 OAuth 流程——用户
+// 已给凭据就不必再授权。
 func usesOAuth(entry McpServerEntry) bool {
 	if !entry.Config.IsHTTP() || entry.Config.Auth != nil {
 		return false
@@ -417,6 +426,10 @@ func (c *Connection) GetClient(ctx context.Context) (*mcp.Client, error) {
 		c.mu.Unlock()
 		return client, nil
 	}
+	// 单飞连接：opening 非 nil 说明已有 goroutine
+	// 在握手——后来的调用者等同一个 flight.done
+	// 拿共享结果，不重复开连接（MCP initialize
+	// 握手是有状态的，双开会拿两个 session）。
 	flight := c.opening
 	if flight == nil {
 		flight = &openFlight{done: make(chan struct{})}
