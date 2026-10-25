@@ -303,6 +303,12 @@ func withPacked(frame Frame, field *packedField) Frame {
 // packMessage is link.ts packMessage, for WebSockets: a frame with a packed payload is a binary message,
 // `[envelope length: u32 BE][envelope JSON, with z: field][deflated payload]`; any other frame is text, with the
 // payload's JSON spliced in last rather than encoded twice. The result is a string (text) or []byte (binary).
+// 帧打包三形态：无载荷字段的帧→纯 JSON
+// 文本；有载荷且打包成字节流→二进制帧
+// [4字节信封长][信封JSON(载荷字段换成
+// "z"标记)][载荷字节]；载荷不值得二进
+// 制化（data==nil）→ splice 把载荷 JSON
+// 以原文拼回信封（省一次对象往返）。
 func packMessage(frame Frame, compress bool) (any, error) {
 	field := payloadField(frame)
 	if field == "" {
@@ -356,6 +362,11 @@ func splice(envelope *chordjson.Object, field string, json []byte) (string, erro
 }
 
 // splitMessage is link.ts splitMessage: the envelope of a binary message (without z), its payload field and bytes.
+// 二进制帧解包：头 4 字节是信封 JSON 长度
+// （长度小于实际时按声明长截信封——允许多
+// 帧拼接的流里只取本帧）；信封必须是 JSON
+// 对象且 "z" 字段是合法载荷名；余下字节
+// 即载荷，克隆剥离 "z" 还原原帧。
 func splitMessage(data []byte) (*chordjson.Object, string, []byte, error) {
 	if len(data) < 4 {
 		return nil, "", nil, errors.New("offset is outside the bounds of the message")

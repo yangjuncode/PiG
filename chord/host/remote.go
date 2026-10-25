@@ -400,6 +400,12 @@ func (binding *RemoteBinding) state(name string, frame StateFrame) {
 }
 
 // gone: the provider ended the object (or refused the hold): every view is gone.
+// 终结两态区分：gone 是永久下线——绑定进
+// ended、拒绝 live/水合 promise、终结全部
+// 视图并从 host 注销；detached 是暂时断链
+// ——值保留、状态退回 loading 换一个新的
+// live promise 等重新 hold，视图只标记更
+// 新不终结（上游重连语义）。
 func (binding *RemoteBinding) gone(err error) {
 	if binding.ended() {
 		return
