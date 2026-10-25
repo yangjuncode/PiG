@@ -118,6 +118,10 @@ func mergePieceTrees(left, right *pieceNode) *pieceNode {
 }
 
 // split divides root into the first index elements and the rest, splitting the piece that straddles index.
+// 按子树元素数二分下潜（implicit treap——树序=数组
+// 顺序）；index 落在节点 piece 内部时把 piece 拆成
+// 头尾两半各自成节点返回（反向 piece 的 step=-1
+// 使 sourceIndex 自动指向正确源头偏移）。
 func (overlay *arrayOverlay) split(root *pieceNode, index int) (*pieceNode, *pieceNode) {
 	if root == nil {
 		return nil, nil
@@ -172,6 +176,10 @@ func rightmostPieceNode(node *pieceNode) *pieceNode {
 }
 
 // mergeablePieces is tracker.ts mergeablePieces: right continues left's run of the same source.
+// 可合并三规：同 source（nil=base 段也只配 base 段）；
+// 两个单元素 piece 特判 ±1 邻接（单元素步长未定义，
+// 正反方向都算）；长 piece 必须同 step 且左段末尾
+// 的下一索引恰是右段起点。
 func mergeablePieces(left, right piece) bool {
 	if left.source != right.source {
 		return false
