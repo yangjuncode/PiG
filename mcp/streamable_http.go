@@ -312,10 +312,16 @@ func (t *StreamableHTTPTransport) Send(ctx context.Context, message JSONRPCMessa
 		}
 		return nil
 	}
+	// 请求语义校验：服务器对 request 只回 202/204
+	// 不给答复是协议违约——请求必须有响应承载。
 	if response.StatusCode == http.StatusAccepted || response.StatusCode == http.StatusNoContent {
 		discardResponse(response)
 		return NewMcpHttpError(response.StatusCode, fmt.Sprintf("MCP server accepted request %s without a response", message.Method), "")
 	}
+	// 响应体按 Content-Type 两路：application/json
+	// 整体读入校验（数组展开逐条 Emit）；
+	// text/event-stream 起 goroutine 消费流（异步
+	// 到达的事件逐条转发，Send 不等流完）。
 	switch kind := responseContentType(response); kind {
 	case "application/json":
 		data, err := io.ReadAll(response.Body)

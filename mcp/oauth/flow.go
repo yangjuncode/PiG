@@ -731,6 +731,12 @@ func runFlow(ctx context.Context, provider OAuthClientProvider, options OAuthFlo
 		}
 		return OAuthAuthorized, nil
 	}
+	// 刷新优先：有 refresh_token 先尝试不换授权。
+	// 失败分三档——网络/中止类错误（insecure
+	// endpoint、ctx 取消）绝不回退重新授权；OAuth
+	// 服务器回的非 server_error 错误（invalid_grant
+	// 等）也直接失败；只有 server_error 才落到下面
+	// 走新授权——临时故障值得一试，确定性拒绝不行。
 	var existing *OAuthTokens
 	if !options.SkipRefresh {
 		if existing, err = provider.Tokens(ctx); err != nil {
