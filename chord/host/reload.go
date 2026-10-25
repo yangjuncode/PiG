@@ -434,6 +434,19 @@ func until(host *HostImpl, ready func() bool, d time.Duration) bool {
 // deadline. Past the deadline it is retired anyway: its remaining roots are aborted first and get a short grace to
 // stop, so they see cancellation before the resources only that code version used are closed; their next call is superseded
 // (Pi reload.ts:228-242).
+// 旧版本退役三段：
+//  1. 宽限期——等旧 CodeVersionState
+//     自然清空（retirable）或宿主自己
+//     换掉它；
+//  2. 超时强退——abortWith Superseded
+//     把还在跑的旧根全部掐掉，再给
+//     abortedRootsGrace 的收尾宽限等
+//     根清场；
+//  3. 最终 retire() 落账——gone() 仍假
+//     说明旧版还挂着，强摘。
+//
+// 分级等待保证正常路径给足时间、异
+// 常路径也不会永久卡死热重载。
 func (r *Reload) waitForRetirement() {
 	host := r.host
 	var previous *CodeVersionState
@@ -463,6 +476,16 @@ func (r *Reload) waitForRetirement() {
 
 // load builds the candidate service table: unchanged services plus everything the given facets serve. It runs on
 // the loop (Pi reload.ts:244-263).
+// 候选表构建三步：
+//  1. 复制未替换的旧服务（被换 facet
+//     和显式 Remove 的排掉）；
+//  2. 每个新 facet 在"只能写进候选表"
+//     的受限 serve API 下 Setup——建错
+//     了不影响线上表；
+//  3. 差集记账 changed/removed 供后续
+//     网关（checkProviders 只管变更的
+//     服务）；最后挂 pending 等新版本
+//     状态正式接管。
 func (r *Reload) load() error {
 	replaced := map[string]bool{}
 	for _, facet := range r.facets {
