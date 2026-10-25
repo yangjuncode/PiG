@@ -281,6 +281,10 @@ func Clean(schema, value any) any {
 		if !ok {
 			return value
 		}
+		// 键三级归属：properties 里声明的 → 按各自 schema
+		// 递归清理；additionalProperties 允许的（true 或子
+		// schema 校验通过）→ 按该 schema 清理；都不沾 →
+		// 删除——TypeBox Clean 的"只留 schema 认得的成员"。
 		props, _ := properties(s)
 		additional, hasAdditional := s["additionalProperties"]
 		for _, key := range target.keys() {
@@ -301,6 +305,7 @@ func Clean(schema, value any) any {
 		if !ok {
 			return value
 		}
+		// record 同对象分支，但键由 pattern 正则判定归属。
 		pattern, recordValue := recordEntry(s)
 		additional, hasAdditional := s["additionalProperties"]
 		for _, key := range target.keys() {
@@ -321,6 +326,8 @@ func Clean(schema, value any) any {
 		if !ok {
 			return value
 		}
+		// tuple 按位置清理并把多余尾巴直接裁掉——元组语义
+		// 严格定长。
 		positional := s["items"].([]any)
 		length := min(len(items), len(positional))
 		for index := range length {
@@ -328,6 +335,9 @@ func Clean(schema, value any) any {
 		}
 		return items[:length]
 	case s["anyOf"] != nil:
+		// anyOf 逐分支试：克隆值清理后 Check 验证，首个
+		// 通过的分支就是答案；全不过返回原值（上游同样
+		// 不改动）。
 		branches, _ := s["anyOf"].([]any)
 		for _, branch := range branches {
 			cleaned := Clean(branch, Clone(value))

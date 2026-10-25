@@ -175,6 +175,10 @@ func (w errorWalker) schema(context *errorContext, path string, schema, value an
 	if !ok {
 		return true
 	}
+	// 全量收集式校验：不像 Check 短路返回，这里每个关键字
+	// 都走一遍把错误全部记下（errorContext 有容量上限）。
+	// step 累积 AND 语义——任何一步失败最终 valid=false，
+	// 但后续关键字仍继续跑以产出完整错误清单。
 	valid := true
 	step := func(result bool) { valid = result && valid }
 	if typeValue, ok := n.get("type"); ok {
@@ -237,6 +241,9 @@ func (w errorWalker) schema(context *errorContext, path string, schema, value an
 	}
 	if n.has("unevaluatedItems") || n.has("unevaluatedProperties") {
 		// The other keywords passed, so a failing Check is the unevaluated keyword's: report it as TypeBox does.
+		// unevaluated 关键字无法局部归因——整 schema 重跑
+		// Check 失败才报它；仅当此前所有关键字都过（valid）
+		// 才归因给它，否则错误算在前面失败的关键字头上。
 		if !Check(schema, value) {
 			_, isArray := value.([]any)
 			if valid && isArray && n.has("unevaluatedItems") {
