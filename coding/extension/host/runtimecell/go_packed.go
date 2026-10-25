@@ -873,6 +873,11 @@ func collectExtensionDeps(extensions []GoExtension) (requires, replaces []string
 		if err != nil {
 			continue
 		}
+		// 依赖汇流：各扩展 go.mod 的 require/replace
+		// 合并去重成打包 cell 的一份——SDK 模块路径
+		// 本身除外（cell 用锁定的 SDK 版本替换它，
+		// 不能让扩展自己指定 SDK 版本绕过 cell
+		// 统一管理）。
 		for _, requirement := range file.Require {
 			if extsource.IsGoSDKModulePath(requirement.Mod.Path) {
 				continue
@@ -902,6 +907,10 @@ func collectExtensionDeps(extensions []GoExtension) (requires, replaces []string
 	return
 }
 
+// 相对路径 replace 锚定到扩展根：go.mod 里的
+// ./foo 是相对于该扩展自己的目录，合并进 cell
+// 的 go.mod 时必须改写成绝对/根路径，否则解析
+// 到 cell 工作目录下找不到。
 func extensionReplaceDirective(root string, replacement *modfile.Replace) string {
 	old := modfile.AutoQuote(replacement.Old.Path)
 	if replacement.Old.Version != "" {
