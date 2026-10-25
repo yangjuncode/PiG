@@ -110,6 +110,9 @@ func (e *LazyEntry) read() (json.RawMessage, error) {
 var errBaseDiffers = errors.New("its record has other base members than the index")
 
 // decode is the member DecodeSessionEntry reads from raw, which must have the base members the entry was indexed with.
+// 读回校验：记录被解码后的 base 成员必须逐项等于索引时记的
+// 值——type 必是 "message"、id/timestamp/parentId 逐一比对。
+// 任一不符即 RecordChangedError（磁盘文件被外部改过）。
 func (e *LazyEntry) decode(raw json.RawMessage) (SessionEntry, error) {
 	decoded := DecodeSessionEntry(raw)
 	if got := decoded.Base(); got.Type != "message" || !sameKey(got.ID, e.id) || got.Timestamp != e.timestamp ||
@@ -137,6 +140,9 @@ func ReadRaw(entry FileEntry) (json.RawMessage, error) {
 }
 
 // ReadRaws is the record of each entry, reading the records of LazyEntry values of one source together in source order.
+// 按 RecordSource 分组批量读：同源的 lazy 条目合并成一次
+// ReadRecords（底层可做预读/窗口读），不同源各自一批，
+// 结果再按原下标撒回 out——既保留输入顺序又享受批量 IO。
 func ReadRaws(entries []SessionEntry) ([]json.RawMessage, error) {
 	out := make([]json.RawMessage, len(entries))
 	type pending struct {
@@ -205,6 +211,8 @@ func MaterializeAll(entries []SessionEntry) ([]SessionEntry, error) {
 	}
 	out := make([]SessionEntry, len(entries))
 	errs := make([]error, len(entries))
+	// decode 分片可并行：每个 worker 处理 [from,to) 区间，
+	// bytes.Clone 先复制再解码防 decode 里改写共享缓冲。
 	decode := func(from, to int) {
 		for i := from; i < to; i++ {
 			l, ok := entries[i].(*LazyEntry)
@@ -215,6 +223,9 @@ func MaterializeAll(entries []SessionEntry) ([]SessionEntry, error) {
 			out[i], errs[i] = l.decode(bytes.Clone(raws[i]))
 		}
 	}
+	// 并行阈值：少于 parallelDecodeMin(256)/核 不划算
+	// （decode 是 CPU 密集但每条约微秒级）；超阈值按
+	// GOMAXPROCS 等分切片。
 	workers := lazy / parallelDecodeMin
 	if workers > 1 {
 		// pig additive (D174): the workers count and run at the runtime default width.
