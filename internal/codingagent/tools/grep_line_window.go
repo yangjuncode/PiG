@@ -112,6 +112,11 @@ func (w *grepLineWindow) fill() {
 }
 
 func (w *grepLineWindow) add(text string) {
+	// 逐 rune 判行尾，与上游 getFileLines 的三种分隔对齐：
+	// \r 结束一行且悬置 pendingCR（后面的 \n 视作 \r\n 的一
+	// 部分不再重复断行）；孤立 \n 自己断行。普通字符只有
+	// "行号 ≥ keepFrom 且未超 grepStoredLineRunes"才入缓冲——
+	// 被丢弃的行与超长行都不占内存。
 	for _, r := range text {
 		switch r {
 		case '\r':

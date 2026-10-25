@@ -117,6 +117,12 @@ func diffStringOf(d *jsdiff.LineDiff, oldContent, newContent string, contextLine
 		}
 
 		count := part.Count
+		// 未变段的省略策略按"两侧是否贴变化"分四态：
+		//  两侧都贴变化 → 上下文窗口内全显，超出则头尾各留
+		//    contextLines、中间省掉（一个省略号衔接两段变化）；
+		//  只左侧贴 → 保留开头 contextLines 行接在变化后；
+		//  只右侧贴 → 保留末尾 contextLines 行引到下个变化；
+		//  两侧都不贴 → 整段跳过但不写省略号（输出首尾边界处）。
 		switch {
 		case hasLeadingChange && hasTrailingChange:
 			if count <= contextLines*2 {

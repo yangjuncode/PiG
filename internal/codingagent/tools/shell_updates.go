@@ -85,6 +85,9 @@ func (u *shellUpdateScheduler) schedule() {
 
 func (u *shellUpdateScheduler) run() {
 	defer close(u.done)
+	// 事件循环：wake 到 → 距上次 emit 不足节流窗口就先等
+	// 剩余时长（等价上游"一次延迟更新"），窗口已过则直接
+	// 发；两次 wake 合并成一次 emit 由 dirty 位完成。
 	for {
 		select {
 		case <-u.stop:
