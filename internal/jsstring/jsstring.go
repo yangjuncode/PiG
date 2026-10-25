@@ -105,6 +105,9 @@ func ToPrecision(x float64, precision int) string {
 		return p
 	}
 	// math.Log10 rounds to a power of ten for a value just below one (1e-11 is a little under 10^-11), so e is settled against the exact value: 10^e <= x < 10^(e+1). Rounding to the precision may then carry to 10^precision, which moves e up by one below.
+	// Log10 浮点估计的 e 用精确比较双向校正到
+	// 10^e ≤ x < 10^(e+1)——贴边值（如 1e-11）浮点
+	// 会算偏一档。
 	for exact.Cmp(pow(e)) < 0 {
 		e--
 	}
@@ -112,6 +115,9 @@ func ToPrecision(x float64, precision int) string {
 		e++
 	}
 	// n = round(x / 10^(e-precision+1)), with n in [10^(precision-1), 10^precision).
+	// 进位循环：精度位舍入可能把 n 顶到 10^precision
+	// （999→1000），此时 e+1 重算；也可能缩到下界
+	// 以下则 e-1——直到 n 落进精度窗口。
 	var n *big.Int
 	for {
 		n = roundHalfUp(new(big.Rat).Quo(exact, pow(e-precision+1)))
@@ -127,6 +133,10 @@ func ToPrecision(x float64, precision int) string {
 		}
 		break
 	}
+	// 四档输出形态：指数态（e<-6 或 e≥precision）、
+	// 恰好补零态（e==precision-1 无小数点）、常规小
+	// 数态、0.00x 前导零态——ECMAScript toPrecision 的
+	// 格式分派表。
 	digits := n.String()
 	var text string
 	switch {

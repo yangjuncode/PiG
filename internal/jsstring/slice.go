@@ -44,6 +44,11 @@ func ASCIIPrefix(text string) int {
 }
 
 // Slice applies String.slice's unit offsets, including negative offsets, an omitted end and retained surrogate halves.
+// 两条路径：纯 UTF-8 时 code point 边界即 UTF-16 边界，
+// 可直接按字节切（零分配快路径）；但只要切片点落在
+// 代理对两半之间（JS 允许保留半个代理）或文本含
+// WTF-8 代理半，就必须走 UTF-16 转换慢路径按 code
+// unit 精确切。
 func Slice(text string, start int, ends ...int) string {
 	if length, ok := validUnits(text); ok {
 		end := length
