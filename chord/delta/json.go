@@ -135,6 +135,10 @@ func cloneStrict(value any, active map[uintptr]bool, held *overlay) (any, error)
 		}
 		return result, nil
 	}
+	// 认不出的类型交反射兜底：Go 数字归一到 float64、
+	// string-keyed map/任意元素 slice 转规范容器、
+	// struct/pointer/func 一律非严格 JSON 报错——上游
+	// 同样只认 plain object/array。
 	return cloneReflected(reflect.ValueOf(value), active, held)
 }
 

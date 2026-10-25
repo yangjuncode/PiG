@@ -47,6 +47,10 @@ func (ref nodeRef) lock() (*node, *sync.Mutex) {
 }
 
 // placements validates and clones values for a placement into ref's draft before that draft is locked. Copying a handle locks the handle's draft; holding this draft's lock meanwhile would deadlock with another goroutine's change that is placing one of this draft's handles. A settled draft panics with ErrRevoked before anything is copied, as tracker.ts asserts the overlay writable before it copies.
+// 两阶段拿锁：先 lock+unlock 只验证 draft 还活着，
+// 再在**锁外**克隆所有值——因为克隆一个 handle 要去
+// 拿它所属 draft 的锁，两个 goroutine 互相放置对方
+// 的 handle 时持锁克隆会死锁。
 func (ref nodeRef) placements(values ...any) ([]any, error) {
 	_, mu := ref.lock()
 	mu.Unlock()

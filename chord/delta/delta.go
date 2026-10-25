@@ -311,6 +311,9 @@ func permutationItems(value any) ([]any, bool) {
 	}
 }
 
+// 校验 "m" 排列是双射：每一项必须是 [0,len) 内整数
+// 且互不重复——少一个目标位就说明有元素会被盖掉，
+// 上游同样只接受完整重排。
 func assertPermutation(value any) error {
 	permutation, ok := permutationItems(value)
 	if !ok {

@@ -52,6 +52,11 @@ func (e *Encoder) Encode(ops []Op) ([]WireOp, error) {
 		if err != nil {
 			return nil, err
 		}
+		// 路径压缩三层：与上一 op 同路径 → 省路径写
+		//（批内有效，跨批必带全路径）；已 intern → 写
+		// id 引用；第二次见 → 发 "#" 定义帧并换 id；
+		// 第一次见 → 仅登记 seen 写全路径（一次性的
+		// 路径不值得浪费一个 id）。
 		key := string(encoded)
 		if hasPrevious && key == previous {
 			out = append(out, append(WireOp{op[0]}, op[2:]...))

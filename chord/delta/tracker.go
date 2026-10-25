@@ -453,6 +453,11 @@ func (n *node) isArray() bool {
 
 // attached reports whether n is still reachable from the root at the slot
 // it was read from. Writes through a detached handle are ignored.
+// 递归沿父链校验"我仍占着当初那个槽位"：数组侧查
+// entry 还在 overlay 里且仍指向本节点（set 槽比 value、
+// 未 set 比 kid）；对象侧查 writes 里还是本节点，或没
+// 被删且 kids 仍登记——父节点先 attached 才有意义，
+// 上游借此让摘离节点上的写静默失效而非写进游离对象。
 func (n *node) attached() bool {
 	parent := n.parent
 	if parent == nil {
@@ -486,6 +491,10 @@ func (n *node) markChanged() {
 }
 
 // modified reports whether n or an attached descendant changed.
+// 判定本节点或其后代是否动过：对象侧遍历 kids 但跳过
+// 已被 writes/deletes 覆盖的槽位（旧 kid 已游离，它的
+// 修改不算数）；数组侧查 baseEntries 中仍留在 overlay
+// 里的未 set 子节点。只认附着后代——游离修改不冒泡。
 func (n *node) modified() bool {
 	if n.changed {
 		return true
@@ -674,6 +683,9 @@ func emitOperations(root *node) ([]Op, error) {
 	var emissions []emission
 	collectEmissions(root, []any{}, root.ctx.dirtySeq, &emissions)
 	// tracker.ts emitOperations buckets nodes by path length, keeping the order in which they first became dirty within a bucket.
+	// 排序双键：先按路径长（浅层 op 先落——父容器
+	// splice/替换必须早于深子孙的写入被应用），桶内按
+	// 首次变脏序稳定排。
 	slices.SortStableFunc(emissions, func(a, b emission) int {
 		if len(a.path) != len(b.path) {
 			return len(a.path) - len(b.path)
@@ -690,6 +702,9 @@ func emitOperations(root *node) ([]Op, error) {
 			emitObject(e.n, e.path, &ops)
 		}
 	}
+	// 批量超上限整批换成一次 "r" 根替换——等价结果但
+	// 常比逐 op 重放便宜得多；也防恶意大变更打爆
+	// 同步帧。
 	if len(ops) > maxDeltaOperations {
 		value, err := clonePlacement(root.current())
 		if err != nil {

@@ -148,6 +148,12 @@ func (r *reconciler) claim(hint JsonValue) {
 	}
 }
 
+// 逐位调和：hint 是同位置的 base 容器——已被别的
+// 候选领走就置 nil 不再当参照。对象同 key、数组同
+// 下标递归比；全部逐位全等就 claim base 容器返回
+// 它（恢复身份，diff 数组按身份对齐搬动的元素）。
+// 数组在逐位后再跑 matchMoved 捞"搬了位置但深等"
+// 的元素。
 func (r *reconciler) reconcile(work, positional JsonValue) JsonValue {
 	hint := positional
 	if isContainer(hint) && r.claimed(hint) {
@@ -201,6 +207,10 @@ func (r *reconciler) reconcile(work, positional JsonValue) JsonValue {
 }
 
 // matchMoved restores, by deep equality, the elements that the positional pass did not restore and that equal a base element elsewhere in the array: an element that moved. Each base element is restored at most once.
+// 搬动元素找回：为未被逐位认领的候选容器在 base 里
+// 按 hashValue 分桶找深等者——命中且未被认领就换回
+// base 实例（恢复身份，diff 才能认出"搬动"而非
+// "删+增"）。index 懒建：没有游离容器就不扫 base。
 func (r *reconciler) matchMoved(work, base []any) {
 	var index map[uint64][]int
 	for at, item := range work {

@@ -34,6 +34,12 @@ func overlapUnits(a, b []uint16, scan, probeLimit, candidateLimit int) int {
 	if len(a) > scan {
 		tail = a[len(a)-scan:]
 	}
+	// 两档探针：先用长头（min(probeLimit,len(b))）找
+	// 大重叠——长头几乎不会误配，命中一次就定位大段
+	// 公共尾；找不到退化到 1 单元头扫所有候选，靠
+	// candidateLimit 封顶防止重复文本把验证打成
+	// O(n²)。候选全失败返回 0 → 上层发整个 set，
+	// 宁大勿错。
 	for _, probe := range [2]int{min(probeLimit, len(b)), 1} {
 		head := b[:probe]
 		tried := 0
