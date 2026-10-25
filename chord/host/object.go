@@ -227,6 +227,12 @@ func (resource *ResourceImpl) startOpen(signal context.Context, order *[]*Resour
 	}
 	resource.state = "opening"
 	opened, resolve, reject := newPromise[struct{}](&host.loop)
+	// Open 在循环外跑（可能阻塞），结果 post 回循环
+	// 判定三分支：失败→回 closed+reject；成功但
+	// signal 已取消→"打开晚了"，资源有 Close 就再派
+	// goroutine 调 Close 收拾完再报 aborted（否则
+	// 直接报），防泄漏；正常→记 value、进 order
+	// （关闭序靠它）、resolve。
 	entered = host.goEntered(func() {
 		value, err := resource.spec.Open(ResourceOpenOptions{Signal: signal})
 		host.post(func() {
@@ -578,6 +584,10 @@ func linkedSignal(sources []context.Context) (signal context.Context, release fu
 		release()
 		cancel(context.Cause(source))
 	}
+	// 逐个挂 AfterFunc 转发：源已取消的立即 forward
+	// 并停扫（先到先得）。挂了回调后再查 released—
+	// 竞态窗口：release 在挂完后跑会漏掉这个 stop，
+	// 持锁复查 released 为真就立即撤掉刚挂的。
 	for _, source := range sources {
 		if source.Err() != nil {
 			forward(source)
@@ -622,6 +632,11 @@ func awaitReady(host *HostImpl, ref RefCore, signals []context.Context, ms time.
 		}
 		// A signal that was cancelled released the reference (Ctx.close cancels its closing signal first): that
 		// cancellation came first, as abort listeners run before the release in Pi.
+		// 优先级改写：ready 失败如果是 ref 被释放造成，
+		// 而源信号也取消了，说明取消在前（上游 abort
+		// listener 先于 release 跑）——把 released 包
+		// 成 aborted 返回，调用方看到的是"调用被中止"
+		// 而不是内部释放细节。
 		if IsChordError(err, CodeReleased) {
 			for _, source := range signals {
 				if source.Err() != nil {
@@ -634,6 +649,10 @@ func awaitReady(host *HostImpl, ref RefCore, signals []context.Context, ms time.
 	return nil
 }
 
+// 竞速裁决：promise.Await 在 signal 上等待，返回后
+// 复查——信号取消了且 promise 还没 settle 才算
+// aborted（err 其实是等被取消引发的）；promise 已
+// settle 时它的结果/错误有效，取消迟到不掩盖。
 func raceSignal[T any](promise *Promise[T], signal context.Context) (T, error) {
 	aborted := func() error {
 		return NewChordError(CodeAborted, "call aborted", ChordErrorOptions{Cause: context.Cause(signal)})

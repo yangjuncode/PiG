@@ -41,6 +41,12 @@ func (loop *loop) onLoop() bool { return loop.owner.Load() == goroutineid.Curren
 // run runs task as a synchronous section of the loop and returns when it and the callbacks it queued have run. A
 // goEntered task that the loop's owner awaits (enter) runs the section on the owner, as upstream runs a callback's
 // synchronous part on its one thread; any other caller that has to wait for the loop has entered (goEntered).
+// run 三路执行 task：已在 loop owner 上→直接跑
+// （嵌套 section 不重排队）；抢不到 exec 锁→先试
+// lendSection 借给正在等本任务的 owner goroutine
+// 跑（上游单线程上同步调用的等价），借不出去才
+// 阻塞等锁。跑完 drain 后续队列——对应上游同
+// tick 内 promise 回调排在本 section 之后。
 func (loop *loop) run(task func()) {
 	id := goroutineid.Current()
 	if loop.owner.Load() == id {
@@ -160,6 +166,13 @@ type loopAwaiter struct {
 
 // lendSection runs section on the owner of loop when goroutine id runs a task that owner awaits, and reports whether
 // it did. A panic in section is raised again in the task.
+// 借道条件三重：id 得是 goEntered 任务、任务得有
+// 等它的 loop owner、那个 owner 的 loop 得是目标
+// loop——否则退回正常等锁。lending 标记防
+// watch 把"等 owner 接走 section"误判成任务已
+// 入等待而提前 enter。section 在 owner 上 panic
+// 要 rethrow 回本任务 goroutine（recover 经
+// done 回传）。
 func lendSection(loop *loop, id uint64, section func()) bool {
 	task := entering.get(id)
 	if task == nil || task.awaiter == nil || task.awaiter.loop != loop {
