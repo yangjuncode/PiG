@@ -79,6 +79,8 @@ func FindWordForward(text string, cursor int, options ...WordNavigationOptions) 
 	next := cursor
 	inRun := false // the first non-whitespace segment was a non-word, non-atomic one, so the run of such segments is being consumed
 	for current := range segment(jsstring.Slice(text, cursor, length)) {
+		// inRun：首个非空白段是非词非原子段（一串符号），
+		// 此后同类段并入一跳——遇词/原子/空白即终止。
 		if inRun {
 			if atomic(current.Segment) || current.IsWordLike || isWhitespaceChar(current.Segment) {
 				break
@@ -86,6 +88,7 @@ func FindWordForward(text string, cursor int, options ...WordNavigationOptions) 
 			next += jsstring.Length(current.Segment)
 			continue
 		}
+		// 前导空白直接跳过（原子段不算空白参与判断）。
 		if !atomic(current.Segment) && isWhitespaceChar(current.Segment) {
 			next += jsstring.Length(current.Segment)
 			continue
@@ -94,6 +97,8 @@ func FindWordForward(text string, cursor int, options ...WordNavigationOptions) 
 		case atomic(current.Segment):
 			next += jsstring.Length(current.Segment)
 		case current.IsWordLike:
+			// 词段内停在第一个标点处——"foo,bar" 前进只
+			// 跨过 "foo"（上游标点切分词边界语义）。
 			index := strings.IndexAny(current.Segment, punctuationChars)
 			if index < 0 {
 				index = len(current.Segment)

@@ -89,6 +89,9 @@ func (a *WheelScrollAccelerator) Next(direction int, now float64) int {
 		return 1
 	}
 
+	// 手势状态机：换向或间隔 >200ms 开新手势（重置均
+	// 值与小数进位，回 1 行）；同向且 <5ms 的事件属于
+	// 同一物理齿格爆发，各算 1 行不参与加速。
 	gap := now - a.lastTime
 	sameGesture := direction == a.lastDirection && gap <= wheelGestureGapMs
 	a.lastTime = now
@@ -102,6 +105,9 @@ func (a *WheelScrollAccelerator) Next(direction int, now float64) int {
 		return 1
 	}
 
+	// 平均间隔每事件递半更新（a=(a+g)/2 收敛快于滑窗），
+	// 行数 = 参考间隔/平均间隔 封顶 6；小数部分攒进 carry
+	// 下次凑整——速度连续变化时每事件行数平滑过渡。
 	if a.hasAverageGap {
 		a.averageGap = (a.averageGap + gap) / 2
 	} else {
