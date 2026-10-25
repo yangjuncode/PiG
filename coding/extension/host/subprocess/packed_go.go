@@ -92,6 +92,11 @@ func newProcessShare(key string, origin any, exit <-chan struct{}, admit io.Writ
 }
 
 // acquire adds a state to a process that has not been killed.
+// 引用计数 CAS 获取：refs≤0 说明进程已被
+// 判死，不能再发引用；CAS 循环抢 +1——
+// 与 release 的"归零即杀"竞态下，CAS 失败
+// 重读，读到 0 就拒绝，绝不给死进程发新
+// 引用。
 func (s *processShare) acquire() bool {
 	for {
 		n := s.refs.Load()
@@ -105,6 +110,10 @@ func (s *processShare) acquire() bool {
 }
 
 // release drops one state and kills the process with the last one. It reports whether it killed.
+// 归零即杀：最后一个引用释放时 killed.Do
+// 只跑一次——先调 kill 钩子再关 admission
+// 通道（顺序有意：kill 可能还要向进程发
+// 消息，通道后关）。
 func (s *processShare) release() bool {
 	if s.refs.Add(-1) > 0 {
 		return false
@@ -151,6 +160,13 @@ func (s *processShare) exited() bool {
 }
 
 // reserve takes the parking reference for the successor of the Host numbered epoch. It reports whether this call took it.
+// 占坑引用：进程可跨 Host 复用时，"下个
+// Host 可能要用"提前占一个引用防它被当
+// 作空闲杀掉。parked CAS 保证全进程只有
+// 一个占坑者；占了坑但 acquire 失败（进
+// 程刚死）回滚 parked 让后面重试。epoch
+// 记录是谁占的——releaseParkedBefore 只
+// 清旧 Host 的坑，不清自己的。
 func (s *processShare) reserve(epoch int) bool {
 	if s.key == "" || !s.alive() || !s.parked.CompareAndSwap(false, true) {
 		return false

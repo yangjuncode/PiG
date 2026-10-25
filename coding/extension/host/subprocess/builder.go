@@ -343,6 +343,13 @@ func hashSourceDirStamped(src, buildType string) (digest, stamp string, err erro
 		mix(nodeRuntimeDigest())
 	}
 
+	// 摘要双列（h=缓存键 digest、s=源戳
+	// stamp）：mix 同步写两列，后面
+	// hashDirSourcesStamped 会让 s 跳过
+	// lock 类文件（编译器自己会改写它
+	// 们——计入 stamp 会每次构建都"源
+	// 变了"，而 digest 需要它们保证可
+	// 复现）。源类型决定扫描后缀集合。
 	var exts []string
 	switch buildType {
 	case "go":
