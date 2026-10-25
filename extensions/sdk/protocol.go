@@ -543,6 +543,12 @@ func (c *conn) beginCall(parentRequestID string, parent *requestParent, method s
 		return pendingCall{}, fmt.Errorf("extension connection closed")
 	default:
 	}
+	// 父请求生命周期继承：挂到未完成请求的
+	// call 用 request ctx（请求取消连带取消
+	// 它）；父请求已完成的用 runtime ctx +
+	// timer 标记——上游语义是"handler 返回后
+	// 遗留的 host-call 还挂着，但宿主会给它
+	// 自己的超时"。
 	timer := false
 	if parent != nil {
 		parentRequestID, err = c.parentIDLocked(parent)
@@ -591,6 +597,11 @@ func (c *conn) waitCall(call pendingCall) (*callResultMsg, error) {
 		select {
 		case <-ctx.Done():
 			// Pi's host calls belong to no request: a call the handler left running when it returned continues until it ends or its own cancellation arrives. The request's context ends with the handler, so a completed request hands the wait to the runtime's context. A cancelled request never completes.
+			// 上下文交接：request ctx 死了先别急着
+			// 报错——父请求若是"正常完成"而非取消，
+			// 等待权交接给 runtime ctx 继续等（call
+			// 还合法活着）；父已取消或已交过接才真
+			// 失败。
 			if call.parent != nil {
 				if runtime, completed := call.parent.lifetime(); completed && ctx != runtime {
 					ctx = runtime
@@ -611,6 +622,11 @@ func (c *conn) waitCall(call pendingCall) (*callResultMsg, error) {
 	}
 }
 
+// 父请求取消级联：标父已取消（后续 beginCall
+// 挂它会报错），遍历 pendingParents 把该父下
+// 所有未决 call 摘除、收 channel——waitCall
+// 在 close(channel) 上拿到"随父取消"错误。
+// 关 channel 放锁外防回调重入。
 func (c *conn) cancelParentCalls(parentRequestID string) {
 	c.pendingMu.Lock()
 	if parent := c.requestParents[parentRequestID]; parent != nil {
