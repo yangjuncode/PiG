@@ -282,6 +282,9 @@ func (h *loopHost) runPreparedToolCall(ctx context.Context, prepared preparedToo
 	}
 	var err error
 	deliver := func() { err = h.deliver(toolExecutionEndEvent(finalized)) }
+	// 事件顺序 vs 完成顺序：tool_execution_end 按工具落地先后
+	// 发（SettleGate 槽位排队），而 toolResult 消息按调用源顺序
+	// 拼（调用方在 wg.Wait 后统一追加）——两套顺序各守其约。
 	if slot := ToolSettleFromContext(ctx, prepared.call.id); slot != nil {
 		// A call ends after every call whose tool settled before its own (jsloop.SettleGate).
 		slot.Run(deliver)

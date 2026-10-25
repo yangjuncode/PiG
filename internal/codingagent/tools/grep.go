@@ -185,6 +185,8 @@ func (t *GrepTool) Execute(ctx context.Context, _ string, rawParams json.RawMess
 	if ctx.Err() != nil {
 		return grepError("Operation aborted"), nil
 	}
+	// 退出码语义：rg 的 0=有匹配、1=无匹配都算正常；因超限
+	// 主动 kill 的退出码不算失败；其余非零码才报 stderr。
 	if !run.killedDueToLimit && run.exitCode != 0 && run.exitCode != 1 {
 		msg := jsstring.Trim(run.stderr)
 		if msg == "" {
@@ -270,6 +272,10 @@ func runRipgrep(ctx context.Context, rgPath, dir string, args []string, limit fl
 	var run ripgrepRun
 	var matches []grepMatch
 	reader := bufio.NewReader(stdout)
+	// 流式消费要点：pipe 永远读干（即使超限后），否则 rg 会
+	// 因写端阻塞而假死；超限先记标志再 kill，区分"被杀"与
+	// "真失败"。match 数无 path/line 的事件也计入配额但不
+	// 进结果（上游同）。
 	for {
 		line, readErr := reader.ReadString('\n')
 		if jsstring.Trim(line) != "" && float64(run.matchCount) < limit {
