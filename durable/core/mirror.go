@@ -136,6 +136,9 @@ func (m *mirror) submission(id session.ID) *jv.Object {
 }
 
 // putTask records task id as stored: a terminal task keeps its text until a read parses it.
+// 存任务双形态：terminal 状态不会再变——留原始
+// 字节串省解析；非 terminal 还要被增量改——留
+// 解析后的 jv.Object 供读路径直接查字段。
 func (m *mirror) putTask(id session.ID, head taskHead, rec *jv.Object, raw []byte) int {
 	i := m.tasks.slot(id)
 	m.tasks.setHead(i, head)

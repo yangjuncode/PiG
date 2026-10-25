@@ -226,6 +226,10 @@ func (h *handler) txBegin(id uint32, op *jv.Object) error {
 		}
 	}
 	h.txs[id] = t
+	// 取线两路：有 loop 就排进 Session 行（line FIFO
+	// 保证顺序），已有人在跑就先回 waiting；无
+	// loop 走本地 queue 排队等 holder 空位——两种
+	// 形态同一"串行事务行"语义。
 	if h.loop != nil {
 		// The transaction takes its turn on the Session line behind the jobs already queued (session.ts #enqueue is one FIFO).
 		if h.holder != 0 || h.loop.Busy() {
@@ -308,6 +312,11 @@ func (h *handler) txEnd(t *hostTx, state *jv.Object) error {
 	if held {
 		pubs = h.sess.HeldPublications()
 	}
+	// 提交三态：NeedGate→挂起等宿主 Storage 裁决
+	//（行继续占着，等 Storage 收/拒后 txEndSettled
+	// 续跑）；其他错误→拒绝，先 TakeTicks 吃掉
+	// Finish 产生的 tick 变更防泄漏给下一个行任务，
+	// 再放行报拒；成功→txCommitted 广播+放线。
 	if session.IsNeedGate(err) {
 		// The host's Storage holds the commit: the transaction keeps the line, and its end is answered when the Storage
 		// accepts or refuses the writes (gate.go).
