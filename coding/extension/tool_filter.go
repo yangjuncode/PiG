@@ -73,6 +73,10 @@ func NewToolFilter(allowed, excluded map[string]struct{}) ToolFilter {
 	if len(excluded) > 0 {
 		filter.excluded = ToolNameMatcher(excluded)
 	}
+	// filtersMcp 判定：空 allowlist（--no-tools）或名单里
+	// 显式出现 mcp__ 条目时，allowlist 管辖 MCP 工具；
+	// 非空且无 mcp__ 条目的名单放 MCP 工具注册——codemode
+	// 和 tool_search 需要它们，只是不直接向模型声明。
 	if allowed != nil {
 		filter.filtersMcp = len(allowed) == 0
 		for entry := range allowed {
@@ -94,6 +98,9 @@ func (f ToolFilter) Names(name string) bool { return f.allowed != nil && f.allow
 // allowlist filters them.
 //
 // Ports packages/coding-agent/src/core/agent-session.ts (_isAllowedTool).
+// 注册裁决三级：denylist 先拒 → allowlist 命中或无
+// allowlist 放行 → 兜底"非过滤 MCP 工具放行"（名单未
+// 提 MCP 时 mcp 工具仍注册，供 codemode/tool_search）。
 func (f ToolFilter) Allows(name string) bool {
 	if f.excluded != nil && f.excluded(name) {
 		return false

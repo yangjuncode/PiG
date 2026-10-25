@@ -154,6 +154,12 @@ func (r *ExtensionRuntime) PendingNativeProviderRegistrations() []PendingNativeP
 	return slices.Clone(r.pendingNativeProviders)
 }
 
+// 刷新期→绑定期的 provider 注册队列：nativeBound=false
+// 期间 RegisterNativeProvider 只入队（加载的扩展此刻还没
+// 有 runner 收它）。逐条 flush 用活数组下标而非快照——
+// 注册回调里又注册的新 provider 也一并冲掉（上游 runner.ts
+// flush 语义）。全部冲完换上真 actions 并置 bound，此后
+// 注册直达目标。
 func (r *ExtensionRuntime) bindNativeProviders(actions ProviderActions, report func(*ExtensionError)) {
 	r.mu.Lock()
 	r.nativeBound = false
