@@ -303,6 +303,12 @@ func selectRuntimeEngine(ctx context.Context, commands runtimeCommands, requeste
 	if requested == "auto" {
 		engines = []string{"docker", "podman"}
 	}
+	// 引擎探测三级门槛：可执行存在 → `info` 活着
+	// → 本地镜像 inspect 得身份。全部失败原因逐
+	// 条收集后一次报错——用户能同时看到 docker
+	// 没装、podman 装了但 daemon 没起等，不用
+	// 逐个修来发现下一个问题。镜像绝不自动拉
+	// 取（供应链边界）。
 	var unavailable []string
 	for _, engine := range engines {
 		if _, err := commands.LookPath(engine); err != nil {
@@ -376,6 +382,16 @@ func resolveAgentMounts(effective *AgentEnvironment) ([]agentMountRecord, error)
 	return records, nil
 }
 
+// 挂载源安全闸（逃逸防线，顺序有意）：
+//  1. 展开后必须绝对路径；
+//  2. Lstat 判存在且非 socket（socket 直接拒，
+//     先于符号链接解析——链接指到 socket 也
+//     会被后面白名单拦）；
+//  3. EvalSymlinks 解真实路径，防 symlink
+//     绕过路径检查；
+//  4. 真实路径是 / → 挂宿主根=整机暴露，拒；
+//  5. 真实路径是容器引擎 socket → 拿到它就
+//     等于拿到宿主 root，拒。
 func resolveMountSource(raw string) (string, error) {
 	path := expandOriginPath("", raw)
 	if !filepath.IsAbs(path) {
@@ -555,6 +571,17 @@ func ActiveAgentEnvironmentIdentity() string {
 	return strings.TrimSpace(os.Getenv(agentEnvironmentActiveEnv))
 }
 
+// 激活环境验锁四关（容器内 pig 自证"我确实是
+// 被环境启动的"而非宿主裸跑）：
+//  1. lock 文件必须存在——标记环境变量能被伪造，
+//     有锁文件才有载体；
+//  2. 严格 JSON 解码（禁未知字段+禁尾随内容）；
+//  3. lock.Identity == 注入的 activeIdentity；
+//  4. 重算 Piglet 摘要+有效环境五元组与 lock
+//     全等对——防同一标记用在被改过的 Piglet 或
+//     环境配置上；
+//  5. 最后从 lock 字段重算 identity 再对一次，
+//     防 lock 里 Identity 字段本身被改。
 func verifyActiveAgentEnvironment(p *Piglet, activeIdentity string) error {
 	lockPath := strings.TrimSpace(os.Getenv(agentEnvironmentLockEnv))
 	if lockPath == "" {
