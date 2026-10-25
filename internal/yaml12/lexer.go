@@ -312,6 +312,13 @@ func (l *lexer) parseFlowCollection() string {
 		}
 		return eof
 	}
+	// 流集合内意外降格检测：缩进回退到
+	// indentNext 以下（非注释行）或撞见
+	// ---/... 文档标记——说明流集合没闭合
+	// 就到新块级了。特赦"恰好少一级且是
+	// 顶层的 ]/}"（未闭合容器的结束符跟
+	// 着缩进排版），其余发 FLOW_END 回块
+	// 级解析。
 	if (indent != -1 && indent < l.indentNext && lineAt(0) != '#') ||
 		(indent == 0 && (strings.HasPrefix(line, "---") || strings.HasPrefix(line, "...")) && isEmpty(lineAt(3))) {
 		atFlowEndMarker := indent == l.indentNext-1 && l.flowLevel == 1 && (lineAt(0) == ']' || lineAt(0) == '}')
@@ -328,6 +335,12 @@ func (l *lexer) parseFlowCollection() string {
 		l.flowKey = false
 	}
 	n += l.pushIndicators()
+	// 流内分派：{/[ 开嵌套 flowLevel++；
+	// }/] 收一级（归零回 doc）；* 别名；
+	// 引号进标量子解析；: 仅在 flowKey
+	// （前面收过 ]/} 或引号标量）或后
+	// 跟空白/逗号时才是映射键分隔符，
+	// 否则并进普通标量。
 	switch lineAt(n) {
 	case eof:
 		return "flow"

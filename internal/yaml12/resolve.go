@@ -306,6 +306,11 @@ func trimBlanksLeft(s string) string  { return strings.TrimLeft(s, " \t") }
 func trimBlanksRight(s string) string { return strings.TrimRight(s, " \t") }
 
 // foldLines folds the line breaks of a flow scalar the way the library's sticky regular expressions do.
+// YAML 折叠规则：行间空白折成一个空格；空行
+// 表示显式换行——但连续空行只有第一个换成
+// \n，后续每个空行再各加一个 \n（sep 状态
+// 机：空行见 sep==" " 先切到 "\n" 不输出，
+// 已是 "\n" 才输出，实现"空行数-1 个换行"）。
 func foldLines(source string) string {
 	n := strings.IndexByte(source, '\n')
 	if n < 0 {
@@ -355,6 +360,10 @@ func substrChars(s string, from int) string {
 }
 
 // substrUnits is String.prototype.substr(from, units) with from a byte offset and the length in UTF-16 units; a surrogate pair cut in two is U+FFFD.
+// UTF-16 长度截断：BMP 外字符占 2 个 unit，
+// 剩余 units 装不下整字符时不取半——写
+// U+FFFD 占位，复刻 JS substr 把代理对切
+// 开后高代理渲染为替换符的观测量。
 func substrUnits(s string, from, units int) string {
 	if from < 0 || from >= len(s) {
 		return ""
