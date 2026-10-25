@@ -437,6 +437,9 @@ func PrepareCompaction(
 	entries := projection.Entries
 	// The newest compaction is projected first. Older compaction entries can
 	// occur in its retained range, but their projected contribution is empty.
+	// 最新的压缩条目在投影中排最前；更早的压缩条目即使落在它的
+	// 保留区间里，投影贡献也为空——所以"第一个有消息的 compaction"
+	// 就是最近一次压缩，它就是本次摘要的上界。
 	prevCompactionIndex := slices.IndexFunc(entries, func(entry codingagent.ProjectedSessionEntry) bool {
 		return entry.SourceEntry.Base().Type == "compaction" && len(entry.Messages) > 0
 	})
@@ -448,6 +451,8 @@ func PrepareCompaction(
 		_ = json.Unmarshal(entries[prevCompactionIndex].SourceEntry.Raw(), &previous)
 		previousSummary = previous.Summary
 		// The projection has already selected the previous compaction's kept range.
+		// 上次压缩之前的历史不再重复摘要：摘要区间从上一次压缩条目
+		// 之后开始，它的 summary 经 PreviousSummary 传给增量更新提示词。
 		boundaryStart = prevCompactionIndex + 1
 	}
 	tokensBefore := EstimateProjectedContextTokens(projection, pathEntries).Tokens
@@ -459,6 +464,8 @@ func PrepareCompaction(
 	if firstKeptEntryID == "" {
 		return nil
 	}
+	// 切口落在回合中间时，整段摘要的终点不是切口而是该回合的起点：
+	// 回合前半段走 turnPrefix 单独摘要，后半段保留原文。
 	historyEnd := cutPoint.FirstKeptEntryIndex
 	if cutPoint.IsSplitTurn {
 		historyEnd = cutPoint.TurnStartIndex
@@ -789,9 +796,13 @@ func generateSummaryAdaptive(
 	sessionID string,
 ) (string, *ai.Usage, error) {
 	summary, usage, err := generateSummaryChunk(ctx, messages, model, reserveTokens, apiKey, headers, customInstructions, previousSummary, thinkingLevel, completer, streamFn, env, retry, callbacks, sessionID)
+	// 仅在"上下文溢出"错误且消息数 ≥2 时二分重试；其他错误
+	// （网络、认证、限流）二分没有意义，直接上抛。
 	if err == nil || len(messages) < 2 || !ai.IsContextOverflow(ai.AssistantMessage{StopReason: ai.StopReasonError, ErrorMessage: err.Error()}, 0) {
 		return summary, usage, err
 	}
+	// 二分递归：前半段先摘要，结果作为后半段的 previousSummary
+	// 串起来——最终的 summary 覆盖整个消息区间，usage 两段相加。
 	middle := len(messages) / 2
 	summary, firstUsage, err := generateSummaryAdaptive(ctx, messages[:middle], model, reserveTokens, apiKey, headers, customInstructions, previousSummary, thinkingLevel, completer, streamFn, env, retry, callbacks, sessionID)
 	if err != nil {
@@ -821,10 +832,15 @@ func splitForContextWindow(messages []agent.AgentMessage, model *ai.Model, reser
 		maxTokens = model.Capabilities.MaxOutputTokens
 	}
 	overhead := ceilQuarter(len(SummarizationSystemPrompt)+len(UPDATE_SUMMARIZATION_PROMPT)+len(customInstructions)) + 2*maxTokens
+	// 可用空间 = (窗口 - 固定开销) × 75%；开销含系统提示词、更新
+	// 提示词、自定义指令的估算，以及"带入的摘要"和"要生成的摘要"
+	// 两个 maxTokens 预算。
 	room := int(float64(model.Capabilities.ContextWindow-overhead) * summarizationInputShare)
 	if room <= 0 {
 		return [][]agent.AgentMessage{messages}
 	}
+	// 逐条估算消息文本大小：ceilQuarter 即 len/4 ≈ token 数的
+	// 字符估算法，与上游口径一致。
 	sizes := make([]int, len(messages))
 	total := 0
 	for index := range messages {
@@ -834,6 +850,8 @@ func splitForContextWindow(messages []agent.AgentMessage, model *ai.Model, reser
 	if total <= room {
 		return [][]agent.AgentMessage{messages}
 	}
+	// 贪心切块：按序累加，装满一块就封块——保证块内消息连续且
+	// 顺序不变；单条超 room 的消息自成一块（used>0 才切分）。
 	var chunks [][]agent.AgentMessage
 	start, used := 0, 0
 	for index, size := range sizes {

@@ -151,6 +151,10 @@ type editArgumentsShape struct {
 func prepareEditArgumentsRaw(raw json.RawMessage) json.RawMessage {
 	// Valid arguments with one edits array and no top-level oldText or newText (in any letter case) are left as they are; telling so
 	// takes a scan, not the ordered parse below, which copies every member.
+	// 快速路径：只数成员出现次数和值的首字节——恰好一个 edits 数组、
+	// 且没有顶层 oldText/newText 时就是标准形，原样返回（不付保序
+	// 解析成本）。注意 encoding/json 对仅大小写不同的键也会匹配，
+	// 与上游宽松语义一致。
 	var shape editArgumentsShape
 	if json.Unmarshal(raw, &shape) == nil && shape.Edits.seen == 1 && shape.Edits.first == '[' && shape.OldText.seen == 0 && shape.NewText.seen == 0 {
 		return raw
@@ -166,10 +170,13 @@ func prepareEditArgumentsOrdered(raw json.RawMessage) json.RawMessage {
 	}
 	changed := false
 	// Assigning args.edits keeps its position when the member exists and appends it otherwise, as a JS object does.
+	// 兼容形一：edits 是 JSON 字符串（模型把数组整体放进了字符串）。
 	if editsRaw, ok := args.Get("edits"); ok && isJSONString(editsRaw) {
 		var inner string
 		if json.Unmarshal(editsRaw, &inner) == nil {
 			// JSON.parse skips only JSON whitespace; strings.TrimSpace would also accept \v, \f, U+0085 and U+00A0.
+			// 只按 JSON 空白裁剪（JS JSON.parse 口径），再判内容：
+			// 是数组 → 直接替换为数组；是单个 edit 对象 → 包成数组。
 			switch innerRaw := json.RawMessage(strings.Trim(inner, " \t\n\r")); {
 			case json.Valid(innerRaw) && len(innerRaw) > 0 && innerRaw[0] == '[':
 				args.Set("edits", innerRaw)
@@ -180,13 +187,17 @@ func prepareEditArgumentsOrdered(raw json.RawMessage) json.RawMessage {
 			}
 		}
 	} else if ok && isSingleEditInput(editsRaw) {
+		// 兼容形二：edits 是单个对象而非数组 → 包成数组。
 		args.Set("edits", append(append(json.RawMessage("["), editsRaw...), ']'))
 		changed = true
 	}
 	oldRaw, _ := args.Get("oldText")
 	newRaw, _ := args.Get("newText")
+	// 兼容形三：顶层 {oldText, newText}（旧 schema）→ 折进 edits 数组。
 	if isJSONString(oldRaw) && isJSONString(newRaw) {
 		// {...rest, edits}: rest keeps its order minus oldText and newText, and edits keeps its place in rest or goes last.
+		// 若已有 edits 数组则追加该 edit；保持 JS 对象的键序语义：
+		// 删除后重设的 edits 落回原位置（已有键）或末尾。
 		edits := []json.RawMessage{}
 		if current, ok := args.Get("edits"); ok {
 			_ = json.Unmarshal(current, &edits)
@@ -213,6 +224,8 @@ func prepareEditArgumentsOrdered(raw json.RawMessage) json.RawMessage {
 		return raw
 	}
 	// JSON.stringify form: no HTML escaping, integer-like members first.
+	// 序列化回 JSON.stringify 形态：不转义 HTML、整数键成员排最前，
+	// 与上游重写后的参数逐字节一致。
 	canonical, err := jsonstringify.Canonicalize(out)
 	if err != nil {
 		return raw
@@ -290,6 +303,8 @@ func (t *EditTool) editLocked(ctx context.Context, absPath string, p editParams)
 		if aborted() {
 			return editError("Operation aborted")
 		}
+		// 上游的错误文案：有 Node error.code 时报 code 而不是
+		// 原始错误文本（模型据此区分 ENOENT/EACCES 等）。
 		detail := "Error: " + err.Error()
 		if code := nodeErrorCode(err); code != "" {
 			detail = "Error code: " + code
@@ -306,6 +321,9 @@ func (t *EditTool) editLocked(ctx context.Context, absPath string, p editParams)
 	if aborted() {
 		return editError("Operation aborted")
 	}
+	// 读 → 规范化 → 应用 → 还原行尾：匹配在 LF 规范文本上进行
+	// （CRLF 文件的 oldText 也是 LF 形），写回时恢复 BOM 与原始
+	// 行尾序列，不悄悄改变文件既有格式。
 	var decoder utf8StreamDecoder
 	bom, content := text.SplitBom(decoder.decode(data, false))
 	originalEnding := detectLineEnding(content)
@@ -325,6 +343,8 @@ func (t *EditTool) editLocked(ctx context.Context, absPath string, p editParams)
 		return editError("Operation aborted")
 	}
 	// One line diff serves the display diff and the patch, which upstream computes separately over the same pair.
+	// 每个步骤后都检查 abort：队列位置要在写完整后释放，但不能
+	// 让已取消的调用白跑一次完整读写。
 	lineDiff := jsdiff.DiffLineRuns(applied.baseContent, applied.newContent)
 	diff, firstChangedLine := diffStringOf(lineDiff, applied.baseContent, applied.newContent, 4)
 	patch := unifiedPatchOf(p.Path, lineDiff, 4)

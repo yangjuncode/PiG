@@ -72,6 +72,10 @@ func StreamObservationFromContext(ctx context.Context) *StreamObservation {
 }
 
 // callbackObservation resolves the observation a host callback derived from this one awaits through.
+// callbackObservation 决定宿生回调（由本 observation 派生）应经谁 await。
+// 三种情况：本 turn 仍在执行 → 用自己；另一个 provider turn 持有执行 →
+// 用那个 producer 的 observation；本 observation 已挂起/正在恢复且无其他
+// turn 在跑 → 嵌套 await 是 no-op，仍用自己；否则返回 nil（无观察点）。
 func (observation *StreamObservation) callbackObservation() *StreamObservation {
 	executor := observation.turn.executor
 	executor.mu.Lock()
@@ -174,6 +178,8 @@ func (observation *StreamObservation) AwaitExternal(wait func() error) error {
 
 // AwaitTick is Await for a wait that Pi settles from a process.nextTick callback: the continuation runs after every ready reaction and before any I/O completion, including completions queued earlier. A synchronous pipe or file write's callback is such a wait (output-guard.ts:writeRawStdoutChunk). Node queues the callback while the caller still runs, so wait runs first, on the caller's goroutine and still holding the observation; it must not depend on the executor.
 func (observation *StreamObservation) AwaitTick(wait func() error) error {
+	// nextTick 回调在调用方还在跑时就被 Node 排队：所以 wait 先在
+	// 持有 observation 的调用方 goroutine 上执行（不能依赖 executor）。
 	err := wait()
 	for {
 		observation.mu.Lock()
@@ -187,6 +193,8 @@ func (observation *StreamObservation) AwaitTick(wait func() error) error {
 			observation.turn.suspend()
 			continue
 		}
+		// 标记为 tick 类完成后立即排队重获反应，再让出 turn：
+		// 重获会排在所有已就绪反应之后、任何 I/O 完成之前。
 		observation.detached = true
 		observation.completion = completionTick
 		drain := observation.acquireLocked()
@@ -206,6 +214,8 @@ func (observation *StreamObservation) suspend() func(bool) {
 // suspendWith is suspend that hands the resume function to before ahead of releasing execution, so work the release admits can call it; suspended is false when the observation was already suspended or ended and resume does nothing. resume(true) returns once the turn holds execution again; resume(false) only queues the reacquire.
 func (observation *StreamObservation) suspendWith(before func(resume func(bool), suspended bool)) func(bool) {
 	observation.mu.Lock()
+	// 已结束或已有挂起：本次 suspend 是 no-op（before 拿到的是
+	// 不做任何事、且 suspended=false 的 resume）。
 	if observation.ended || observation.suspensions > 0 {
 		observation.mu.Unlock()
 		noop := func(bool) {}
@@ -215,6 +225,8 @@ func (observation *StreamObservation) suspendWith(before func(resume func(bool),
 		return noop
 	}
 	if observation.acquiring {
+		// 上一次挂起的重获反应已在队列：先经它把执行权拿回来，
+		// 再重新尝试 suspend——保证恢复顺序不乱。
 		observation.mu.Unlock()
 		observation.turn.suspend()
 		return observation.suspendWith(before)
@@ -228,6 +240,8 @@ func (observation *StreamObservation) suspendWith(before func(resume func(bool),
 			observation.mu.Lock()
 			observation.suspensions--
 			var drain func()
+			// 只有最后一个挂起结束、且没在重获中/未结束，才排队
+			// “拿回执行权”的反应——多个并发挂起只获一次执行权。
 			if observation.suspensions == 0 && !observation.acquiring && !observation.ended {
 				drain = observation.acquireLocked()
 			}
@@ -243,6 +257,8 @@ func (observation *StreamObservation) suspendWith(before func(resume func(bool),
 	if before != nil {
 		before(resume, true)
 	}
+	// detach 才真正让出 turn：在 before 之后调用，使 before 装好的
+	// resume 回调对随后被接纳的工作可用。
 	observation.turn.detach()
 	return resume
 }
@@ -251,6 +267,8 @@ func (observation *StreamObservation) suspendWith(before func(resume func(bool),
 func (observation *StreamObservation) acquireLocked() func() {
 	observation.acquiring = true
 	executor := observation.turn.executor
+	// 重获执行权的反应排在哪条队列由完成类别决定，复刻 Node
+	// 优先级：nextTick > promise reaction（ready）> I/O 外部完成。
 	queue := &executor.ready
 	switch observation.completion {
 	case completionTick:
@@ -279,7 +297,9 @@ func (observation *StreamObservation) end() {
 	observation.mu.Lock()
 	observation.ended = true
 	if observation.detached {
-		// A suspension is still out: take execution back before the callback's turn returns.
+		// 回调要返回了但还有挂起未回收：必须先把执行权拿回来
+		// 再让 turn 返回，否则 executor 会带着“有 turn 悬在外面”
+		// 的状态继续跑别的反应。
 		var drain func()
 		if !observation.acquiring {
 			drain = observation.acquireLocked()
@@ -361,10 +381,14 @@ func (stream *AssistantMessageEventStream) observeEvents(ctx context.Context, ma
 			defer iterator.close()
 			owner := currentGoroutineID()
 			for {
+				// 等下一个交付：done 表示流终止且缓冲已排空。
 				delivery := awaitContinuation(turn, iterator.next())
 				if delivery.done {
 					return
 				}
+				// 每个事件给它自己的 observation：yield 内消费的
+				// 回调都挂在这个 observation 上，yield 返回时 end()
+				// 回收它的挂起并交还 executor。
 				observation := &StreamObservation{turn: turn, owner: owner}
 				executor.mu.Lock()
 				executor.observation = observation

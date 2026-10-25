@@ -33,6 +33,8 @@ func NewEventStream[T, R any](isComplete func(T) bool, extractResult func(T) R) 
 }
 
 func (s *EventStream[T, R]) settle(result R) {
+	// 只允许一次 settle：closed 标记保证“只有一个终止结果”的契约，
+	// 后到的事件不再改写 result。
 	if s.closed {
 		return
 	}
@@ -49,10 +51,14 @@ func (s *EventStream[T, R]) Push(event T) {
 	if s.done {
 		return
 	}
+	// 完成事件触发 done 并把结果提取出来 settle——但完成事件本身
+	// 仍然照常投递给消费者（上游语义：consumer 能看到 done 事件）。
 	if s.isComplete(event) {
 		s.done = true
 		s.settle(s.extractResult(event))
 	}
+	// 有等待者时直接交给最早开始等待的消费者（保序且公平）；
+	// 否则入缓冲队列等下一个 Events() 读者。
 	if len(s.waiting) > 0 {
 		waiter := s.waiting[0]
 		s.waiting = s.waiting[1:]
@@ -67,6 +73,8 @@ func (s *EventStream[T, R]) End(result ...R) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.done = true
+	// 带参数的 End 等价上游 end(result)；不带参数时 Result 保持
+	// 未 resolve（对应上游 end() 无参的语义）。settle 内部幂等。
 	if len(result) > 0 {
 		s.settle(result[0])
 	}
@@ -75,6 +83,8 @@ func (s *EventStream[T, R]) End(result ...R) {
 
 func (s *EventStream[T, R]) finish() {
 	s.done = true
+	// 关闭所有等待通道（而非发送），让等待中的消费者以 ok=false
+	// 退出循环；已缓冲的事件仍可被继续读走。
 	for _, waiter := range s.waiting {
 		close(waiter)
 	}
@@ -86,6 +96,7 @@ func (s *EventStream[T, R]) Events() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for {
 			s.mu.Lock()
+			// 先排空缓冲：保证按 push 顺序交付。
 			if len(s.queue) > 0 {
 				event := s.queue[0]
 				var zero T
@@ -97,10 +108,13 @@ func (s *EventStream[T, R]) Events() iter.Seq[T] {
 				}
 				continue
 			}
+			// 缓冲空且流已结束：终止迭代（含已读取的完成事件）。
 			if s.done {
 				s.mu.Unlock()
 				return
 			}
+			// 否则注册等待通道（容量 1，Push 直接投递不会阻塞），
+			// 解锁后挂起等下一个事件或 finish() 的 close。
 			waiter := make(chan T, 1)
 			s.waiting = append(s.waiting, waiter)
 			s.mu.Unlock()

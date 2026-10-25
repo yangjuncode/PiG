@@ -83,6 +83,8 @@ func (decoder *openAIStreamDecoder) Next() bool {
 		if err == nil {
 			decoder.done = true
 		}
+		// 取消类错误不作为流的 Err 暴露：上游里取消走自己的通道，
+		// FetchRequestCanceledException 同样被吞掉。
 		if !errors.Is(err, context.Canceled) && (err == nil || !strings.Contains(err.Error(), "FetchRequestCanceledException")) {
 			decoder.err = err
 		}
@@ -90,6 +92,8 @@ func (decoder *openAIStreamDecoder) Next() bool {
 	}
 	if sse.Data == "[DONE]" {
 		// 7.19 breaks at the sentinel; the loop's AsyncIteratorClose returns _iterSSEMessages without aborting the request, so the body is not read to its end.
+		// 精确匹配 "[DONE]" 哨兵即结束，不再读后续字节（SDK 7.19
+		// 行为：正常终止不 abort 请求，body 可能未读完）。
 		decoder.messages.close(true)
 		openAIStreamSuspend(decoder.suspend) // AsyncIteratorClose awaits _iterSSEMessages.return().
 		decoder.done = true
@@ -97,6 +101,8 @@ func (decoder *openAIStreamDecoder) Next() bool {
 		return false
 	}
 	if err := decoder.parse(&sse); err != nil {
+		// 解析失败（畸形 JSON / error 事件）走另一条 close 路径：
+		// 先 abort 控制器再关闭（close(false)）。
 		decoder.messages.close(false)
 		openAIStreamSuspend(decoder.suspend) // AsyncIteratorClose awaits _iterSSEMessages.return().
 		decoder.err = err
@@ -155,6 +161,9 @@ func (decoder *openAIStreamDecoder) parse(sse *serverSentEvent) error {
 	var apiError json.RawMessage
 	if sse.Event == "error" {
 		// fromSSEResponse throws new APIError(undefined, data?.error ?? data) for an error event before any other check.
+		// error 事件：优先取 data.error 成员；成员缺失或为 null 时
+		// 整个 data 就是错误对象。始终返回错误（无错误内容时给
+		// "(no status code or body)" 占位）。
 		if value := bytes.TrimLeft(data, " \t\r\n"); len(value) > 0 && value[0] == '{' {
 			member, err := openAIStreamErrorMember(data)
 			if err != nil {
@@ -172,6 +181,10 @@ func (decoder *openAIStreamDecoder) parse(sse *serverSentEvent) error {
 		return &openAIStreamDecodeError{SSE: *sse, APIError: apiError, Cause: err}
 	}
 	// Only the "error" member is read. The members are decoded only when the object has a top-level member named "error", found by a walk that unescapes nothing but member names (an escape could spell the key); the record is valid JSON, so decoding them cannot fail. JSON whitespace may precede the object, as JSON.parse in the SDK's stream accepts.
+	// 普通事件里 data 也可能内嵌 error 成员（部分 provider 用
+	// 200 流携带错误对象）。快速判定链：是 '{' 开头、字节里含
+	// "error" 或转义符（键可能被转义拼出），再走保序键名扫描
+	// 确认顶层确有该成员——避免对大 chunk 做完整 decode。
 	if value := bytes.TrimLeft(data, " \t\r\n"); len(value) > 0 && value[0] == '{' && (bytes.Contains(data, []byte("error")) || bytes.IndexByte(data, '\\') >= 0) && jsonObjectHasMember(sse.Data, "error") {
 		member, err := openAIStreamErrorMember(data)
 		if err != nil {
@@ -286,6 +299,8 @@ type openAISSEChunks struct {
 //perf:hot
 func (chunks *openAISSEChunks) next() ([]byte, bool, error) {
 	for !chunks.finished {
+		// SSE 事件以空行（两个连续行尾）分隔；scanFrom 让重扫从
+		// 上次未命中处继续而不是从头。
 		if index := openAIDoubleNewlineIndex(chunks.data[chunks.scanFrom:]); index >= 0 {
 			index += chunks.scanFrom
 			chunk := chunks.data[:index]
@@ -295,6 +310,7 @@ func (chunks *openAISSEChunks) next() ([]byte, bool, error) {
 			return chunk, true, nil
 		}
 		// A delimiter can straddle the next body value by at most three bytes (CR LF CR LF).
+		// 分隔符最多跨界 3 字节：下次只从 len-3 起重扫。
 		chunks.scanFrom = max(0, len(chunks.data)-3)
 		if chunks.bodyEnded {
 			if len(chunks.data) > 0 {
@@ -308,7 +324,9 @@ func (chunks *openAISSEChunks) next() ([]byte, bool, error) {
 			return nil, false, nil
 		}
 		if len(chunks.data) > 0 && !chunks.owned {
-			// The bytes left of the reader's last value must outlive its next call; the copy has room for the value that completes them.
+			// 剩余字节引用的还是 reader 上次 Read 的缓冲，reader 下次
+			// Read 可能复用它——先拷到自有缓冲（并预留追加空间），
+			// 保证未交付的尾巴活到被补全。
 			owned := make([]byte, len(chunks.data), max(2*len(chunks.data), 4096))
 			copy(owned, chunks.data)
 			chunks.data, chunks.owned = owned, true

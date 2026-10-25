@@ -77,6 +77,9 @@ func ExecuteBashWithOperations(ctx context.Context, command, cwd string, operati
 		// TextDecoder, like upstream's: a leading BOM is dropped.
 		decoder = utf8StreamDecoder{stripBOM: true}
 	)
+	// ensureTempFile 惰性创建完整输出的落盘文件：只在输出超过
+	// 阈值后才有必要落盘；创建时先把已在滚动窗口里的 chunk
+	// 补写进去，保证文件包含从头开始的全部清洗后输出。
 	ensureTempFile := func() {
 		if tempFileOpened {
 			return
@@ -101,10 +104,13 @@ func ExecuteBashWithOperations(ctx context.Context, command, cwd string, operati
 	// Unfinished escape sequence at the end of the previous chunk, completed by the next chunk (bash-executor.ts pendingAnsi).
 	pendingAnsi := ""
 	appendText := func(rawText string) {
+		// 每段文本先剥 ANSI、再做二进制输出清洗、去 \r——与上游
+		// 展示/存储用文本的处理顺序一致。
 		chunk := strings.ReplaceAll(text.SanitizeBinaryOutput(text.StripANSIString(rawText)), "\r", "")
 		if chunk == "" {
 			return
 		}
+		// 输出总量越限后开始落盘（保留全文供 FullOutputPath 查看）。
 		if totalBytes > DefaultMaxBytesUpstream {
 			ensureTempFile()
 		}
@@ -112,6 +118,8 @@ func ExecuteBashWithOperations(ctx context.Context, command, cwd string, operati
 			_, _ = tempWriter.WriteString(chunk)
 		}
 		outputChunks = append(outputChunks, chunk)
+		// 滚动窗口按 JS String.length（UTF-16 code unit）计长，
+		// 与上游的截断阈值口径一致。
 		outputBytes += jsLength(chunk)
 		for outputBytes > maxOutputBytes && len(outputChunks) > 1 {
 			outputBytes -= jsLength(outputChunks[0])
@@ -124,6 +132,8 @@ func ExecuteBashWithOperations(ctx context.Context, command, cwd string, operati
 	onData := func(data []byte) {
 		totalBytes += len(data)
 		decoded := decoder.decode(data, true)
+		// ANSI 转义序列可能横跨 chunk 边界：上一段的未闭合尾巴
+		// 与本段拼接后再判断边界，未闭合的新尾巴继续挂起。
 		if pendingAnsi != "" {
 			decoded = pendingAnsi + decoded
 		}
@@ -152,6 +162,9 @@ func ExecuteBashWithOperations(ctx context.Context, command, cwd string, operati
 	}
 
 	result, err := operations.Exec(ctx, command, cwd, BashOperationsExecOptions{OnData: onData})
+	// 取消不是失败：ctx 取消时进程是被杀的，已产出的输出仍要
+	// 以 Cancelled=true 返回（上游语义），只有非取消的错误才
+	// 作为 error 传播。
 	cancelled := ctx.Err() != nil
 	if err != nil && !cancelled {
 		closeTempFile()

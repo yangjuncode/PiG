@@ -112,6 +112,8 @@ func truthySessionLine(line []byte) bool {
 func readSessionFileEntries(path string) ([]FileEntry, bool, error) {
 	// loadEntriesFromFile returns no entries unless existsSync(path), which is false for any stat failure (a missing
 	// file, or a parent that is a file); a path that exists but cannot be opened fails.
+	// 上游 existsSync 语义：任何 stat 失败（文件不存在、父路径
+	// 是文件）都返回空列表而不是错误；只有"存在但打不开"才报错。
 	if _, err := os.Stat(path); err != nil {
 		return []FileEntry{}, false, nil
 	}
@@ -124,6 +126,8 @@ func readSessionFileEntries(path string) ([]FileEntry, bool, error) {
 	records := []FileEntry{}
 	err = forEachJSONLLine(reader, func(line []byte) error {
 		// readFileSync(path, "utf8") replaces each maximal invalid subpart with one U+FFFD before the lines are split.
+		// 非法 UTF-8 行先按 Node readFileSync utf8 语义替换为 U+FFFD
+		// 再解析——坏字节不会让整行被跳过（上游行为）。
 		if !utf8.Valid(line) {
 			line = []byte(jsstring.FromUTF8(line))
 		}
@@ -142,9 +146,13 @@ func readSessionFileEntries(path string) ([]FileEntry, bool, error) {
 	if len(records) == 0 {
 		return records, false, nil
 	}
+	// 第一条合法记录必须是 session header，否则整个文件不算会话
+	// 文件（防止把普通 JSONL 当会话读）。
 	if _, valid := records[0].(SessionHeader); !valid {
 		return []FileEntry{}, false, nil
 	}
+	// 返回值的 unterminated 标记：文件确实读过内容且最后一字节
+	// 不是换行——调用方补一个空行封口崩溃留下的截断写。
 	return records, reader.read && reader.last != '\n', nil
 }
 

@@ -101,6 +101,9 @@ type MutationTicket struct {
 // admission order itself, in its own call-ordered loop, decoupled from when
 // the reserving goroutine actually runs its mutation.
 func (q *FileMutationQueue) Reserve(filePath string) (*MutationTicket, error) {
+	// 整个准入判定（键解析 + 同文件匹配 + 占位）在同一把锁内完成，
+	// 因此每个调用者的队列位置按调用顺序原子确定——这是用
+	// “锁内定位置 + 等自己的 channel”替代“再次 Lock() 竞争”的关键。
 	q.mu.Lock()
 	key, err := canonicalKey(filePath)
 	if err != nil {
@@ -108,6 +111,8 @@ func (q *FileMutationQueue) Reserve(filePath string) (*MutationTicket, error) {
 		return nil, err
 	}
 	//perf:ok once per file mutation call, which reads and writes the file; the identity of the file is what D190 orders by
+	// 记录本次调用时文件的身份（不存在则为 nil），供 D190 的
+	// “同文件不同路径”判断使用。
 	info, err := os.Stat(key)
 	if err != nil && !isMissingPathError(err) {
 		q.mu.Unlock()
@@ -119,13 +124,18 @@ func (q *FileMutationQueue) Reserve(filePath string) (*MutationTicket, error) {
 		if observed == nil && info != nil {
 			// A queued write may have created a file that was missing at registration.
 			//perf:ok only for a queued call whose file was missing when it queued, and only while a call for an existing file is queued behind it
+			// 排队时文件不存在、但现在存在了（可能已被前一个排队的
+			// write 创建）：重新 stat 以做同文件比较。
 			observed, _ = os.Stat(path)
 		}
 		// pig divergence (D190): a mutation also waits for earlier mutations of the same existing file reached by another canonical path (a hard link, or a case alias on a case-insensitive filesystem); Pi keys only by realpath, so it runs them at once and one overwrites the other.
+		// 等待条件：同一路径键，或（D190）同一真实文件经不同路径
+		// 到达——硬链接、大小写不敏感文件系统上的大小写别名。
 		if path == key || (info != nil && observed != nil && os.SameFile(info, observed)) {
 			prev = append(prev, pending)
 		}
 	}
+	// 占住自己的位置：next 在本 ticket Release 时关闭，唤醒后排。
 	next := make(chan struct{})
 	q.chains[key] = next
 	q.files[key] = info
@@ -148,6 +158,9 @@ func (t *MutationTicket) WaitContext(ctx context.Context) error {
 		select {
 		case <-prev:
 		case <-ctx.Done():
+			// 放弃等待不等于放弃队列位置：位置交给后台 goroutine
+			// 持有到所有前驱完成后再放行，保证后继永远不会越过
+			// 一个仍在队列里的前驱先执行。
 			t.handOff(t.prev[i:])
 			return ctx.Err()
 		}
@@ -174,6 +187,8 @@ func (t *MutationTicket) handOff(rest []<-chan struct{}) {
 func (t *MutationTicket) Release() {
 	close(t.next)
 	t.q.mu.Lock()
+	// 只有自己仍是该键最新占位时才清理簿记；若后面已有调用者
+	// 排进来，chains[key] 已被换成它的 channel，保留给释放职责。
 	if t.q.chains[t.key] == t.next {
 		delete(t.q.chains, t.key)
 		delete(t.q.files, t.key)
