@@ -31,6 +31,11 @@ func isUserBashCommand(text string) bool {
 }
 
 func (m *InteractiveMode) handleSubmitWithImages(ctx context.Context, prompt string, images []ai.ImageContent) {
+	// 提交分发链（顺序与上游 onSubmit 一致）：
+	//   1. 压缩中 → 只有本地命令/bash 直通，模型输入排队
+	//   2. !/!! bash 前缀 → 直接执行，不进模型
+	//   3. 可解析的 slash 命令 → 立即派发（即使流式运行中）
+	//   4. 其余 → promptUserInput（steer/followUp/新 turn）
 	// Defensive drain for messages restored after a failed compaction-queue
 	// delivery. Normal compaction completion flushes immediately, including the
 	// WillRetry path that steers into the imminent retry turn.
@@ -299,9 +304,14 @@ func (m *InteractiveMode) startTurn(ctx context.Context, prompt string, images [
 	// The run's cancellation is Esc's abort context at the time the run starts;
 	// the main loop replaces m.abortCtx after an abort, so the goroutine never
 	// reads the field.
+	// runCtx 在启动时快照：主循环 abort 后会换掉 m.abortCtx，
+	// goroutine 不能再读字段，否则可能拿到下一次 run 的 ctx。
 	runCtx := m.abortCtx
 	session, runner := m.opts.SessionHandle, m.newRunner
 
+	// turn goroutine 生命周期：启动 →（可选）校验/压缩/钩子 →
+	// runAgentPrompt（含重试/恢复/队列续跑）→ settleTurn →
+	// defer 里把 UI 状态与 agent_settled 发回主循环。
 	go func() {
 		rejected := false
 		defer func() {
@@ -447,6 +457,9 @@ func (m *InteractiveMode) settleTurn(ctx context.Context, err error) error {
 }
 
 func (m *InteractiveMode) settleTurnWithPrompt(ctx context.Context, err error, finishPrompt func()) error {
+	// 结算循环：flush 延迟 custom 消息 → 锁内判断是否真结束 →
+	// 队列还有消息就续跑一轮（上游事件循环天然保证的"排进本
+	// run 与开新 run 二选一"在这里由 queueMu 提供）。
 	for {
 		// Custom messages deferred to the end of a turn are appended when the run ends (upstream _flushPendingCustomMessages in the finally of
 		// _runAgentPrompt). The flush runs outside queueMu because it publishes events the owner loop consumes; a message deferred after it is seen
@@ -462,6 +475,9 @@ func (m *InteractiveMode) settleTurnWithPrompt(ctx context.Context, err error, f
 		}
 		if err != nil || ctx.Err() != nil || !m.agent.HasQueuedMessages() {
 			// Clear the outgoing prompt before publishing idle or releasing replacement waiters.
+			// 真正结束：先清本轮 prompt，再原子地置 turnActive=false
+			// 并放行等待者（turnSettled）——这些与"是否有新消息
+			// 排进来"的判定在同一把锁内，没有窗口。
 			if finishPrompt != nil {
 				finishPrompt()
 			}

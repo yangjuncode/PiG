@@ -283,6 +283,8 @@ func readLocalFile(path string) ([]byte, string, string) {
 	defer func() { _ = f.Close() }()
 	size := 0
 	//perf:ok fstat of the open fd once per read call, the one os.ReadFile makes to size its buffer; it replaces three opens and a stat
+	// 一次 open 复用三步：open 本身是 access 检查；头若干字节
+	// 供图片嗅探；剩余内容接着读完——上游是三次 open+stat。
 	if info, err := f.Stat(); err == nil && info.Mode().IsRegular() {
 		size = int(info.Size())
 	}
@@ -295,6 +297,8 @@ func readLocalFile(path string) ([]byte, string, string) {
 	}
 	data = data[:n]
 	mime := imageprocessing.DetectSupportedImageMimeType(data)
+	// 嗅探窗口被填满才继续读全文——窗口都没读满说明文件
+	// 已经全部在手上，不再做第二次系统调用。
 	if n == imageprocessing.ImageTypeSniffBytes {
 		for {
 			if len(data) == cap(data) {
@@ -341,6 +345,8 @@ func readTextResult(p readParams, data []byte) (agent.AgentToolResult, error) {
 	if p.Offset != nil && *p.Offset != 0 {
 		startLine = math.Max(0, *p.Offset-1)
 	}
+	// 行号在 float64 域运算（JS Number 语义）：offset/limit 可以
+	// 是小数，续读提示里原样展示小数，只在切片时截断。
 	startLineDisplay := startLine + 1
 	if startLine >= lineCount {
 		return agent.AgentToolResult{}, fmt.Errorf("Offset %s is beyond end of file (%d lines total)", jsNumber(*p.Offset), totalFileLines)
@@ -378,10 +384,15 @@ func readTextResult(p readParams, data []byte) (agent.AgentToolResult, error) {
 
 	var output string
 	var truncation *TruncationResult
+	// 四种出口按优先级：首行超限（提示用 sed 绕过）→ 截断
+	// （提示续读 offset）→ 用户 limit 未读全（提示剩余行数）→
+	// 正常全文。每种文案与上游 read.ts 的提示逐字一致。
 	switch {
 	case tr.FirstLineExceedsLimit:
 		if startLine != float64(sliceStart) {
 			// allLines[startLine] is undefined for a fractional index, so Buffer.byteLength throws (read.ts:181).
+			// 小数 offset 在上游会读到 undefined 并抛 Buffer 类型错误——
+			// 这里复刻同一个错误文本。
 			return agent.AgentToolResult{}, errors.New(`The "string" argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined`)
 		}
 		firstLineSize := FormatSize(len(selectedText(sliceStart + 1)))

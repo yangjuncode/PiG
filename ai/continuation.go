@@ -264,6 +264,10 @@ func (executor *continuationExecutor) idleLocked() bool {
 }
 
 // popLocked takes the next reaction in Node's order: after an I/O completion its process.nextTick callbacks run first, then every ready promise reaction; microtasks run to exhaustion before the tick queue runs again, and I/O completions come last (lib/internal/process/task_queues.js processTicksAndRejections). external reports an I/O completion, which starts a new event-loop macrotask.
+//
+// tickPhase 是"正在消费 tick 队列"的相位标记：一旦进入 tick 阶段
+// 先把 ticks 清空才回到 ready——对应 Node 里一次 I/O 完成后
+// nextTick 回调先于一切、微任务清空后 tick 队列才继续的次序。
 func (executor *continuationExecutor) popLocked() (reaction continuationJob, kind reactionKind) {
 	if executor.tickPhase {
 		if executor.ticks.len() != 0 {
@@ -326,6 +330,9 @@ func (executor *continuationExecutor) watch(ctx context.Context, fire func()) (d
 }
 
 // pollWatchersLocked queues the reaction of every armed watcher whose context is done, in arming order.
+// Go 的 ctx 取消没有"调用点"可挂钩，所以每个反应边界轮询一遍：
+// 取消的效果排在取消者让出执行后的第一个反应边界、且先于任何
+// external 完成——与 JS abort() 在调用它的 job 内生效等价。
 func (executor *continuationExecutor) pollWatchersLocked() {
 	for index := 0; index < len(executor.watchers); {
 		watcher := executor.watchers[index]
@@ -346,6 +353,9 @@ func (executor *continuationExecutor) drain() {
 
 // drainLocked is drain, called with the lock held; it returns with the lock released.
 func (executor *continuationExecutor) drainLocked() {
+	// drains 计数是本 drain 的"代数"：被恢复的 turn 可以从自己的
+	// 栈上就地终结本 drain（settle 时 drains++）——发现代数变了
+	// 就立即退出，不再碰 executor。
 	drains := executor.drains
 	for {
 		if executor.drains != drains {
@@ -353,6 +363,8 @@ func (executor *continuationExecutor) drainLocked() {
 			return
 		}
 		executor.pollWatchersLocked()
+		// 有 turn 持有执行（active != nil）时 drain 必须停：执行权
+		// 唯一，反应不能抢在持有执行的 turn 前面跑。
 		if executor.active != nil || executor.idleLocked() {
 			idle := executor.endDrainLocked()
 			executor.mu.Unlock()
@@ -363,6 +375,8 @@ func (executor *continuationExecutor) drainLocked() {
 		}
 		reaction, kind := executor.popLocked()
 		trace := executor.trace
+		// 锁内只做调度决策；反应体在锁外跑——反应可能再 post
+		// 新反应或 grant 一个 turn。
 		executor.mu.Unlock()
 		executor.traceReaction(trace, kind)
 		reaction.run()
@@ -419,6 +433,9 @@ func (executor *continuationExecutor) run(body func(*continuationTurn)) {
 // run runs body as a coroutine turn and returns when it has returned, or at once when the turn was abandoned before it ran. Any serving goroutine resumes the body at its grants; the calling goroutine serves the executor meanwhile and runs the body's detached segments. A panic in body is rethrown here.
 func (turn *continuationTurn) run(body func(*continuationTurn)) {
 	executor := turn.executor
+	// iter.Pull 把 body 变成协程：body 跑在 pull 的 goroutine 上，
+	// yield 交出 turnStep（suspend/detach）给驱动方。panic 通过
+	// panicked 字段带回调用方 goroutine 重抛——保持错误的调用点。
 	next, stop := iter.Pull(func(yield func(turnStep) bool) {
 		turn.yield = yield
 		stackprime.Prime()
@@ -516,6 +533,9 @@ func (turn *continuationTurn) finishDirect() {
 
 // serve lends the calling goroutine, the home of self, to the executor until self needs it: a direct self holds execution again, a coroutine self has a detached segment to run or has returned, or self was abandoned before it ran. Meanwhile the goroutine drains reactions and resumes coroutine turns, so execution passes between turns without waking another goroutine, and it sleeps when there is nothing to run.
 func (executor *continuationExecutor) serve(self *continuationTurn) {
+	// serve 是 goroutine 复用的核心：等待自己 turn 的 goroutine 不
+	// 空睡，而是借给 executor 当 drain/driver——执行权在 turn 之间
+	// 传递全靠协程切换，不付出 goroutine 唤醒成本。
 	executor.mu.Lock()
 	for {
 		switch {
@@ -523,20 +543,28 @@ func (executor *continuationExecutor) serve(self *continuationTurn) {
 			executor.mu.Unlock()
 			return
 		case executor.active == nil && !executor.draining && !executor.idleLocked():
+			// 空闲且队列有货：本 goroutine 亲自跑 drain，并登记为
+			// drainer——之后 drain 里 grant 协程 turn 时就地恢复。
 			executor.draining, executor.drainer = true, self
 			executor.mu.Unlock()
 			executor.drain()
 		case executor.active != nil && executor.active.needsDriver:
+			// 有协程 turn 被 grant 但还没人恢复它：本 goroutine
+			// 充当它的 driver。
 			turn := executor.active
 			turn.needsDriver, turn.granted, turn.claimed, turn.state = false, false, true, turnRunning
 			executor.mu.Unlock()
 			executor.advance(turn, self)
 		case self.state == turnDetached:
 			// The executor ran what the release let run; now the segment.
+			// 自己的 body 让出执行后跑了一段 detached 区间：
+			// executor 先消化了让出所接纳的反应，现在轮到该区间。
 			self.state = turnRunning
 			executor.mu.Unlock()
 			return
 		default:
+			// 无事可做：挂到 drivers 栈睡觉，等 wake 唤醒——
+			// 唤醒者从栈顶取（最近入睡的先醒）。
 			if self.wake == nil {
 				self.wake = make(chan struct{}, 1)
 			}
@@ -657,11 +685,15 @@ func (turn *continuationTurn) grant() {
 		return
 	}
 	if executor.active != nil {
+		// 执行权唯一：另一 turn 还持有时收到 grant 是状态机 bug。
 		executor.mu.Unlock()
 		panic("stream continuation resumed during another turn")
 	}
 	for turn.owed > 0 || turn.unless != nil {
 		// The body owes awaits of an already resolved promise (awaitResolvedThen) and runs no code between them but, after the last, the check it left: this resumption is the next of those awaits, behind every queued reaction or, with none queued, at once, as awaitResolved makes it.
+		// owed>0：body 还欠着"已 resolve promise 的 await"——JS 里
+		// 这些 await 仍是微任务，必须排在已有反应后面；队列空时
+		// 就地消耗一个微任务额度（resumeNextLocked）。
 		if turn.owed == 0 && !turn.checkLocked() {
 			break
 		}
@@ -682,6 +714,10 @@ func (turn *continuationTurn) grant() {
 	}
 	executor.active = turn
 	waiting := turn.hasBody && turn.state == turnWaiting
+	// 三条恢复路径：当前 drain 在服务型 goroutine 上 → 就地切换
+	// 协程（零唤醒）；没有 drainer → 标记 needsDriver 并唤醒一个
+	// 睡眠的 driver；非协程 turn → 只记 granted 唤醒其归属
+	// goroutine。
 	switch self := executor.drainer; {
 	case waiting && turn.coroutine && self != nil && self.state != turnDone:
 		turn.state, turn.claimed = turnRunning, true
