@@ -159,6 +159,19 @@ func foldFlowLines(textS, indent, mode string, indentAtStart int, hasIndentAtSta
 		}
 		return text[i]
 	}
+	// 折行点扫描（YAML 行折叠）：
+	// - split 记最近的合法折点：两侧都是
+	//   非空白字符的空格（不能在词中或空
+	//   白串里折）；
+	// - 到行宽 end 时有 split 用 split，
+	//   没有则 quoted 模式强制在转义序列
+	//   后折（escStart/escEnd 记最近一个
+	//   完整 \x \u \U 转义的边界——折在
+	//   转义中间会让反斜杠落到行尾变成
+	//   续行符吃掉换行）；
+	// - escapedFolds 防同一位置二次强折
+	//   死循环（j 已折过→放弃整个折叠
+	//   返原文）。
 	split := -1
 	var prev uint16
 	i, escStart, escEnd := -1, -1, -1
@@ -228,6 +241,11 @@ func foldFlowLines(textS, indent, mode string, indentAtStart int, hasIndentAtSta
 		}
 		return fromU16(text[a:b])
 	}
+	// 折点回放：fold==0 是 indentAtStart
+	// 触发的首部折行；escapedFolds 的折
+	// 点补 "\" 行尾续行符（quoted 标量里
+	// 折行需要反斜杠转义换行）；其余在
+	// 折点空格处断行。
 	res := slice(0, folds[0])
 	for k, fold := range folds {
 		stop := len(text)

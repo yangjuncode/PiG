@@ -233,6 +233,17 @@ func (c *composer) decorate(doc *document, afterDoc bool) {
 }
 
 // next consumes a CST token and returns the document it completes, if any.
+// 文档级分派（顶层 token 流→文档序
+// 列）：directive 累计进 dirs+prelude
+// 并置 atDirective；document 完成一篇
+// 返回前一篇（流式——调用方逐篇取，
+// 不攒全集）；comment/newline 只进
+// prelude 供 decorate 挂到下一篇文
+// 档头；error 归属判定——指令区或还
+// 没文档→流级 errors，否则归当前文
+// 档（文档内错误不污染流）；doc-end
+// 收尾当前文档并吸收其后注释进文档
+// comment。
 func (c *composer) next(token *Token) *document {
 	switch token.Type {
 	case "directive":
