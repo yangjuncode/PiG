@@ -75,6 +75,10 @@ type lazySetupResult struct {
 }
 
 // startLazyStream models lazyStream(model, async () => { await x; ... }): the reserved turn is the await continuation that runs setup, and the setup promise settles when it returns.
+// 惰性流的外壳：立即返回空的 outer 流，真正的 setup 在
+// 续延执行器的 turn 里跑——调用方先拿到流句柄，setup 的
+// 事件经 forwardLazySetup 转发进来。对应上游 lazyStream
+// 里 async 函数首个 await 之后才执行体的模型。
 func startLazyStream(ctx context.Context, model *Model, setup func(context.Context) (*AssistantMessageEventStream, error), launch func(func()), observation *lazyObservation) *AssistantMessageEventStream {
 	ctx, executor := withContinuationExecutor(ctx)
 	outer := NewAssistantMessageEventStream()
@@ -208,6 +212,9 @@ func forwardLazySetup(ctx context.Context, turn *continuationTurn, executor *con
 		err = fmt.Errorf("API returned no event stream")
 	}
 	if err == nil {
+		// 成功路径：inner 事件逐个转发到 outer（有 observer 时
+		// 包一层回调）。forwarding ctx 用 WithoutCancel——inner
+		// 流的取消由 producer 自己管，外层取消只影响转发者。
 		forwarding := context.WithValue(context.WithoutCancel(ctx), continuationTurnKey{}, turn)
 		var result *AssistantMessage
 		push := outer.Push
@@ -226,6 +233,9 @@ func forwardLazySetup(ctx context.Context, turn *continuationTurn, executor *con
 			return
 		}
 	} else {
+		// 失败路径的时序细节：上游 setup reject 会先到 .then
+		// 透传再到 catch——这里用一次已 resolve promise 的 await
+		// 模拟那"两跳"，保持与上游相同的事件相对顺序。
 		passthrough := newContinuationPromise[struct{}](executor)
 		passthrough.resolve(struct{}{})
 		awaitContinuation(turn, passthrough)
