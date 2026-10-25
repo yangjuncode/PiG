@@ -425,6 +425,11 @@ func scanGoPackage(moduleRoot, packageRoot string) ([]goFactory, bool, bool, err
 			if !ok || fn.Recv != nil || fn.Type.Params.NumFields() != 0 {
 				continue
 			}
+			// 工厂签名门槛：必须叫 Extension、无
+			// 参、无接收者——约定式导出符号。
+			// 名字含 extension 但不合规格记
+			// nonstandard（报"你是不是想导出
+			// 工厂但写错了"的诊断提示）。
 			if fn.Name.Name != "Extension" {
 				if strings.Contains(strings.ToLower(fn.Name.Name), "extension") {
 					nonstandard = true
@@ -470,6 +475,12 @@ func scanGoModule(root string) ([]goFactory, bool, bool, error) {
 			return walkErr
 		}
 		if entry.IsDir() {
+			// 遍历剪枝四类：vendor（依赖副本
+			// 不产扩展）、testdata（测试固件）、
+			// 隐藏目录、内含 go.mod 的子目录
+			// （那是独立模块，由它自己的
+			// scanGoModule 管，不能并进父模
+			// 块工厂清单）。
 			if path != walkRoot && (entry.Name() == "vendor" || entry.Name() == "testdata" || strings.HasPrefix(entry.Name(), ".") || exists(filepath.Join(path, "go.mod"))) {
 				return filepath.SkipDir
 			}

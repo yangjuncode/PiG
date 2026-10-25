@@ -98,6 +98,19 @@ func adoptionAnyTypes(t uint16) string {
 }
 
 // usurpType is minimatch's usurpMap: the type an extglob of type t takes when it usurps a child extglob of type c.
+// extglob 类型兼并表（父类型 t 能否吃掉子
+// 类型 c 的单层包装，及兼并后类型）：
+//   - !(!x) → @x：否定之否定按"恰好一次"处
+//     理（上游语义，非逻辑等价但观测量如此）；
+//   - ?(*(x)) ?(+(x)) → *(x)：0/1 次套 0+ 次
+//     仍是 0+ 次；
+//   - @(Tx) → Tx：恰好一次套任意量词等价于
+//     内层量词本身；
+//   - +(?(x)) +(*(x)) → *(x)：1+ 次套 0+ 次
+//     实际可达 0 次，并入 *。
+//
+// 保证生成正则与上游字节级一致，不能逻辑
+// 化简成别的形式。
 func usurpType(t, c uint16) (uint16, bool) {
 	switch t {
 	case '!':
