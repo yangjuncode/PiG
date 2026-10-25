@@ -377,6 +377,9 @@ func treeNavigateWithSummarize(sc *SlashContext, entryID string) error {
 
 	// Loop until user makes a complete choice or cancels (Esc) to re-open tree.
 	// Mirrors upstream while(true) loop (interactive-mode.ts:5591-5615).
+	// 选择器 ↔ 编辑器往返的循环：Esc 出编辑器回选择器重选
+	// （continue），Esc 出选择器则回到树的同一行（return
+	// treeHandlerWithInitial），做出完整选择才 break 进入导航。
 	for !skipPrompt {
 		choice, ok := sc.ShowExtensionSelector("Summarize branch?", []string{
 			optNoSummary, optSummarize, optCustomSummarize,

@@ -68,6 +68,13 @@ func (m *InteractiveMode) awaitReloadStep(parent context.Context, work func(cont
 	ctx := parent
 	input, releaseInput := m.acquireModalInputChannel()
 	defer releaseInput()
+	// 工作跑在后台 goroutine，本循环保持 UI 多路复用：
+	// 每轮先查 requestExit（被中断的输入循环收不到这个
+	// 信号，由这里代理关机），然后 select 六路——
+	// done（工作终了）、cancelled（ctx 取消，置 nil 只收
+	// 一次）、input（reload 框吞掉按键）、uiTask/render/
+	// extensionError/agent 事件照常消化，保证等待期间
+	// UI 不死锁、事件不丢序。
 	done := make(chan struct{})
 	var err error
 	go func() {

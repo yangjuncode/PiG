@@ -37,12 +37,17 @@ func ResolveBeforeAgentStartRun(base extension.BuildSystemPromptOptions, result 
 			if options.Sections != nil {
 				sections = *options.Sections
 			}
+			// 只有 selectedTools 被显式编辑或与 base 不同才算
+			// 一次装备变更——原样回填不动当前活跃工具集。
 			if result.SelectedToolsEdited || !slices.Equal(options.SelectedTools, base.SelectedTools) {
 				run.SelectedTools = append([]string{}, options.SelectedTools...)
 			}
 		}
 		run.SystemPrompt = result.SystemPrompt
 		// agent-session.ts:1724 forces the run options' forceSystemPrompt, which a handler may set or clear directly as well as through a returned systemPrompt (runner.ts:1445-1447).
+		// forceSystemPrompt 是第二通道：handler 即使没返回
+		// systemPrompt，只要 options 里写了 force 字段也算
+		// 覆盖（nil force 则撤掉刚才记下的返回值）。
 		if options := result.SystemPromptOptions; options != nil {
 			run.SystemPrompt = nil
 			if options.ForceSystemPrompt != nil {
@@ -51,6 +56,11 @@ func ResolveBeforeAgentStartRun(base extension.BuildSystemPromptOptions, result 
 		}
 		run.Messages = result.Messages
 	}
+	// 自定义 sections 先做合法性空跑校验：非法名按上游直接
+	// 拒掉，但 SelectedTools 仍然带回——上游在构造 sections
+	// 之前就先把装备变更应用了，错误路径保留该语义。
+	// 校验过后克隆值（含指针成员）防 handler 持有的引用
+	// 事后改写已固化的运行选项。
 	if len(sections) > 0 {
 		if _, err := prompts.ApplyCustomSystemPromptSections(nil, sections); err != nil {
 			return BeforeAgentStartRun{SelectedTools: run.SelectedTools}, err

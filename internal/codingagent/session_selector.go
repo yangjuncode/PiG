@@ -564,6 +564,10 @@ type sessionTreeNode struct {
 }
 
 // buildSessionTree groups canonical paths and stably orders each subtree by its most recent millisecond timestamp.
+// 两遍建树：先按 canonical 路径登记节点（消除路径写法差异
+// 造成的父子错认），再对每条会话查父路径入树；父不在
+// 列表里（子树顶）即作 root。随后自底向上回填子树最新
+// 活动时间，再逐级稳定排序——threaded 视图的"最新在前"。
 func buildSessionTree(sessions []SessionInfo) []*sessionTreeNode {
 	byPath := make(map[string]*sessionTreeNode, len(sessions))
 	for _, sess := range sessions {
@@ -607,6 +611,9 @@ func buildSessionTree(sessions []SessionInfo) []*sessionTreeNode {
 	return roots
 }
 
+// 前序展开为渲染行：ancestors 记录每一层"该层是否还有后续
+// 兄弟"（决定连接线 ├/└ 的绘制），depth>0 时 cont=!isLast
+// 把连线沿续位传给子层——树形 UI 的标准缩进/管线编码。
 func flattenSessionTree(roots []*sessionTreeNode) []sessionDisplayNode {
 	var out []sessionDisplayNode
 	var walk func(node *sessionTreeNode, depth int, ancestors []bool, isLast bool)
@@ -658,6 +665,10 @@ func parseSearchQuery(query string) parsedSearchQuery {
 			tokens = append(tokens, searchToken{kind: kind, value: v})
 		}
 	}
+	// 词法扫描：引号内外两个状态——引号内整段记 phrase
+	// （精确短语），引号外按 JS 空白切出 fuzzy 词。引号
+	// 未闭合时整个查询退回按空白切 fuzzy（与上游 unclosed
+	// quote 兜底一致）。
 	for _, r := range trimmed {
 		switch {
 		case r == '"':
