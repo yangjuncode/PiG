@@ -61,6 +61,9 @@ func newEncodedMessageCache(limit int) *encodedMessageCache {
 }
 
 // beginRequest starts a request build: it forgets the entries that the last requestMessageKeepRequests builds did not use. They are at the back of recency, so it removes only them.
+// 逐出策略用"请求代际"而非 TTL：每次构建 gen++，连续 8 个
+// 请求没用到的条目说明属于已被 compaction/branch 丢下的历史，
+// 清掉它们。LRU 尾部即最老代际，从头尾各只扫一边。
 func (c *encodedMessageCache) beginRequest() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -79,6 +82,9 @@ func (c *encodedMessageCache) lookup(hash uint64, key []byte) []byte {
 		return nil
 	}
 	entry := element.Value.(*encodedMessage)
+	// 正确性关键：hash 命中后必须逐字节比对完整 key——maphash
+	// 冲突的代价只是 miss（再编码一次），绝不允许错发另一条
+	// 消息的字节。
 	if !bytes.Equal(entry.key, key) {
 		return nil
 	}
@@ -259,6 +265,9 @@ func (k *messageKey) order(order schemaObjectOrder) {
 }
 
 // object writes the members of a decoded JSON object in the order of their names.
+// 成员名排序写入使键与 map 迭代序无关（canonical）；keys 是
+// 共享栈：嵌套对象把名字 push 在自己这一层之上排序，弹栈后
+// 下层名字原地保留——一次分配供整棵树复用。
 func (k *messageKey) object(members map[string]any) bool {
 	k.present(members != nil)
 	if members == nil {
@@ -287,6 +296,9 @@ func (k *messageKey) object(members map[string]any) bool {
 }
 
 // json writes a value of the decoded JSON kinds. It reports false for any other, which the message's encoding may read in ways the record does not.
+// 未知类型一律 false（整条消息不可缓存）而非按部分值做键——
+// 编码器可能读取 record 没覆盖到的字段（如 payload 钩子的
+// 自定义类型），半键会让两条不同消息错认为同一条。
 func (k *messageKey) json(value any) bool {
 	switch value := value.(type) {
 	case nil:

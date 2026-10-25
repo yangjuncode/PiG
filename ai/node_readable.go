@@ -90,6 +90,9 @@ func (readable *nodeReadable) nextTick(callback func()) { readable.executor.post
 func (readable *nodeReadable) on(event string, fn func(error)) *nodeListener {
 	listener := &nodeListener{fn: fn}
 	readable.events[event] = append(readable.events[event], listener)
+	// "readable" 监听注册本身有副作用（readable.js on()）：
+	// 置 readableListening/needReadable 并按当前缓冲立即决定
+	// emit 还是 nextTick 补读——不是简单挂回调。
 	if event == "readable" && !readable.endEmitted && !readable.readableListening {
 		readable.readableListening = true
 		readable.needReadable = true
@@ -140,6 +143,10 @@ func (readable *nodeReadable) canPushMore() bool {
 
 // push is Readable.prototype.push (readableAddChunkPushByteMode) for a Buffer chunk. A nil chunk with eof set is push(null).
 func (readable *nodeReadable) push(chunk []byte, eof bool) bool {
+	// 三条入口路径：eof（push(null)）→ onEofChunk；
+	// 空 chunk → 只触发 maybeReadMore（不算数据）；
+	// 常规 chunk → addChunk。eof 后 push 按 Node 报
+	// "push() after EOF" 错误。
 	if eof {
 		readable.reading = false
 		readable.onEofChunk()
@@ -272,6 +279,9 @@ func (readable *nodeReadable) read(n int) []byte {
 	if n != 0 {
 		readable.emittedReadable = false
 	}
+	// read(0) 的"探测"语义（readable.js:555-561）：只负责发
+	// readable/end 信号，不取数据——needReadable 且水位已到或
+	// 流已结束时返回 null。
 	if n == 0 && readable.needReadable && ((readable.highWaterMark != 0 && readable.length >= readable.highWaterMark) || (readable.highWaterMark == 0 && readable.length > 0) || readable.ended) {
 		if readable.length == 0 && readable.ended {
 			readable.endReadable()
@@ -287,6 +297,9 @@ func (readable *nodeReadable) read(n int) []byte {
 		}
 		return nil
 	}
+	// doRead 判定：needReadable 或读后剩余低于水位 → 实际发起
+	// _read（可能同步 push 更多数据，sync 标记期间 push 的
+	// emitReadable 走同步路径）。
 	doRead := readable.needReadable
 	if readable.length == 0 || readable.length-n < readable.highWaterMark {
 		doRead = true
@@ -299,6 +312,8 @@ func (readable *nodeReadable) read(n int) []byte {
 		}
 		readable.callRead()
 		readable.sync = false
+		// _read 同步 push 清掉了 reading → 已有更多数据，按原始
+		// n 重算可读量。
 		if !readable.reading {
 			n = readable.howMuchToRead(original)
 		}
@@ -315,6 +330,9 @@ func (readable *nodeReadable) read(n int) []byte {
 	} else {
 		readable.length -= n
 	}
+	// 缓冲清空后的收尾：未结束 → needReadable 重新置位；
+	// 已结束且本次读的是"全部剩余"（original != n 即请求
+	// readAll 时实际只拿到部分）→ 发 end。
 	if readable.length == 0 {
 		if !readable.ended {
 			readable.needReadable = true
@@ -428,6 +446,11 @@ func (readable *nodeReadable) destroyer(err error) {
 
 // nodeEndOfStream is eos(stream, { writable: false }, callback) for a Readable.
 func nodeEndOfStream(readable *nodeReadable, callback func(error)) (cleanup func()) {
+	// EOS 语义核心：回调只能触发一次（once 包装），但判定要看
+	// end/error/close 三个事件谁先谁后、以及 autoDestroy 下
+	// close 是否还会来（willEmitClose）——end 到了但 close 未
+	// 到时要等 close，提前 close（未完成就 close）报
+	// Premature close。
 	called := false
 	once := func(err error) {
 		if !called {
@@ -471,6 +494,8 @@ func nodeEndOfStream(readable *nodeReadable, callback func(error)) (cleanup func
 	end := readable.on("end", onEnd)
 	failure := readable.on("error", onError)
 	closeListener := readable.on("close", onClose)
+	// 注册时就可能已终态：按三种已发生状态决定 nextTick 立即
+	// 回调哪种语义（已 closed / 已 errorEmitted / 已结束）。
 	switch {
 	case closed:
 		readable.nextTick(func() { onClose(nil) })
