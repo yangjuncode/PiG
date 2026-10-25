@@ -213,6 +213,10 @@ func (m *matcher) matchGlobstar(file []string, pattern []part, fileIndex, patter
 		}
 		return pattern[from:to]
 	}
+	// globstar 匹配分三段：head（首个 ** 前）与 tail
+	//（末个 ** 后）固定对齐 file 的头尾，body（两个 **
+	// 之间）在剩余中段递归。minimatch 把 "**" 视作可吞
+	// 任意多段、且默认不吞以点开头的段。
 	head, body, tail := sliceParts(patternIndex, firstgs), sliceParts(firstgs+1, lastgs), sliceParts(lastgs+1, len(pattern))
 	if len(head) > 0 {
 		if fileIndex+len(head) > len(file) {
@@ -232,6 +236,9 @@ func (m *matcher) matchGlobstar(file []string, pattern []part, fileIndex, patter
 		if m.matchPlain(file, tail, tailStart, 0) {
 			fileTailMatch = len(tail)
 		} else {
+			// tail 对不上时再试 "文件名含尾斜杠" 情形：
+			// file 末段是空串（trailing /）就把空段也计入
+			// 比对——否则直接失败。
 			if file[len(file)-1] != "" || fileIndex+len(tail) == len(file) {
 				return false
 			}
@@ -243,6 +250,9 @@ func (m *matcher) matchGlobstar(file []string, pattern []part, fileIndex, patter
 		}
 	}
 	if len(body) == 0 {
+		// 只有一个 **：中段全由它吞，扫过的段都不许
+		// 是 dot 段；sawSome 要求 ** 至少吞一段或
+		// tail 已消耗了段（否则 a/** 配不上 a/）。
 		sawSome := fileTailMatch != 0
 		for i := fileIndex; i < len(file)-fileTailMatch; i++ {
 			sawSome = true
