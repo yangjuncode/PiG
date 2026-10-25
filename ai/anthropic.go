@@ -597,6 +597,10 @@ func anthConvertMessagesDetailed(messages []Message, isOAuthToken, allowEmptySig
 						blocks = append(blocks, anthContentBlock{Type: "redacted_thinking", Data: content.ThinkingSignature})
 						continue
 					}
+					// thinking 块三种归宿：redacted → 透传签名数据；
+					// 有签名（或允许空签名）→ thinking 块带签名；
+					// 无签名且不允许空签名 → 降级为 text 块（provider
+					// 不收未签名 thinking，但内容本身仍是上下文）。
 					signature := trimJSWhitespace(content.ThinkingSignature)
 					if trimJSWhitespace(content.Thinking) == "" && signature == "" {
 						continue
@@ -622,6 +626,10 @@ func anthConvertMessagesDetailed(messages []Message, isOAuthToken, allowEmptySig
 			}
 			if len(blocks) > 0 {
 				// An assistant message that converts to no blocks is dropped, so the held updates wait for the next one that is sent (Pi #11091).
+				// pendingSystem 的释放时机：只在即将发 assistant 前
+				// 倾倒——Anthropic 要求 tool_result 紧跟其 tool_use，
+				// system 更新若插在它们中间会被拒绝；assistant 消息
+				// 若被整块丢弃（无有效块），pending 继续等下一条。
 				out = append(out, pendingSystem...)
 				pendingSystem = nil
 				messageIndex := len(out)
@@ -634,6 +642,11 @@ func anthConvertMessagesDetailed(messages []Message, isOAuthToken, allowEmptySig
 			var results []anthContentBlock
 			// Anthropic rejects error tool results that contain anything but text, so their images follow all tool results of
 			// the turn, which must come first in the user message (Pi #10794, anthropic-messages.ts convertMessages).
+			// 连续 ToolResultMessage 在此内聚消费成一个 user 消息：
+			// Anthropic 的 tool_result 块必须成组出现在同一 user
+			// 消息里。error 结果的图片被拆出来挪到 results 之后
+			// （error tool_result 只准含 text），并配 caption 文本
+			// 说明图片来源。
 			var errorImages []anthContentBlock
 			for index < len(messages) {
 				result, ok := messages[index].(ToolResultMessage)
@@ -675,6 +688,10 @@ func isAnthropicEffort(value AnthropicEffort) bool {
 	}
 }
 
+// 在每条"历史 effort 标记的 assistant"之前各插一条 system
+// effort 消息（还原当时的 thinking 级别上下文），末尾再补一
+// 条当前 activeEffort——Anthropic 把 effort 当会话级信号读，
+// 历史轮次的级别要靠这些 system 标记逐条还原。
 func insertAnthropicThinkingLevelMessages(converted anthConvertedMessages, activeEffort AnthropicEffort) []anthMessage {
 	messages := make([]anthMessage, 0, len(converted.messages)+len(converted.assistantLevels)+1)
 	for index, message := range converted.messages {
