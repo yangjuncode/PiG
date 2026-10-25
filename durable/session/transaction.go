@@ -335,6 +335,13 @@ func (tx *Transaction) drainLocked() {
 }
 
 // read runs a table read: rejected once the transaction settled or wrote a table.
+// 读门禁两道：sealed 拒绝（事务已结算）；
+// hasTableWrite 拒绝（写过表后再读会产生
+// "读到自己未提交写"的歧义——存储层要么
+// 读不到刚写的、要么读出脏数据，干脆禁
+// 掉让调用方显式分两阶段）。pendingOps
+// 计数保 sealed 排空（drainLocked 等所有
+// 在飞操作落地才真正封）。
 func read[T any](tx *Transaction, method string, run func() (T, error)) (T, error) {
 	var zero T
 	tx.mu.Lock()
@@ -353,6 +360,9 @@ func read[T any](tx *Transaction, method string, run func() (T, error)) (T, erro
 }
 
 // write runs a table write: rejected once the transaction settled.
+// 写门禁：sealed 后拒绝；首写置
+// hasTableWrite 触发后续所有读的
+// ReadAfterWrite 拒绝（见 read 注释）。
 func write[T any](tx *Transaction, run func() (T, error)) (T, error) {
 	var zero T
 	tx.mu.Lock()
@@ -1206,6 +1216,18 @@ func (tx *Transaction) releaseContextLocked() { tx.ctx = unscoped }
 
 // settleSuccess seals after callback success, prepares every open change, and assembles the atomic batch. Any
 // failure aborts every change before Storage admission.
+// 成功结算四阶段：
+//  1. 封印（sealed→后续读写全拒）；
+//  2. 排空检查——还有在飞操作说明回调在
+//     op 未完成时就返回，是调用方协议违约，
+//     整体废弃；
+//  3. Prepare 每个 open change（生成不可变
+//     快照并吊销 draft——之后改 draft 不再
+//     影响这批写）；
+//  4. assemble 组装原子批。
+//
+// 任何一步失败→abortChangesLocked 全部作
+// 废，Storage 只看到要么完整批次要么没有。
 func (tx *Transaction) settleSuccess() ([]durable.StorageWrite, error) {
 	// The context is released however settlement ends, once assembly has finished reading with it.
 	defer func() {
