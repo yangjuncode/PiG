@@ -66,6 +66,10 @@ func GitHasAvailableUpdate(installedPath string) bool {
 	return err == nil && strings.TrimSpace(localHead) != strings.TrimSpace(remoteHead)
 }
 
+// 远端头两查：优先 @{upstream} 的精确 ref（跟踪分支就是
+// 要比对的那个），查不到或解析不出再退回远端 HEAD。
+// ls-remote 输出用正则抠 40 位 hash——输出可能带多行
+// ref 列表，HEAD 行与分支行用各自模式。
 func getRemoteGitHead(installedPath string) (string, error) {
 	if upstreamRef := getGitUpstreamRef(installedPath); upstreamRef != "" {
 		out, err := runGitRemoteCommand(installedPath, "ls-remote", "origin", upstreamRef)
@@ -118,6 +122,10 @@ func RunWithTimeout(cmd *exec.Cmd, timeout time.Duration) (string, error) {
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
+	// 超时仲裁：Wait 在 goroutine 里跑，timer 到点先杀
+	// 进程再等 Wait 收尸（不留僵尸 goroutine）。失败时
+	// stderr 优先作诊断，空则退回 stdout——不少工具把
+	// 错误说明写到 stdout。
 	done := make(chan error, 1)
 	go func() { done <- cmd.Wait() }()
 	timer := time.NewTimer(timeout)

@@ -42,6 +42,11 @@ func GitUpdateMarkerPath(checkout string) string {
 	return filepath.Join(filepath.Dir(checkout), "."+filepath.Base(checkout)+".pi-update-incomplete")
 }
 
+// 更新流程三路：fetch 后比较本地 HEAD 与目标提交——
+// 相同但留有上次未完成的 marker → 重跑清理+安装（上次
+// 更新中途崩了的续跑）；相同且无 marker → 只修补缺失
+// 依赖（node_modules 可能被人删过）；不同 → 先写 marker
+// （崩溃续跑的凭证）再 hard reset 到目标提交并清装。
 func EnsureGitRef(checkout, packageRoot string, sm *codingagent.SettingsManager, target GitUpdateTarget, opts ...InstallOption) error {
 	if err := RunPackageProcess(checkout, "git", target.fetchArgs...); err != nil {
 		return err
