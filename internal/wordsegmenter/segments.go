@@ -67,6 +67,11 @@ func Segments(text string) iter.Seq[SegmentData] {
 			index += jsstring.Length(part)
 			return yield(result)
 		}
+		// 两遍切分：先把 uax29 扫描器吐的相邻小片段按
+		// joinWordRules 拼成"规则段"（tailoring 合并 ICU 会
+		// 并的边界，pending 存下一段起点），再让字典引擎在
+		// 段内找更细的 CJK/SEA 断点——emit 按边界逐个吐出
+		// 最终段，keepGoing 让 yield 的 false 早停整条产线。
 		for pending != "" || scanner.Next() {
 			part := pending
 			if part == "" {
@@ -155,6 +160,11 @@ func (e *dictionaryEngines) dictionaryBoundaries(text string, visit func(int)) {
 	if len(text) <= 3 && jsstring.Length(text) <= 1 { // one UTF-16 unit takes at most three bytes
 		return
 	}
+	// 扫描规则段：非字典字符直接跨过；命中字典字符选定
+	// 引擎后把该引擎负责的连续字符聚成子段，交给对应
+	// breaker（Unhandled 无断点、CJK 查 cjkBoundaries、
+	// SEA 走 seaDivide）。i==start 防御性前进——数据缺口
+	// 不许让外层死循环。
 	for i := 0; i < len(text); {
 		r, size := utf8.DecodeRuneInString(text[i:])
 		if !ruleDictionary(r) {
