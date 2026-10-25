@@ -1,3 +1,4 @@
+// 中文导读：Standard 内部：像素渲染：pixel。
 // Package pixel draws PiG Standard game scenes as terminal pixel art. A Canvas
 // holds RGBA pixels; an Encoder turns every two pixel rows into one line of
 // half-block cells with 24-bit color, or the nearest xterm-256 color when the

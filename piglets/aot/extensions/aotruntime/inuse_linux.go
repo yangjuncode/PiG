@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：aot piglet 的 AOT 运行时扩展：inuse_linux。
 package aotruntime
 
 import (

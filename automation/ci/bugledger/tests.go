@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI bug 台账工具：tests。
 package main
 
 import (

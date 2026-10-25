@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：发布工具：hash。
 // Package modulehash computes the Go publication hashes of tracked module files.
 package modulehash
 

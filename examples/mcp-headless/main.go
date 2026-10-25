@@ -5,6 +5,8 @@
 // Run from the repo root:
 //
 //	go run ./examples/mcp-headless <command> [args...]
+//
+// 中文导读：示例代码：main。
 package main
 
 import (

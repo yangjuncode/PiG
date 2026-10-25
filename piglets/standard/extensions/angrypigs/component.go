@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 angrypigs 游戏扩展：component。
 package angrypigs
 
 import (

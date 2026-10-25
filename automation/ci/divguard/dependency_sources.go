@@ -1,3 +1,4 @@
+// 中文导读：CI 护栏检查器（divguard）：dependency_sources。
 package main
 
 import (

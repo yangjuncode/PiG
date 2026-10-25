@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：移植透镜（portlens）分析工具：overview。
 package main
 
 import (

@@ -2,6 +2,7 @@
 
 // Command scan parses tracked Go files without evaluating build constraints.
 // Byte offsets let the caller change literals without reprinting unrelated code.
+// 中文导读：布局扫描工具：main。
 package main
 
 import (

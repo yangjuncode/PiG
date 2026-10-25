@@ -1,6 +1,7 @@
 // Command sdkapidiff fails when the extension SDK makes an incompatible API change since its last release that has no upgrade rule or no release note.
 //
 // The baseline is the SDK version the root module requires. The gate compares every package of that release with extensions/sdk with apidiff in module mode. Every incompatible symbol needs a rule in extensions/sdk/upgrade (a rewrite, or a diagnosis with a remedy) and a release note that names the symbol in backquotes in changelog.d or in CHANGELOG.md.
+// 中文导读：CI SDK API 差异检查：main。
 package main
 
 import (

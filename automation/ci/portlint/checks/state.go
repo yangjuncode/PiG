@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI 移植 lint（portlint）：state；对应上游 ") {。
 package checks
 
 import (

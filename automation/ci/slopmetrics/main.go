@@ -13,6 +13,7 @@
 // SlopCodeBench reports established repositories at verbosity 0.15 +/- 0.06 and
 // erosion 0.31 +/- 0.17, and agent-written code at 0.33 and 0.68. Generated
 // files and tests are excluded. Run it with `make slop`.
+// 中文导读：CI 质量指标：main。
 package main
 
 import (

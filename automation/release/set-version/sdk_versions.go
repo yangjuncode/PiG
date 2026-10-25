@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：发布工具：sdk_versions。
 package main
 
 import (

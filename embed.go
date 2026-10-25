@@ -1,3 +1,4 @@
+// 中文导读：根目录：embed。
 // Package pig exposes build-time-embedded resources for the pig binary.
 //
 // This is the only file at module root; runtime code lives in cmd/, internal/,

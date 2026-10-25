@@ -1,3 +1,4 @@
+// 中文导读：aot piglet 的 AOT 运行时扩展：config。
 package aotruntime
 
 import (

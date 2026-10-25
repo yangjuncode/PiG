@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 pigrunner 游戏扩展：extension。
 package pigrunner
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：aot piglet 内部：tlsdistrust。
 // Package tlsdistrust refuses TLS connections whose verified certificate chain contains a CA key that is
 // known to be compromised, or a root certificate that Mozilla removed from NSS after the October 2026
 // eMudhra incident (Mozilla bug 2083449).

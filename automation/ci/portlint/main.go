@@ -14,6 +14,7 @@
 //
 // Run it with `make port-lint`. -report prints counts per check and every
 // finding without failing; -print prints the findings as baseline entries.
+// 中文导读：CI 移植 lint（portlint）：main。
 package main
 
 import (

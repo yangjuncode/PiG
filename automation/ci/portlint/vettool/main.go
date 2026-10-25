@@ -6,6 +6,7 @@
 //	go vet -vettool=/tmp/portlint-vet ./ai/...
 //
 // It reports every finding. It does not read the baseline, so `make port-lint` stays the gate.
+// 中文导读：CI 移植 lint（portlint）：main。
 package main
 
 import (

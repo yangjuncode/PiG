@@ -1,3 +1,4 @@
+// 中文导读：Standard 内部：终端游戏框架：termgame。
 // Package termgame holds the terminal plumbing shared by PiG Standard games:
 // the full-terminal overlay, its content size, and key decoding.
 package termgame

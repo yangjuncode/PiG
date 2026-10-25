@@ -1,3 +1,4 @@
+// 中文导读：porter piglet（升级工作流）：extension。
 package pigporter
 
 import (

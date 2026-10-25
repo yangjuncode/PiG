@@ -1,3 +1,4 @@
+// 中文导读：aot piglet 的 AOT 运行时扩展：extension。
 // Package aotruntime is the compiled-extensions runtime Piglet extension (experimental). It compiles the user's TypeScript extension set and PiG's
 // extension host into one executable with Pi-Bolt's ahead-of-time compiler, and installs that executable into PiG's TypeScript runtime slot. PiG
 // starts the set from the executable when the global extensionsTypescriptRuntime setting, or PIG_TS_RUNTIME, selects "aot".

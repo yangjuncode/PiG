@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 pigrunner 游戏扩展：state。
 package pigrunner
 
 import (

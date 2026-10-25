@@ -1,3 +1,4 @@
+// 中文导读：Standard 内部：像素渲染：text。
 package pixel
 
 import (

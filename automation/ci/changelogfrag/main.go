@@ -15,6 +15,7 @@
 // "<!-- fix: <sha> -->" marker, so the ledger never has to guess which commit fixed it. Fragments that predate these
 // rules, whose commits a squash replaced, are listed in legacy.txt and are exempt from the name rule and from the
 // reachability of their markers, not from the marker: the check and the fold both refuse an unmarked Fixed bullet.
+// 中文导读：CI changelog 片段工具：main。
 package main
 
 import (

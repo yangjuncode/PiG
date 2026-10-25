@@ -5,6 +5,7 @@
 //
 // Each divergence is edited in its own file, so lanes that touch different records never conflict. The
 // generated ledger stays committed because the divergence gates, the docs bundle and the call-site markers read it.
+// 中文导读：CI 自动化工具：divsplit。
 package main
 
 import (

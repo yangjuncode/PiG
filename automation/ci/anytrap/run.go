@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI anytrap 检查：run。
 package main
 
 import (

@@ -26,6 +26,7 @@
 // Library consumers writing their own integrations can use this
 // program as a starting template. See coding/doc.go for the full
 // public API reference.
+// 中文导读：示例代码：main。
 package main
 
 import (

@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：Standard piglet 的 Bun 运行时扩展：installlock_unix。
 package bunruntime
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：示例代码：utils。
 package planmode
 
 import (

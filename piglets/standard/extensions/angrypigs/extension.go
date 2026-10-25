@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 angrypigs 游戏扩展：extension。
 // Package angrypigs is the PiG Standard /angry-pigs game: launch pigs from a
 // slingshot to knock birds off their towers. It draws a half-block pixel-art
 // scene over the whole terminal through the remote-component API of an

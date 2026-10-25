@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI 移植 lint（portlint）：common。
 // Package checks holds the porting anti-pattern analyzers behind `make port-lint`.
 // Each analyzer flags one way a Go port can drift from the TypeScript behavior it
 // maps. Every diagnostic carries the analyzer name as its category.

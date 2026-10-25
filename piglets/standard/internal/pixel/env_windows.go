@@ -1,3 +1,4 @@
+// 中文导读：Standard 内部：像素渲染：env_windows。
 package pixel
 
 import (

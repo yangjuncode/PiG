@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的登录样式扩展：definition。
 package standardlogin
 
 import (

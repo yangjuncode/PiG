@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 Bun 运行时扩展：openpgp。
 package bunruntime
 
 import (

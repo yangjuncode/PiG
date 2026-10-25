@@ -3,6 +3,7 @@
 // Modulesize gates the root module zip that `go install github.com/MichaelKinsy/PiG/cmd/pig@<version>` downloads.
 //
 // It lists the tracked files with Go's module zip rules (golang.org/x/mod/zip, as automation/release/modulehash does), sums their uncompressed bytes, and fails above the committed budget with the largest files and directories. With -install it also builds the module zip, serves it through a file:// GOPROXY, and runs `go install ./cmd/pig` from that zip, so a missing go:embed target, a replace directive, or an oversized tree fails here and not after publication.
+// 中文导读：发布工具：main。
 package main
 
 import (

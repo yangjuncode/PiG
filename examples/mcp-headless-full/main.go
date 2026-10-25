@@ -2,6 +2,7 @@
 // imports the full coding/mcpext package, which links the terminal UI through
 // coding/extension. It only builds the extension and prints how many tools it
 // registered (none).
+// 中文导读：示例代码：main。
 package main
 
 import (

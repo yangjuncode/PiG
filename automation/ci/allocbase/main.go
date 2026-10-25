@@ -8,6 +8,7 @@
 // Allocation counts of a benchmark that starts goroutines or servers vary by a few allocations from run to run, so the tolerance is the larger of 2 allocations and 6% (BenchmarkNativeProviderStream varies 827 to 864 between runs).
 //
 // Run it with `make alloc-baseline`. -update rewrites the baseline from a run, -packages limits the run.
+// 中文导读：CI 分配基线：main。
 package main
 
 import (

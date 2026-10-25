@@ -18,6 +18,7 @@
 //
 // Run it with `make divergence-guard`; -list prints every hit, and -print
 // prints them as baseline entries.
+// 中文导读：CI 护栏检查器（divguard）：main。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Standard piglet 的 Bun 运行时扩展：extension。
 // Package bunruntime is the Bun runtime Piglet extension: it installs, verifies and removes stock Bun in PiG's TypeScript runtime
 // slot, from which PiG runs TypeScript extensions when extensionsTypescriptRuntime or PIG_TS_RUNTIME selects "bun". Stock PiG
 // downloads nothing; this extension is the only part that does, and only on the user's command.

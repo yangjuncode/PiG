@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI 护栏检查器（divguard）：errfuncs。
 package main
 
 import (

@@ -6,6 +6,7 @@
 //
 // Usage: go run embed-bundle.go -pkg name -out file.go [-walk dir]... [-skip suffix]... pattern...
 // Each pattern is a path or a glob relative to the working directory. Each -walk directory contributes every regular file under it. A file whose base name ends with a -skip suffix is left out.
+// 中文导读：代码生成工具：embed-bundle。
 package main
 
 import (

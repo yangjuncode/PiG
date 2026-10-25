@@ -5,6 +5,7 @@
 // The baseline (baseline.toml) is a ratchet like port-lint's: a decode it does not list fails, a listed decode whose count rose fails, and an entry whose count fell or vanished fails too, so a fix lowers or deletes its entry in the same change. Never add an entry for new code: decode into a struct, a json.RawMessage, or use a scanner such as the resumable argument parser in ai/.
 //
 // Run it with `make any-trap`. -report prints every decode; -print prints the findings as baseline entries.
+// 中文导读：CI anytrap 检查：main。
 package main
 
 import (

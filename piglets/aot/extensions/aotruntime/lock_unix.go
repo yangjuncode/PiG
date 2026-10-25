@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：aot piglet 的 AOT 运行时扩展：lock_unix。
 package aotruntime
 
 import (

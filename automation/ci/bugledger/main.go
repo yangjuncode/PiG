@@ -7,6 +7,7 @@
 // -notes <version> prints the draft release notes for a version from the same sources.
 //
 // A fix-titled commit that is not a product bug is listed with a category and a reason in automation/ci/bugledger/exempt.txt, or carries a "Bug-Ledger: exempt <category>: <reason>" trailer. A follow-up commit of an existing fix carries "Bug-Ledger: see <commit>".
+// 中文导读：CI bug 台账工具：main。
 package main
 
 import (

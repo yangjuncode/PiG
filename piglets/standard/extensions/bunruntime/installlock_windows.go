@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：Standard piglet 的 Bun 运行时扩展：installlock_windows。
 package bunruntime
 
 import (

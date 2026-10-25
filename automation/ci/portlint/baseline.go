@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI 移植 lint（portlint）：baseline。
 package main
 
 import (

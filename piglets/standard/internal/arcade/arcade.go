@@ -1,3 +1,4 @@
+// 中文导读：Standard 内部：arcade 游戏框架：arcade。
 // Package arcade is the shared look of the PiG Standard games, taken from
 // the restored PiG Runner: its night palette, sky gradient, hill profiles,
 // turf, two-line text HUD, and pixel-font title cards. Every game draws its

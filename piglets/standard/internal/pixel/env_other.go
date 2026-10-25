@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Standard 内部：像素渲染：env_other。
 package pixel
 
 import (

@@ -3,6 +3,7 @@
 // Command portlens renders a static HTML report of the port: the Pi pin and ledger health, the port map, divergences, the bug ledger, and evals and benchmarks.
 //
 // It reads only repository files (the interface ledgers, DIVERGENCES.md, docs/additive-features.md, docs/bug-ledger.json, the benchmark results and the perf scoreboard registry) and, for Pi source snippets, the source mirror of the pinned Pi version under .upstream. The output directory holds index.html and its assets; it needs no server and works from file://. -serve starts a local http.Server over the directory.
+// 中文导读：移植透镜（portlens）分析工具：main。
 package main
 
 import (

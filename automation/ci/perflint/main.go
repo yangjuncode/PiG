@@ -20,6 +20,7 @@
 // A site is allowed by a `//perf:ok <reason>` comment on its line or the line above; the reason is required. Remaining sites are ratcheted in baseline.toml: a site it does not list fails, and an entry whose count fell fails too, so a fix lowers the baseline in the same change. Entries of every pattern except marshal-compare, compile-in-func, env-stat and loop-format carry a class: "cold[:<why>]", "hot-owned:<branch>" or "hot-kept:<reason>".
 //
 // Run with `make perf-lint`. -report prints every finding with file:line; -print prints baseline entries.
+// 中文导读：CI 性能 lint：main。
 package main
 
 import (

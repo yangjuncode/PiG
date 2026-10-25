@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 // Set-version synchronizes repository release pins without publishing anything.
+// 中文导读：发布工具：main。
 package main
 
 import (

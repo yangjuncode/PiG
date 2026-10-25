@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CI changelog 片段工具：history。
 package main
 
 import (

@@ -3,6 +3,7 @@
 // Command cargotarget prints the persistent Cargo target directory a test package uses (internal/testenv.SharedCargoTargetDir), so make test-warm builds the Rust SDK dependencies into the same directory the tests reuse.
 //
 // Usage: go run ./automation/ci/cargotarget <package> <sdk-rs dir>
+// 中文导读：CI cargo target 检查：main。
 package main
 
 import (
