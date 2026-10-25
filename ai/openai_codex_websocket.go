@@ -622,6 +622,10 @@ type codexDelta struct {
 // cachedCodexDelta is buildCachedWebSocketRequestBody (openai-codex-responses.ts): the delta of a request whose members other than
 // input equal the previous request's and whose input starts with the previous input and response items, compared as
 // JSON.stringify texts. Any other request ends the continuation and is sent whole (nil).
+// 续发资格判定（任一不符即清缓存走全量）：请求其余成员
+// 必须与上次逐字节一致（模型/工具等参数变了就不能续）、
+// input 必须是数组且不比上次短、前缀逐元素相同——只有
+// "同一请求尾部追加"才配用 previous_response_id 增量。
 func cachedCodexDelta(entry *codexWebSocketEntry, request codexRequest) *codexDelta {
 	if entry == nil || entry.continuation == nil {
 		return nil

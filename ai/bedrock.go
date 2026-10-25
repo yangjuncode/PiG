@@ -569,8 +569,13 @@ func supportsBedrockPromptCaching(modelID, modelName string, env ProviderEnv) bo
 	if !hasClaudeRef {
 		// Allow forcing for application inference profiles whose ARNs
 		// don't reveal the model name. Mirrors upstream.
+		// 非 Claude 模型缓存语义未知——只能靠环境强制开启，
+		// 默认关闭防止把 cachePoint 发给它不认的模型。
 		return getProviderEnvValue("AWS_BEDROCK_FORCE_CACHE", env) == "1"
 	}
+	// Claude 模型两代名单：5 系列全家族名直开，4 系列靠
+	// "-4-" 版本中缀（opus-4-1/sonnet-4 等通配），加上两个
+	// 仍被 Bedrock 支持的 3.x 特例。
 	for _, candidate := range candidates {
 		if strings.Contains(candidate, "fable-5") || strings.Contains(candidate, "opus-5") || strings.Contains(candidate, "sonnet-5") || strings.Contains(candidate, "haiku-5") {
 			return true

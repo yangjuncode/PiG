@@ -539,6 +539,10 @@ func copilotFetchWithRetry(ctx context.Context, policy copilotRetryPolicy, newRe
 			cancel()
 			return copilotHTTPResult{}, err
 		}
+		// 三重重试闸门：Retry-After 能解析出有限值 +
+		// 确实是 429 + 次数没封顶；预算模式下还要求
+		// 等待时长不吃掉剩余总预算——任一不满足即按
+		// 最终响应返回（上游同样只重试 429）。
 		delayMs, retryable := copilotRetryDelay(resp.Header.Get("Retry-After"), retry)
 		retryable = retryable && resp.StatusCode == http.StatusTooManyRequests && retry != policy.MaxRetries
 		if hasBudget && delayMs >= float64(deadline.UnixMilli()-time.Now().UnixMilli()) {
