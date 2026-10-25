@@ -112,6 +112,9 @@ func (t *FindTool) Execute(ctx context.Context, _ string, rawParams json.RawMess
 	// fd ignores .gitignore outside git repos unless --no-require-git; inside
 	// a repo its git-aware default stops parent rules at nested repos
 	// (upstream #5960).
+	// gitignore 语义分支：fd 在 git 仓库外默认忽略 .gitignore，
+	// 显式 --no-require-git 才能让非仓库目录也遵守 ignore 规则；
+	// 在仓库内则用 fd 自带的 git-aware 逻辑（嵌套仓库边界正确）。
 	if !insideGitRepo(searchPath) {
 		args = append(args, "--no-require-git")
 	}
@@ -119,6 +122,9 @@ func (t *FindTool) Execute(ctx context.Context, _ string, rawParams json.RawMess
 	// fd --glob matches the basename unless --full-path is set; in
 	// --full-path mode it matches the absolute candidate path, so a
 	// path-containing pattern needs a leading "**/".
+	// 模式含 "/" 时 fd 默认只匹配 basename 会漏——切 --full-path
+	// 模式并给非绝对非 **/ 开头的模式补前缀，让 "src/*.ts" 能
+	// 匹配任意深度下的 src/。Windows 下 "/" 换成 [/\\] 字符类。
 	effectivePattern := p.Pattern
 	if strings.Contains(p.Pattern, "/") {
 		args = append(args, "--full-path")
@@ -281,6 +287,9 @@ func relativizeFindResultPath(resultPath, searchPath string) string {
 // relativizeFindResultPathFor is relativizeFindResultPath with upstream's injectable pathModule: path.win32 when
 // windows is set, else path.posix, each reading the process state env.
 // A working directory that cannot be read leaves the result unrelativized.
+// 相对化三步：按平台选 isAbsolute/relative（Windows 用 win32 语义
+// 处理盘符和反斜杠）→ 绝对路径算相对 → 分隔符归一到 "/"，
+// 目录结尾的 "/" 保留（区分目录与文件）。
 func relativizeFindResultPathFor(resultPath, searchPath string, windows bool, env nodepath.Env) string {
 	sep := "/"
 	isAbsolute, relative := nodepath.PosixIsAbsolute, nodepath.PosixRelative
