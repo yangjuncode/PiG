@@ -393,6 +393,17 @@ func (c *Client) initialize(ctx context.Context, transport Transport) (*Initiali
 	if version == "" {
 		version = LatestProtocolVersion
 	}
+	// 握手顺序（协议强约束）：
+	// 1) initialize 请求带客户端声明的
+	//    最新版本与能力；
+	// 2) 服务端回应它选的版本——不在
+	//    支持列表=无法对话，握手失败；
+	// 3) 版本回传给 transport（stdio/
+	//    HTTP 需要知道版本做帧语义）；
+	// 4) notifications/initialized 告
+	//    知"我方就绪"后才转 Connected
+	//    ——在通知发出前转 Connected 会
+	//    让调用方先于协议就绪发请求。
 	raw, err := c.requestInternal(ctx, "initialize", InitializeParams{
 		ProtocolVersion: version,
 		Capabilities:    capabilities,
