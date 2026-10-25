@@ -25,6 +25,13 @@ type nativeModelProvider struct {
 
 func (p *nativeModelProvider) ID() string   { return p.native.ID }
 func (p *nativeModelProvider) Close() error { return nil }
+
+// Stream 两相：未 prepared 的实例（BuildNativeModel 造的
+// 门面）先走 prepareNativeRequest 把认证/BaseURL/Header
+// 折进请求模型再递归到 prepared 实例——延迟到首次调用
+// 才查注册表，让 provider 可在模型选定后再注册/换绑；
+// prepared 实例直发，simple 模式且 provider 提供
+// StreamSimple 时走简化流。
 func (p *nativeModelProvider) Stream(ctx context.Context, transcript ai.TranscriptContext, options ai.StreamOptions) (*ai.AssistantMessageEventStream, error) {
 	if !p.prepared {
 		current := p.registry.NativeProvider(p.native.ID)
