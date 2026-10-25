@@ -338,6 +338,11 @@ func (t *TuiSurface) StopWithOptions(StopOptions) {
 // the session so. Unlike Stop, the components keep reporting their
 // invalidations, so the frame after Resume carries only what changed. It does
 // nothing before Start, after Stop, or while suspended.
+// 与 Stop 的关键差异：不 forgetMain——
+// 组件树和失效记账都保留，挂起期间的
+// 变更继续累计，Resume 后只画增量（借
+// 出终端的代价是一帧差量不是全量重
+// 建）。
 func (t *TuiSurface) Suspend() {
 	t.mu.Lock()
 	if !t.started || t.stopped {
@@ -360,6 +365,11 @@ func (t *TuiSurface) Suspend() {
 // Resume tells the session that PiG owns the terminal again and draws what
 // changed since Suspend, which is no frame when nothing changed. It does
 // nothing unless suspended; after a Stop it only resumes the session.
+// 两段式恢复：先记 started（Suspend 时
+// 它是 true），开锁后通知 session+开配
+// 色上报；再回锁把 stopped 清回并让
+// Render 走正常调度——渲染在锁外触发，
+// 持锁渲染会死锁失效回调。
 func (t *TuiSurface) Resume() {
 	t.mu.Lock()
 	if !t.suspended {
