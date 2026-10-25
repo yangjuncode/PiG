@@ -390,6 +390,14 @@ func (f *grepFormatter) truncate(line string) string {
 }
 
 // emitMatch adds the output lines of one match to out (grep.ts:198-277). Once out holds every byte its result can show, a line is only measured: its length and whether its text was cut are what the result and the notice still read.
+// 两条输出路径：
+//  1. 无上下文（context=0）且 rg 带回了行文本 → 直接用 rg 给的
+//     lineText，不重开文件；
+//  2. 有上下文或 rg 没带行文本 → 打开文件行窗口重读匹配行
+//     ±context 范围。
+//
+// out.full() 的早退：50KB 显示预算耗尽后只累加长度不再拼字符串
+// （大结果集不白分配），单行无 \n 时可以整条只测长度。
 func (f *grepFormatter) emitMatch(m grepMatch, out *headJoin) {
 	relativePath := f.formatPath(m.filePath)
 	if f.contextValue == 0 && m.lineText != nil {
@@ -410,6 +418,8 @@ func (f *grepFormatter) emitMatch(m grepMatch, out *headJoin) {
 	}
 	w := f.fileWindow(m.filePath, start)
 	w.discardBefore(start)
+	// countAtLeast 决定窗口读多远：无上下文只要读到匹配行，
+	// 有上下文要到 end——文件不够长时 end 被 clamp 到实际行数。
 	total := w.countAtLeast(end)
 	if total == 0 {
 		out.Add(fmt.Sprintf("%s:%d: (unable to read file)", relativePath, m.lineNumber))
@@ -420,6 +430,9 @@ func (f *grepFormatter) emitMatch(m grepMatch, out *headJoin) {
 	}
 	for current := start; current <= end; current++ {
 		lineText := ""
+		// context 可为小数（上游 context 参数是 number）：
+		// 非整数下标不读行——守卫先判整数性再转 int，避免
+		// float 截断出错的行号。
 		//portlint:allow numbers current is at most the end bound, which is at most the line count, so the conversion stays in range
 		if current == math.Trunc(current) && current >= 1 && int(current) <= total {
 			//portlint:allow numbers the guard above bounds current by the line count
