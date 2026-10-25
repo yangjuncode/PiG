@@ -73,6 +73,10 @@ func (c *fuzzyContent) fuzzy() string {
 
 // fuzzyFindText tries exact match first, then fuzzy. When fuzzy is used,
 // contentForReplacement is the normalized content.
+// 两级匹配：先在原文精确找（快路径），不中再走模糊归一化
+// （Unicode 引号/破折号/空白规整后比对）。命中模糊时返回的
+// contentForReplacement 是归一化文本——后续替换在归一化域做，
+// 再映射回原行。
 func fuzzyFindText(content *fuzzyContent, oldText string) fuzzyMatchResult {
 	if i := strings.Index(content.text, oldText); i != -1 {
 		return fuzzyMatchResult{
@@ -146,6 +150,9 @@ func applyEditsToNormalizedContent(normalizedContent string, edits []editEntry, 
 	}
 
 	// First probe: decide whether any edit needs fuzzy matching.
+	// 两遍探测的原因：只要有一个 edit 需要模糊匹配，替换基准就
+	// 整体切到归一化文本（保证所有 edit 的位置/长度在同一坐标
+	// 系），否则基准保持原文。
 	usedFuzzyAny := false
 	original := &fuzzyContent{text: normalizedContent}
 	for _, e := range normEdits {
@@ -162,6 +169,8 @@ func applyEditsToNormalizedContent(normalizedContent string, edits []editEntry, 
 	baseContent := base.text
 
 	// Second probe: locate each edit in baseContent.
+	// 第二遍定位：找不到→notFound；出现多次→duplicate（要求
+	// oldText 更长消歧）。重叠检查在排序后做。
 	matched := make([]matchedEdit, 0, len(normEdits))
 	for i, e := range normEdits {
 		m := fuzzyFindText(base, e.OldText)
@@ -182,6 +191,8 @@ func applyEditsToNormalizedContent(normalizedContent string, edits []editEntry, 
 	}
 
 	// Sort ascending by position, check overlaps.
+	// 位置排序后线性扫重叠——重叠的 edit 无法同时成立，要求
+	// 调用方合并。
 	slices.SortStableFunc(matched, func(a, b matchedEdit) int { return cmp.Compare(a.matchIndex, b.matchIndex) })
 	for i := 1; i < len(matched); i++ {
 		prev := matched[i-1]
@@ -196,6 +207,9 @@ func applyEditsToNormalizedContent(normalizedContent string, edits []editEntry, 
 	// Upstream diffs against the original content. A fuzzy match rewrites
 	// only the lines its replacements touch, from the normalized base; every
 	// other line keeps its original bytes.
+	// 应用路径分两支：fuzzy 时走"保留未改行"（按行映射回原文，
+	// 只重写被碰的行，其余行保留原字节——smart quote 等模糊
+	// 命中不会污染全文）；纯精确匹配直接在 base 上替换。
 	var newContent string
 	if usedFuzzyAny {
 		var err error
@@ -286,9 +300,14 @@ func applyReplacements(content string, replacements []matchedEdit, offset int) s
 func applyReplacementsPreservingUnchangedLines(originalContent, baseContent string, replacements []matchedEdit) (string, error) {
 	originalLines := splitLinesWithEndings(originalContent)
 	baseLines := getLineSpans(baseContent)
+	// 前提不变量：归一化不改行数（只规整行内字符），否则
+	// 行号映射失效，只能整体失败。
 	if len(originalLines) != len(baseLines) {
 		return "", errors.New("Cannot preserve unchanged lines because the base content has a different line count.")
 	}
+	// 把按位置排序的 replacements 归并成行组：行范围相交的
+	// 相邻 replacement 合成一组，同组内在 base 文本上一次性
+	// 应用；组间行从原文照搬。
 	type group struct {
 		startLine, endLine int
 		replacements       []matchedEdit
