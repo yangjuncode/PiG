@@ -671,6 +671,23 @@ func (s *TaskScheduler) Wake() Wake {
 func (s *TaskScheduler) wakeLocked() Wake { return s.wakeAtLocked(s.options.Now()) }
 
 // wakeAtLocked is the wake as of now on the Harness clock: a sleep with an until after now is not yet due.
+// 唤醒判定（进程要不要再跑一轮调度）：
+// active 初值已含三处活动（在飞调用/
+// 对账中/对账还有待办——对账本身也是
+// 工作，进程若在落地前死掉必须再醒）。
+// 逐条 live 任务排除"不算活"的状态：
+//   - Completing：结局已定只等落盘；
+//   - Waiting：依赖的任务还 live；
+//   - Sleeping：唤醒点在将来（顺便记最
+//     近唤醒时刻 at）；
+//   - parked：重启额度烧完；
+//   - abort 但底下还有活：等下层先完；
+//   - 无定义可接的任务：等注册表变化
+//     （abort 标记的孤儿例外——没人会
+//     再接它）。
+//
+// 只要一条过了全部排除→active=true，
+// 进程需要醒着。
 func (s *TaskScheduler) wakeAtLocked(now float64) Wake {
 	// A reconcile pass with work to do is work too: it finalizes held outcomes and marks cascades, at open as recovery. A
 	// process that dies before it lands must be woken again. A pass with nothing to do is not.
