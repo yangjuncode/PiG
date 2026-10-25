@@ -127,6 +127,11 @@ func (a *workerAdmission) reserve(ctx context.Context, timeout time.Duration) (r
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	// 等待终止竞态两路：isGrant 说明槽在
+	// select 返回时已发出但我们没领——
+	// active-- 把槽还池再 admit 让给下一
+	// 个等待者（不能占着不用的槽）；没发
+	// 到就从等待队列摘除自己。
 	if w.isGrant {
 		// The slot was granted as the wait ended; the wait ended first, so give the slot to the next waiter.
 		a.active--
@@ -187,6 +192,11 @@ func newWorkerReservation(release func()) *workerReservation {
 }
 
 // acquireWorker is the sandbox's AcquireWorker. From here the returned release frees the slot, once, when the worker actually exits.
+// 预约过户：CAS 把"槽属于脚本"换成"槽属
+// 于 worker"——脚本结算后再来的 acquire
+// 拿不到槽（报 already settled）；拿到的
+// 是 once 包装的释放函数，worker 退出时
+// 调一次还槽。
 func (r *workerReservation) acquireWorker() (func(), error) {
 	if !r.reserved.CompareAndSwap(true, false) {
 		return nil, errors.New("The script already settled")

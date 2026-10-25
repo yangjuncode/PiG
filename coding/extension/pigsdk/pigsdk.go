@@ -303,6 +303,15 @@ func ownsStaging(dir string, names []string) bool {
 var renameDir = os.Rename
 
 // replaceDir moves the complete tree staging to dir. An existing dir is renamed aside first and removed only after the new tree is in place, so a failed rename restores it. A crash or rollback failure between the two renames leaves dir absent and the previous tree aside; the next settleStaging under the stage lock restores it before anything is removed.
+// 原子换目录两步走（崩溃安全）：
+// 1) 旧 dir → aside 暂存；
+// 2) staging → dir 落位；
+// 3) 落位成功才删 aside。
+// 任一步失败：第 2 步挂→旧树还原回去；
+// 进程崩在两步之间→dir 缺失+aside 还在，
+// 下次 settleStaging 扫 .stage-*/.old 残
+// 骸时先还原再清理——永远不留"既没有新
+// 也没有旧"的窗口。
 func replaceDir(dir, staging string) error {
 	aside := staging + ".old"
 	hadPrevious := true
