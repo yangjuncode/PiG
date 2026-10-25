@@ -64,6 +64,8 @@ func (l *DefaultResourceLoader) loadExtensionFiles(ctx context.Context, request 
 	if err != nil {
 		return LoadExtensionsResult{}, fmt.Errorf("coding: %w", err)
 	}
+	// 分流两种装载通道：builtin: 前缀走内建工厂注册表，
+	// 其余走文件/子进程加载——同一批但机制不同。
 	var filePaths, builtinPaths []string
 	for _, path := range paths {
 		if strings.HasPrefix(path, icodingagent.BuiltinPathPrefix) {
@@ -162,6 +164,11 @@ func (l *DefaultResourceLoader) loadExtensionFiles(ctx context.Context, request 
 		}
 	}
 	// Extensions follow the order of the paths, built-ins in place, then the inline ones (:765-775).
+	// 最终排序：按声明路径序重建扩展列表——预载内建
+	// 优先按路径位插入，文件扩展按 canonical 路径对上
+	// 号，路径没覆盖的（加载出来但不在名单）排尾；
+	// inline 永远最后。这样声明顺序 = 加载顺序 =
+	// 派发顺序，重复声明自然去重。
 	files := map[string]extension.Extension{}
 	for _, ext := range result.Extensions {
 		files[icodingagent.CanonicalizePath(ext.ResolvedPath)] = ext
