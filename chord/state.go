@@ -180,6 +180,10 @@ type stateSubscriber[T any] struct {
 	closed  bool
 }
 
+// push 窗口上限防内存爆：pending 满 100 时整批丢弃——
+// 冷副本订阅者没跑过 hydrate 时保留首帧（hydrate 帧），
+// 让它先拿全量快照再续接后续 update；已水合过的则全部
+// 可弃（上游语义：堆积的中间状态帧对新来的已过时）。
 func (subscriber *stateSubscriber[T]) push(frame stateDelivery[T]) {
 	subscriber.mu.Lock()
 	defer subscriber.mu.Unlock()
@@ -197,6 +201,11 @@ func (subscriber *stateSubscriber[T]) push(frame stateDelivery[T]) {
 	subscriber.pending = append(subscriber.pending, frame)
 }
 
+// drain 串行化 listener 调用：running 标记防止嵌套
+// drain 并发执行同订阅者的回调。listener 返回
+// Completion（上游 Promise）时暂停排空、起 goroutine
+// 等其 settle 后自重启——帧顺序严格按队列，异步完成
+// 不插队。锁在调用前释放，listener 可安全重入 push。
 func (subscriber *stateSubscriber[T]) drain() {
 	subscriber.mu.Lock()
 	if subscriber.running || subscriber.closed {
@@ -347,6 +356,11 @@ func (publisher *statePublisher[T]) enqueue(value T, ops []delta.Op, ctx context
 // deliver delivers every enqueued publication in sequence order and returns the source listeners' failures. A
 // publication made while another is being delivered, on this call stack or another goroutine, is delivered by the
 // running loop, after it.
+// 交付单飞：delivering 让重入调用（listener 里又发布）
+// 早退，由正在跑的循环顺手带走——发布序列号全局有序，
+// 快照出队时拷贝 listeners/sources 防止回调中订阅/退订
+// 迭代失效。已水合到本序列的订阅者跳过（hydrate 已含
+// 该版本）。
 func (publisher *statePublisher[T]) deliver() []error {
 	publisher.mu.Lock()
 	if publisher.delivering {
