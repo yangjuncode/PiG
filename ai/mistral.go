@@ -1214,6 +1214,10 @@ func (p *mistralProvider) convertToolResultMessage(message ToolResultMessage, su
 	}
 }
 
+// 工具结果文本三态拼装：错误结果带 "[tool error]" 前缀让模型
+// 区分成败；有文本时图片缺失只在不支持图片的模型上补注释；
+// 无文本时占位符说明实际内容（附图/图片被省略/无输出）——
+// 保证 tool_result 永远非空（空 content 会被 API 拒绝）。
 func buildMistralToolResultText(text string, hasImages, supportsImages, isError bool) string {
 	text = trimJSWhitespace(text)
 	prefix := ""
