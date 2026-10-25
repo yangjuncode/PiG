@@ -94,6 +94,9 @@ func (s *SettleSlot) Begin() (began func()) {
 // slot that no reader settled settles when Run starts, so waiters whose
 // answers carry no order keep the order they reach Run in. Each slot runs one
 // action.
+// 等轮到自己跑：条件变量在 settled 队列头不是自己时
+// 挂起——前面 slot 的 Close 出队后 Broadcast 唤醒重查。
+// 锁外跑 action，defer Close 保证跑完出队放行后面。
 func (s *SettleSlot) Run(action func()) {
 	s.Settle()
 	g := s.gate

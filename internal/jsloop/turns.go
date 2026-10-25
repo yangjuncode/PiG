@@ -315,6 +315,13 @@ func (t *Turns) flushLocked(turn bool) {
 	}
 	for {
 		// A late tick (heldCall.turning) is a turn of the loop: the callbacks held before it run with it.
+		// 放行条件复刻 Node 循环时序：turn 显式到来或队里
+		// 有迟到 tick（turning）都算循环转了一圈；无进行中
+		// 的 chain（chains==0）或有挂起等待（waits>0）则
+		// held 回调可以跑；ticks 只在显式 turn 或无链时放。
+		// ticks 被压而 turning 无 → 强行关 open：Pi 的 tick
+		// 队列先于下一个定时器，定时器回调不能抢在早到的
+		// tick 前执行。
 		turning := slices.ContainsFunc(t.held, func(call heldCall) bool { return call.turning })
 		open := turn || turning || t.chains == 0 || t.waits > 0
 		ticks := turn || t.chains == 0
@@ -322,6 +329,9 @@ func (t *Turns) flushLocked(turn bool) {
 			// A timer callback runs behind the tick callbacks that arrived before it, as Pi's tick queue runs before the next timer.
 			open = false
 		}
+		// 每轮把可跑队列整批摘出再锁外执行——回调里再入队
+		// 的项排到下一批（到达序即执行序），Written 等到本
+		// 批全部写完输出才重查，确保输出可见性先于返回。
 		var runTicks []tickCall
 		var runHeld []heldCall
 		if ticks {

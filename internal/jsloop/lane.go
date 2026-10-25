@@ -56,6 +56,9 @@ func After(previous *Place) *Place {
 }
 
 // Wait returns when every earlier place was released, provided each earlier call waited before it released (Wait then Release, or Pass). A place released without waiting hands on at once, and the place behind it waits for it, not for the places before it.
+// 只等"前一个"位置——链上传递逐跳兑现：第 N 位释放后，
+// 第 N+1 位的 Wait 回来即由它向第 N+2 位保证有序。等完
+// CAS 掉 previous 引用，长 lane 不留整链。
 func (p *Place) Wait() {
 	if p == nil {
 		return
@@ -69,6 +72,9 @@ func (p *Place) Wait() {
 }
 
 // await returns when p was released.
+// 先原子快查（已释放则零分配返回）；未释放才持锁建
+// wake 通道——通道只在真有等待者时分配，Released 侧
+// close 唤醒。锁内二次检查防与 Release 竞争丢唤醒。
 func (p *Place) await() {
 	if p.released.Load() {
 		return
