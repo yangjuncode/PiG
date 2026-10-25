@@ -47,6 +47,12 @@ func isOmittedAssistantAttempt(entry codingagent.ProjectedSessionEntry) bool {
 // itself omitted in the suffix blocks it, because the omitted attempt answered
 // the pre-edit input.
 func isRecoveryOmissionSuffix(suffix []codingagent.ProjectedSessionEntry) bool {
+	// 三步验收"恢复残骸"：
+	//  1. 收集后缀里所有被 edit 隐藏的条目 ID；
+	//  2. 后缀里若有指向"未被隐藏条目"的替换 edit → 不算纯
+	//     恢复残骸（那条 edit 还改着活条目）；
+	//  3. 必须真的含一条被隐藏的 assistant 尝试，且后缀不含
+	//     compaction、不含仍可见的条目——全过才算封闭恢复尾部。
 	omittedIDs := make(map[string]struct{})
 	for _, entry := range suffix {
 		if isOmitted(entry) {
@@ -86,6 +92,9 @@ func isRecoveryOmissionSuffix(suffix []codingagent.ProjectedSessionEntry) bool {
 // assistant 尝试 + 它的删除编辑 + 不可见元数据），切口再进一格
 // 越过它——这些条目已不在上下文里，留着只会污染摘要输入。
 func findProjectedCutPoint(entries []codingagent.ProjectedSessionEntry, startIndex, endIndex, keepRecentTokens int) CutPointResult {
+	// 第一遍：收集所有合法切点（非 compaction 且含
+	// isCutPointMessage——即用户消息这类"一条消息可自成
+	// 切割边界"的条目）。
 	var cutPoints []int
 	for i := startIndex; i < endIndex; i++ {
 		if entries[i].SourceEntry.Base().Type != "compaction" && slices.ContainsFunc(entries[i].Messages, isCutPointMessage) {
@@ -96,6 +105,9 @@ func findProjectedCutPoint(entries []codingagent.ProjectedSessionEntry, startInd
 		return CutPointResult{FirstKeptEntryIndex: startIndex, TurnStartIndex: -1}
 	}
 
+	// 第二遍：从尾部向头累计可见 token，到达 keepRecentTokens
+	// 预算时取"该位置之后最近的合法切点"——保留预算内的尾部，
+	// 把预算耗尽处对齐到最近的天然边界。
 	accumulated := 0
 	exceededBudget := false
 	cutIndex := cutPoints[0]
@@ -119,6 +131,9 @@ func findProjectedCutPoint(entries []codingagent.ProjectedSessionEntry, startInd
 		cutIndex++
 	}
 
+	// 向前收缩：切口前若是无投影消息的条目（纯元数据/被全部
+	// 隐藏），把切口往前让——避免摘要尾部刚切完就留给一串
+	// 无内容条目做"新保留区"的开场。
 	for cutIndex > startIndex {
 		previous := entries[cutIndex-1]
 		if previous.SourceEntry.Base().Type == "compaction" || len(previous.Messages) > 0 {
@@ -126,6 +141,9 @@ func findProjectedCutPoint(entries []codingagent.ProjectedSessionEntry, startInd
 		}
 		cutIndex--
 	}
+	// 切口语义收尾：切口恰在 turn 开头 → 干净切割；在 turn
+	// 中间 → 向前找该 turn 的起点记为 turnStartIndex，
+	// IsSplitTurn=true 提示上层这次压缩劈开了一个回合。
 	startsTurn := isProjectedTurnStart(entries[cutIndex])
 	turnStartIndex := -1
 	if !startsTurn {
