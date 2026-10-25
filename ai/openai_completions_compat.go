@@ -47,6 +47,14 @@ func detectOpenAICompletionsCompat(providerID, baseURL, modelID string) OpenAICo
 	isGrok := providerID == "xai" || has("api.x.ai")
 	isOpenRouterDeveloperRoleModel := isOpenRouter && (strings.HasPrefix(modelID, "anthropic/") || strings.HasPrefix(modelID, "openai/"))
 
+	// 兼容位推导（与上游 detectCompat 同序）：
+	//  1. 非标准实现拒收 max_completion_tokens，只认老字段
+	//     max_tokens——名单内 provider 换字段名；
+	//  2. thinking 块的回放格式各家不同，provider 特判优先
+	//     于默认 "openai"；
+	//  3. cache_control 只有 OpenRouter 上 anthropic/ 前缀的
+	//     模型用 Anthropic 格式；
+	//  4. 会话亲和性头：OpenRouter 用自己的格式。
 	maxTokensField := "max_completion_tokens"
 	if useMaxTokens {
 		maxTokensField = "max_tokens"

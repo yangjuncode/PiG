@@ -95,6 +95,10 @@ func (state *bedrockStreamState) handleItem(item bedrockStreamItem) error {
 		state.stopReason, stopErrMsg = mapBedrockStopReason(rawStopReason)
 		state.hasStopReason = true
 		// output.stopReason and output.errorMessage change in place: later partials carry them before `done`. A later messageStop replaces the stop reason but keeps an errorMessage an earlier one set (bedrock-converse-stream.ts:313-318).
+		// 就地改写 partial：此后发出的快照都带新 stopReason；
+		// 已经带上的 errorMessage 不被后续 messageStop 清掉
+		// （上游按"先出现的错误文案保留"处理），所以只有
+		// 非空 stopErrMsg 才写。
 		builder.partial.StopReason = state.stopReason
 		if stopErrMsg != "" {
 			state.stopErrMsg = stopErrMsg

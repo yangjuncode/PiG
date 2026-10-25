@@ -30,6 +30,10 @@ func decodeAnthropicDeltaFast(data string) (anthEventContentBlockDelta, bool) {
 			return ev, false
 		}
 		p.ws()
+		// 三类成员：index 收 int、delta 进子对象、其余跳过
+		// 标量。重复成员或与已知字段仅大小写不同的成员都拒
+		// 收——反射路径对这些的判定可能不同，快路径遇任何
+		// 歧义一律退回慢路径保证两路结果一致。
 		switch key {
 		case "index":
 			if seenIndex {
