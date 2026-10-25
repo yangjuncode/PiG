@@ -276,6 +276,11 @@ func lowerBound(values []int, value int) int {
 }
 
 // identitySubsequence matches the shorter side as an in-order subsequence of the longer side by identity, or returns false.
+// 双指针子序列匹配：短侧每个元素在长侧按序找第一个
+// 全等项——after 短说明中间有删（before 侧扫过未匹配项
+// 就是删掉的），before 短说明中间有增；两边等长不进
+// 此路（交给 LCS/锚点）。任一侧找不到对应即放弃让上层
+// 换策略。
 func identitySubsequence(before []any, beforeStart, beforeEnd int, after []any, afterStart, afterEnd int) ([]arrayMatch, bool) {
 	beforeCount, afterCount := beforeEnd-beforeStart, afterEnd-afterStart
 	var matches []arrayMatch
@@ -311,6 +316,10 @@ func identitySubsequence(before []any, beforeStart, beforeEnd int, after []any, 
 	}
 }
 
+// 贪心锚点：after 每元素在 before 的 valueKey 桶里
+// 二分取 >previous 的最小候选——保证锚点链单调递增
+// 且不重复使用同一 before 元素；重复值按桶内顺序
+// 依次消费（上游与 LCS 同义的快路径）。
 func greedyIdentityAnchors(positions map[valueKey][]int, after []any, afterStart, afterEnd int) []arrayMatch {
 	var matches []arrayMatch
 	previous := -1
