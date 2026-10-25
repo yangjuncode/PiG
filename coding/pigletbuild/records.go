@@ -192,6 +192,9 @@ func buildBinaryRecords(lock buildLock, p *piglet.Piglet, artifactPath string) (
 	}
 	// The managed copy is stored and later started under this name, so a
 	// Windows artifact keeps the .exe its default output has.
+	// 命名三级：显式 outputName 优先；其次默认
+	// pig-<name>；Windows 目标补 .exe——托管
+	// 副本按此名启动，没扩展名 Windows 起不来。
 	fileName := "pig-" + p.Name
 	if p.Build != nil && p.Build.OutputName != "" {
 		fileName = p.Build.OutputName
@@ -562,6 +565,16 @@ func hashTree(root string) (string, error) {
 	}
 	hash := sha256.New()
 	buffer := make([]byte, hashBufferSize)
+	// 树摘要遍历三态（每文件哈希 =
+	// 相对路径\0 + 模式串\0 + 内容\0，
+	// 0 分隔防字段拼接歧义）：
+	// - symlink：.md 链接放过（文档常链
+	//   外部），其余直接失败——构建锁要
+	//   可重现，symlink 目标在锁外可变；
+	// - 目录：跳过 .git/node_modules 等
+	//   派生目录（不影响源身份，还省
+	//   掉扫巨型目录）；
+	// - 文件：写相对路径+模式+内容。
 	err = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
