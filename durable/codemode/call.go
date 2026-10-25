@@ -57,6 +57,10 @@ type events struct {
 func newEvents() *events { return &events{wake: make(chan struct{}, 1)} }
 
 // post queues f; it never blocks, and drops f once the loop has ended.
+// 单缓冲唤醒信号：wake 容量 1，post 只在
+// 消费者睡着时塞一个——不逐事件发信号
+// （消费者醒着会自己把队列取空），关
+// 闭后 post 静默丢弃（items 不入队）。
 func (e *events) post(f func()) {
 	e.mu.Lock()
 	if !e.closed {
@@ -569,6 +573,13 @@ func (c *call) decideAsync(decided storedResult, then func()) {
 }
 
 // diverge ends the call with message: stores it as the outcome, then stops the VM with an error the script cannot catch.
+// 重放分歧终止：重启后重跑走到了与日志不
+// 同的路径——结果不可信，必须先把"分歧"
+// 这个结果落库（重试者看到它就不再重
+// 放），再 abort 杀 VM（顺序有意：先存后
+// 杀，杀失败也不会丢判决；abort 的错脚
+// 本捕不到，防它把分歧当普通异常吞掉继
+// 续跑）。
 func (c *call) diverge(message string) {
 	if c.ended != nil || c.failure != nil {
 		return
