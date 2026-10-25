@@ -1,3 +1,7 @@
+// 中文导读：URLSearchParams 表单字段的保序构造。
+//
+// Pi 传给 `new URLSearchParams(fields)` 的 Record<string,string>：
+// 插入序的 name/value 对，编码规则与 Node 一致（nodeurl）。
 package ai
 
 import (

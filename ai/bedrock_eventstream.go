@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：AWS eventstream 二进制帧编解码（v2 协议帧头/CRC/消息类型）。
 package ai
 
 import (

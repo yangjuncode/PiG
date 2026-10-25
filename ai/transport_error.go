@@ -1,3 +1,9 @@
+// 中文导读：传输层错误的归一化。
+//
+// 把 Go 网络栈的错误（net.Error、httptrace 阶段、url.Error、EOF 等）
+// 映射为上游 Node/undici 风格的错误分类：DNS、连接拒绝、TLS、超时、
+// 取消、body 中断等，使 provider 重试与错误呈现对两类运行时表现
+// 一致。
 package ai
 
 import (

@@ -1,3 +1,8 @@
+// 中文导读：HTTP 代理调度器。
+//
+// 对应 upstream coding-agent 的 http-dispatcher.ts：按环境变量与配置
+// 为 provider 请求选择直连或 HTTP/CONNECT/SOCKS 代理，实现 CONNECT
+// 隧道与代理认证，保证代理行为与上游 Node dispatcher 一致。
 package ai
 
 // Ports packages/coding-agent/src/core/http-dispatcher.ts

@@ -1,3 +1,9 @@
+// 中文导读：流式文本的零拷贝累积字符串。
+//
+// accumulatedString 让“current + delta”式追加不每次复制前文：
+// 返回的字符串共享一个只增的 buffer，已返回的前缀不会被改写
+// （保持不可变）。当传入的 current 与 buffer 不符（持有者换掉
+// 了累积串）时从 current 重建 buffer。
 package ai
 
 import "strings"

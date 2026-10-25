@@ -1,3 +1,7 @@
+// 中文导读：内置 provider id 枚举（types.ts KnownProvider 移植）。
+//
+// 上游已知的全部 provider id 常量；开放 API 联合之外用于
+// 静态分支与目录查找。
 package ai
 
 // KnownProvider is a built-in provider id. Ports packages/ai/src/types.ts (KnownProvider).

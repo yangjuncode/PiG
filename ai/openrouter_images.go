@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter 图像生成注册与实现（providers/images/register-builtins.ts 等）。
 package ai
 
 import (

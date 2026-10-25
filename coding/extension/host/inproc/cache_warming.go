@@ -1,3 +1,13 @@
+// 中文导读：cache-warming 决策事件的派发。
+//
+// EmitCacheWarmingDecision 对应上游 runner.ts 的 emitCacheWarmingDecision：
+// 按扩展注册顺序逐个调用该事件的处理器，每个处理器可返回一个 action 覆盖
+// 当前值，最后一个给出 action 的处理器获胜；没有任何处理器覆盖时回落到
+// 事件自带的 Action。某个处理器报错只会被 recordHandlerError 记录，
+// 不会中断后续处理器——这与上游“单个扩展失败不影响其他扩展”的契约一致。
+//
+// 实现要点：先把每个扩展的处理器切片做快照再迭代，避免派发期间
+// 注册/注销改动遍历中的切片。
 package inproc
 
 import (

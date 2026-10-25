@@ -1,3 +1,11 @@
+// 中文导读：pi-messages SSE 体的读取器与 JS 异步时序建模。
+//
+// 对应上游 pi-messages.ts 的 readPiMessagesEvents、parsePiMessagesEvent
+// 以及 stream() 中消费它们的 for-await 循环。上游把 provider、事件
+// 队列、消费者跑在同一条 JS 线程上，消费者看到的事件粒度取决于
+// provider 两次 push 之间让出了多少微任务；本文件用 jsAsyncGenerator /
+// jsAwait 这些 ECMA-262 原语显式建模每个 await/yield 的反应顺序，
+// 使 Go 侧事件交付时序与上游一致，而不是简单的 io 读取。
 package ai
 
 // Ports packages/ai/src/api/pi-messages.ts (readPiMessagesEvents, parsePiMessagesEvent, and the `for await` in stream() that consumes them).

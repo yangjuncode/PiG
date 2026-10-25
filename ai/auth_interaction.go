@@ -1,3 +1,7 @@
+// 中文导读：登录交互抽象（AuthInteraction/AuthPrompt/AuthEvent）。
+//
+// 对应 auth/types.ts：登录流程与 UI 的边界——provider 发 prompt
+// （打开 URL、输入码、确认），宿主 UI 呈现并回传结果。
 package ai
 
 // Ports packages/ai/src/auth/types.ts (AuthInteraction, AuthPrompt and AuthEvent).

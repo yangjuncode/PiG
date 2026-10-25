@@ -1,3 +1,4 @@
+// 中文导读：OpenAI 流解码器：SSE 行 → 结构化事件的公共解码。
 package ai
 
 import (

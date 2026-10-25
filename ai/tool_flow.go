@@ -1,3 +1,7 @@
+// 中文导读：工具调用流的 transcript 规整（transform-messages.ts 的一部分）。
+//
+// 处理 tool call → tool result 的配对与顺序：找出孤儿 result、
+// 缺失 result、重复 call id 等 API 会拒绝的形状。
 package ai
 
 import (

@@ -1,3 +1,6 @@
+// 中文导读：UUID 生成（utils/uuid.ts）。
+//
+// 复刻上游的 UUID v4 生成格式，供会话/请求 id 使用。
 package ai
 
 // Ports packages/ai/src/utils/uuid.ts.

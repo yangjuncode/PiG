@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：auth 文件修订号（windows）。
 package ai
 
 import (

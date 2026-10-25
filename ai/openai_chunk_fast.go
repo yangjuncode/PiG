@@ -1,3 +1,4 @@
+// 中文导读：OpenAI completions 流块的快速解析路径。
 package ai
 
 import (

@@ -1,3 +1,7 @@
+// 中文导读：auth 文件的外部改动重读。
+//
+// 对应 auth-storage.ts：检测 auth 文件被其他进程（如另一实例
+// 的 pi）改写后重读，保持凭证视图与磁盘一致（pilock 协调）。
 package ai
 
 // Ports packages/coding-agent/src/core/auth-storage.ts

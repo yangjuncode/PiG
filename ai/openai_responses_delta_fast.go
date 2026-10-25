@@ -1,3 +1,4 @@
+// 中文导读：Responses 流 delta 的快速解析路径。
 package ai
 
 // parseResponsesDeltaFast decodes the common Responses delta event without reflection: an object whose type is a delta event, with a

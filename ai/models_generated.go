@@ -3,6 +3,7 @@
 // Upstream: @earendil-works/pi-ai 1.4.0
 // Models: 1597
 
+// 中文导读：生成的聊天模型目录数据——ai 包最大文件，由 make model-catalogs 从 pin 的上游包生成，勿手改。
 package ai
 
 // GeneratedModel is a static catalog entry for one model. Lives in

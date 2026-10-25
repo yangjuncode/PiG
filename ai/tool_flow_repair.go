@@ -1,3 +1,8 @@
+// 中文导读：工具流的修复（request validity 的前置处理）。
+//
+// withRepairedToolFlow：真实 provider 在转换前先把 Pi 会发但 API
+// 会拒绝的 tool result 修复掉（补缺失 call、去孤儿等）；faux 与
+// pi-messages 收到的是原样 transcript——修复发生在 provider 边界。
 package ai
 
 import "slices"

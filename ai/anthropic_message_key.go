@@ -1,3 +1,4 @@
+// 中文导读：Anthropic 消息级缓存键：识别消息身份用于编码缓存/去重。
 package ai
 
 // anthMessageKey records every value of m that its encoding reads (messageKey). It reports false for a message it cannot record whole, which is then encoded each time.

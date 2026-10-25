@@ -1,3 +1,4 @@
+// 中文导读：Cloudflare AI binding 变体（cloudflare-ai-binding.ts）。
 package ai
 
 import (

@@ -1,3 +1,8 @@
+// 中文导读：model-runtime 所需的模型操作导出。
+//
+// 移植 model-operations.ts 中被 coding-agent model-runtime.ts
+// 使用的导出：assertChatModel（断言模型可用于聊天）与
+// imageErrorResult（图像操作的错误结果构造）。
 package ai
 
 import (

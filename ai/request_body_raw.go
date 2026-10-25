@@ -1,3 +1,7 @@
+// 中文导读：请求体的原始拼接出口。
+//
+// marshalRequestBody 的最终组装：已编码片段与缓存 splice 的
+// 字节拼装（jsonstringify）。
 package ai
 
 import (

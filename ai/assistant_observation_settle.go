@@ -1,3 +1,12 @@
+// 中文导读：流式工具调用参数的惰性解析（settle）。
+//
+// ToolCall.deferArguments 表示参数文本还在流式增长、尚未解析成
+// JsonObject。cellArguments 持有该调用的增量解析器：每次 settle 从
+// 上次停下的位置继续，读者如果每次都 settle，总成本与生产者
+// 即时解析相同——每段 delta 只解析一次。关键优化：settled 结果
+// 是参数文本的纯函数，同一文本无论出现在哪个后续块都复用同一
+// 解析结果与已装箱的不可变 call 值。readLock 决定读者该拿读锁
+// 还是写锁：有未 settle 参数时必须先拿写锁完成解析再读。
 package ai
 
 import "slices"

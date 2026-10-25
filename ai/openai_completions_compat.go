@@ -1,3 +1,4 @@
+// 中文导读：OpenAI completions 的 compat 修正：各第三方兼容实现的差异位。
 package ai
 
 import (

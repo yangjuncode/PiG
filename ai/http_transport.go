@@ -1,3 +1,9 @@
+// 中文导读：provider HTTP 传输层。
+//
+// 构造与复用 http.Transport/RoundTripper：TLS、代理、超时、连接池
+// 与 body 读取钩子（bodyreadhook），是所有 provider HTTP 请求的
+// 公共底座。body_readiness.go 的 readiness 桥与 sse_event_idle.go
+// 的语义空闲超时都挂在这一层。
 package ai
 
 import (

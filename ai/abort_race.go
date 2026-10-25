@@ -1,3 +1,10 @@
+// 中文导读：AbortSignal 语义的两个原语。
+//
+// OperationSignal（upstream abort.ts:operationSignal）：把可选信号
+// 归一化——nil 换成永不取消的 context。RaceWithAbortSignal：让
+// 操作与信号赛跑——信号先取消则返回取消因，操作本身不中断、
+// 在自有 goroutine 跑完并丢弃结果（对应上游 Promise.race 中
+// 被抛弃分支仍 settle 的语义）；已取消的信号立即获胜。
 package ai
 
 import "context"

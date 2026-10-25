@@ -1,3 +1,8 @@
+// 中文导读：auth 文件的进程内互斥与可取消排队。
+//
+// 对应 auth-storage.ts。authMutex 保证活跃操作持有快照所有权
+// 直到其回调 settle，同时允许排队中的文件操作在拿到锁之前
+// 被取消——兼顾一致性与取消及时性。
 package ai
 
 // Ports packages/coding-agent/src/core/auth-storage.ts.

@@ -1,3 +1,6 @@
+// 中文导读：TypeBox schema 构造助手（typebox-helpers.ts）。
+//
+// StringEnum 等常用 schema 片段的构造，带可选 description/default。
 package ai
 
 // Ports packages/ai/src/utils/typebox-helpers.ts.

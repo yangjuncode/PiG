@@ -1,3 +1,8 @@
+// 中文导读：provider 错误响应体的解析（utils/error-body.ts 移植）。
+//
+// 各 provider 的错误响应体形制不一（JSON error 对象、纯文本、嵌套
+// message），本文件把它们归一化为可展示的错误字符串，供重试判定
+// 与用户呈现共用。
 package ai
 
 // Ports packages/ai/src/utils/error-body.ts

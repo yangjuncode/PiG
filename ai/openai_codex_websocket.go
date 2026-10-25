@@ -1,3 +1,4 @@
+// 中文导读：Codex Responses 的 websocket 通道（websocketRequestId = codexSessionId || uuidv7()）。
 package ai
 
 import (

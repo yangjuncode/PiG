@@ -1,3 +1,4 @@
+// 中文导读：OpenAI 请求 cache_control 断点计算：哪些消息/块打缓存标记。
 package ai
 
 func (p *openAIProvider) getCompatCacheControl(opts StreamOptions) *oaiCacheControl {

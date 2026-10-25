@@ -1,3 +1,7 @@
+// 中文导读：惰性加载的 OAuth 方法。
+//
+// 对应 auth/helpers.ts:40 的 lazyOAuth input：OAuth 流程实现
+// 在首次使用才加载，避免启动时为不用的 provider 付初始化成本。
 package ai
 
 import (

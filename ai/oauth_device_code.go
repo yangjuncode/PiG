@@ -1,3 +1,6 @@
+// 中文导读：RFC 8628 设备码流程（oauth/device-code.ts）。
+//
+// 设备授权 grant 的轮询与超时实现。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/utils/oauth/device-code.ts.

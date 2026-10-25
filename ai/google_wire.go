@@ -1,3 +1,4 @@
+// 中文导读：Google API 的线形结构与字段映射。
 package ai
 
 import (

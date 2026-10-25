@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：User-Agent 平台段（unix）。
 package ai
 
 import "golang.org/x/sys/unix"

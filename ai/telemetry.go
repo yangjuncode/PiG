@@ -1,3 +1,11 @@
+// 中文导读：模型请求遥测。
+//
+// 对应 upstream telemetry.ts。observeModelRequest 的异步契约
+// （telemetry.ts:84-86 `void start(...)`）：span 回调是个无人等待的
+// Promise，在观察者看到结果时 settle。Go 侧用专门 goroutine 阻塞
+// 等待 onResult，并保证回调在第一个事件前跑过（与 Pi 的同步
+// adapter 语义一致）；span 在结果被观察后结束。StartSpan 失败
+// 则留下 no-op span 且不记录错误。
 package ai
 
 // Ports packages/ai/src/telemetry.ts.

@@ -1,3 +1,4 @@
+// 中文导读：Anthropic Messages API 的客户端选项与请求装配（anthropic-messages.ts AnthropicOptions.client）。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/api/anthropic-messages.ts

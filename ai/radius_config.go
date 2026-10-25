@@ -1,3 +1,7 @@
+// 中文导读：Radius 网关配置解析。
+//
+// 对应 upstream providers/radius-config.ts：网关地址、认证与
+// capability 配置的读取与校验。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/providers/radius-config.ts.

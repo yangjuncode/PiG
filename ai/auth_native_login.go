@@ -1,3 +1,8 @@
+// 中文导读：登录交互到 Go OAuth 回调契约的适配。
+//
+// 把 auth/types.ts 的 login interaction 接到 Go OAuth 回调，
+// 保留调用方与逐 prompt 两层取消 context——用户中途取消某个
+// 步骤不杀掉整个登录，取消整个登录则全部终止。
 package ai
 
 // Adapts packages/ai/src/auth/types.ts login interactions to the Go OAuth callback contract, preserving caller and per-prompt cancellation contexts.

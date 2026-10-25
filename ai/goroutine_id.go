@@ -1,3 +1,9 @@
+// 中文导读：消费者 goroutine 身份标记。
+//
+// StreamObservation 需要区分“跑消费者回调的 goroutine”与“只是
+// 等待的 goroutine”——Result 只能靠 goroutine id 分辨。Current
+// 需要解析栈头，成本不低，所以多次回调的 goroutine 只问一次
+// （CurrentStreamOwner 缓存）。
 package ai
 
 import "github.com/MichaelKinsy/PiG/internal/goroutineid"

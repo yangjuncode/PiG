@@ -1,3 +1,7 @@
+// 中文导读：HTTP body 读取观测。
+//
+// 包在响应 body 上的观测层：统计已读字节、TLS/连接信息暴露、
+// 与 body_readiness 桥配合报告“这次读会不会等网络”。
 package ai
 
 import (

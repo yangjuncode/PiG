@@ -1,3 +1,4 @@
+// 中文导读：Codex Responses 的 HTTP 通道（openai-codex-responses.ts）。
 package ai
 
 // Ports packages/ai/src/api/openai-codex-responses.ts.

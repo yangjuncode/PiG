@@ -1,3 +1,7 @@
+// 中文导读：OAuth 本地回调服务器。
+//
+// 对应 upstream auth/oauth/callback-server.ts：浏览器授权流程中
+// 在本机起 HTTP 监听接收 redirect，回传授权码并展示完成页。
 package ai
 
 // Ports packages/ai/src/auth/oauth/callback-server.ts.

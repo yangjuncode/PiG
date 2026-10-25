@@ -1,3 +1,7 @@
+// 中文导读：内存凭证存储（credential-store.ts 移植）。
+//
+// CredentialStore 的纯内存实现：无文件 IO，供测试与进程内
+// 临时凭证使用；实现与文件存储相同的接口语义。
 package ai
 
 // Ports packages/ai/src/auth/credential-store.ts.

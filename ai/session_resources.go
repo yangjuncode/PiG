@@ -1,3 +1,7 @@
+// 中文导读：会话级 provider 资源的清理注册。
+//
+// SessionResourceCleanup 按 sessionID 释放该逻辑会话持有的
+// provider 资源（如缓存的传输连接）；注册项携带 id 便于去重。
 package ai
 
 import "fmt"

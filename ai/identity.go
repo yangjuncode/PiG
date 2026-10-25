@@ -1,3 +1,8 @@
+// 中文导读：provider 请求的客户端身份标识。
+//
+// 对应 upstream utils/identity.ts：构造发给各 provider 的 User-Agent /
+// X-Client 类身份字符串，处理 URL 编码、运行时信息与非法字符清洗，
+// 使 pig 发出的请求头与上游一致。
 package ai
 
 // Ports packages/ai/src/utils/identity.ts.

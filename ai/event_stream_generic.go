@@ -1,3 +1,8 @@
+// 中文导读：EventStream——泛型异步事件流（utils/event-stream.ts 移植）。
+//
+// 上游 EventStream 的 Go 版：push/end 投递、排队缓冲、单消费者
+// async iterator 消费、一次性 terminal result。AssistantMessageEventStream
+// 是它的特化；ai/AGENTS.md 要求流保持顺序且只有一个终止结果。
 package ai
 
 // Ports packages/ai/src/utils/event-stream.ts:EventStream.

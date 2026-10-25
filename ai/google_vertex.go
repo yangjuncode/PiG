@@ -1,5 +1,6 @@
 //go:build !pig_strip_google_vertex
 
+// 中文导读：Google Vertex AI provider（google-vertex.ts）。
 package ai
 
 // Ports packages/ai/src/api/google-vertex.ts.

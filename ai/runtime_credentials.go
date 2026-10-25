@@ -1,3 +1,7 @@
+// 中文导读：Models 运行时的凭证解析与缓存。
+//
+// 运行时维度缓存 provider 凭证解析结果，处理并发解析与
+// 失效——auth_resolve 的运行时侧。
 package ai
 
 import (

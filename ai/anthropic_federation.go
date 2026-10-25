@@ -1,3 +1,4 @@
+// 中文导读：Anthropic workload identity federation 凭证（getAnthropicFederation）：OIDC JWT 换访问令牌。
 package ai
 
 // Ports the workload identity federation of packages/ai/src/api/anthropic-messages.ts (getAnthropicFederation, the

@@ -1,3 +1,4 @@
+// 中文导读：OpenAI completions 流块的 JS 语义读取（openai-completions.ts:558-700）。
 package ai
 
 import (

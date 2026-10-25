@@ -1,3 +1,11 @@
+// 中文导读：provider 错误的重试判定。
+//
+// 对应上游 utils/retry.ts。核心是一张“不可重试”的模式表：429 里
+// 的订阅/账号限额（GoUsageLimitError、FreeUsageLimitError、月度
+// 限额、余额不足）、配额/预算/账单耗尽、ChatGPT 登录的共享用量
+// 限额等——这些错误等再久也不会恢复，直接终止。其余限流/服务
+// 错误按上游的退避策略重试。模式用 JS 语义的 ignore-case 正则
+// 匹配（lazyregexp.NewJSIgnoreCase）。
 package ai
 
 import (

@@ -1,3 +1,11 @@
+// 中文导读：partial assistant 消息的发布注册表。
+//
+// 流式事件把 producer 的 partial 消息交给多个消费者。为了不共享
+// 可变构造数据、又不为每个消费者复制整棵消息，stream 为每条源
+// 消息维护一个 cell（assistantMessageCell），并用 weak.Pointer +
+// runtime.Cleanup 在消费者释放视图后自动清理注册项。注意 D82
+// 差异：executor 之外的 producer 只能拿到发布时刻的不可变快照，
+// 因为活视图会让读者看到自由运行的 goroutine 当时的任意修订。
 package ai
 
 import (

@@ -1,3 +1,9 @@
+// 中文导读：streamSimple 的选项归一化（思考预算等）。
+//
+// 对应 upstream providers/simple-options.ts。ThinkingBudgets 把
+// thinking level 名映射到 token 预算：上游里“显式配置的预算”
+// 覆盖默认值，且 0/负数也是有效配置；Go int 分不出“0”与
+// “未设置”，所以用 Set 额外记录哪些 level 被显式配置过。
 package ai
 
 //

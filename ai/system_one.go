@@ -1,3 +1,9 @@
+// 中文导读：SystemOne 请求/响应共享格式。
+//
+// 移植 api/system-one-shared.ts、typesafe-system-one.ts、
+// cloudflare-workers-ai-system-one.ts、cloudflare-stream.ts 的
+// classifier 对应部分，以及 providers/compat-schema.ts 的
+// SystemOneCompatSchema——多个 provider 共用的 SystemOne 线形。
 package ai
 
 // Ports packages/ai/src/api/system-one-shared.ts, typesafe-system-one.ts and cloudflare-workers-ai-system-one.ts,

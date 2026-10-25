@@ -1,3 +1,8 @@
+// 中文导读：Node setTimeout 延时语义的移植。
+//
+// Node 的 setTimeout 对超范围值有特殊行为：超过 2^31-1 或 NaN、
+// 小于 1 的延时都按 1ms 处理（lib/internal/timers.js），分数截断。
+// nodeTimerDuration 复刻该换算，供按上游超时逻辑移植的代码使用。
 package ai
 
 import (

@@ -1,3 +1,7 @@
+// 中文导读：Unicode 清洗（sanitize-unicode.ts）。
+//
+// 按上游规则清洗文本中的代理对/非法 UTF-16 序列等，防止
+// 畸形 Unicode 进入请求或渲染。
 package ai
 
 import (

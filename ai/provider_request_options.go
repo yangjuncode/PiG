@@ -1,3 +1,7 @@
+// 中文导读：provider 请求级选项的共享解析。
+//
+// openai-completions/responses 与 anthropic-messages 共用的
+// StreamOptions 字段（headers、温度等）解析。
 package ai
 
 // Ports packages/ai/src/api/openai-completions.ts

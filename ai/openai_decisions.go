@@ -1,3 +1,4 @@
+// 中文导读：OpenAI API 选择决策（openai-decisions.ts/.lazy.ts）：何时用 completions vs responses。
 package ai
 
 // Ports packages/ai/src/api/openai-decisions.ts and packages/ai/src/api/openai-decisions.lazy.ts.

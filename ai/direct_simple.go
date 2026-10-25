@@ -1,3 +1,7 @@
+// 中文导读：直连 simple 流路径（anthropic-messages.ts 移植）。
+//
+// 不经网关、直接对 Anthropic Messages API 的 streamSimple 实现，
+// 处理 reasoning 与 token 预算选项的映射。
 package ai
 
 import (

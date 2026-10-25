@@ -1,3 +1,9 @@
+// 中文导读：ShallowCapture——先记录、后复制的浅快照。
+//
+// 记录 ShallowCopy 需要复制的引用而不立即复制：已发布的 live
+// 视图状态不可变、嵌套引用保持身份，所以之后任何时刻从
+// capture 构建的拷贝都等于捕获时刻的拷贝。消费者可能永不读
+// 拷贝时只付捕获成本。
 package ai
 
 import "unsafe"

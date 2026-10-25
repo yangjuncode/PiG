@@ -1,3 +1,6 @@
+// 中文导读：PKCE（oauth/pkce.ts）。
+//
+// code_verifier/code_challenge 的生成（S256）。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/utils/oauth/pkce.ts.

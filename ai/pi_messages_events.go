@@ -1,3 +1,10 @@
+// 中文导读：pi-messages 后端事件到 AssistantMessageEvent 的转换器。
+//
+// 对应上游 pi-messages.ts 的 createEventConverter。事件流是状态机：
+// start → text_start/text_delta/text_end、thinking_*、toolcall_* 等
+// 增量事件，最后 done/error。转换器累积增量构造 AssistantMessage，
+// 把后端的事件序列翻译成 ai 包统一的事件流。服务端的改写
+// （如网关策略）记录为 PiMessagesRewriteImpact 诊断。
 package ai
 
 // Converts serialized pi-messages backend events into assistant-message

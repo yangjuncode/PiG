@@ -1,3 +1,4 @@
+// 中文导读：Responses 共享事件的 JS 语义读取（openai-responses-shared.ts 两段）。
 package ai
 
 import (

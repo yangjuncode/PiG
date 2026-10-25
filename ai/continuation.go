@@ -1,3 +1,11 @@
+// 中文导读：Go 侧的 JavaScript 微任务/异步延续执行器。
+//
+// 上游 provider 的异步函数跑在 JS 事件循环上：每个 await/yield 的
+// 恢复顺序由 ECMA-262 的 reaction 队列决定。continuationExecutor
+// 用 jsloop.Turns 在 Go 里建模同一语义——把“一个同步执行片段 +
+// 其 await 反应”组织为 turn，ctx 中的 executor 保证同一 provider
+// 调用链上的所有延续按 JS 顺序运行。stream_observation.go 的
+// StreamObservation 是消费者侧的对应物。
 package ai
 
 import (

@@ -1,3 +1,11 @@
+// 中文导读：SSE 响应的“语义空闲”超时。
+//
+// sseIdleTransport 包装 RoundTripper：当 text/event-stream 响应
+// 在配置的 idle 超时内没有语义进展（新事件数据）时终止响应。
+// 为什么需要：字节级 idle  deadline 只要网关还在发注释行/ping
+// 就永不触发， stalled 生成会永远挂起。D131 差异：上游只按
+// 字节衡量空闲（pi-mono #10761, #10762）；本实现把 reasoning
+// 事件等 keepalive 也计入语义进展。
 package ai
 
 import (

@@ -1,3 +1,8 @@
+// 中文导读：内容块封闭联合的编解码。
+//
+// ContentBlocks 处理 Pi 的内容块联合（text/thinking/tool_call/image/
+// redacted_thinking 等）的 JSON 解码：按 type 字段分发到具体类型，
+// 未知类型报错——与上游封闭联合语义一致。
 package ai
 
 // ContentBlocks decodes Pi's closed content union.

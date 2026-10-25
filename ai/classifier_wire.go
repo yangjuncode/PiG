@@ -1,3 +1,8 @@
+// 中文导读：classifier/image 请求与结果的线形 JSON。
+//
+// 扩展 wire 与 Pi JSON 携带的格式：context={state,questions}、
+// result={api,provider,model,answers,usage?,...}；questions/
+// answers 对象保持 JS 对象键序。
 package ai
 
 // JSON forms of the classifier and image request/result values as the extension wire and Pi's JSON carry them: a

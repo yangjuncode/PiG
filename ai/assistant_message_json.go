@@ -1,3 +1,10 @@
+// 中文导读：AssistantMessage 的 JSON 解码。
+//
+// UnmarshalJSON 处理上游 AssistantMessage 的线形：content 是封闭联合
+// （text/thinking/tool_call/...），逐块走 UnmarshalContentBlock 解码并
+// 校验确实属于 assistant 内容块；同时记录 ErrorBeforeTimestamp
+// （error 字段在 JSON 中出现于 timestamp 之前的键序信息），用于
+// 保序回写。编码路径在同文件的 MarshalJSON。
 package ai
 
 import (

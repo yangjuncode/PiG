@@ -1,3 +1,9 @@
+// 中文导读：凭证存储契约（CredentialStore/CredentialInfo）。
+//
+// 对应 upstream ai/src/auth/types.ts 的存储接口与 coding-agent
+// auth-storage.ts 的三个实现：AuthStorage（读写文件）、
+// ReadOnlyAuthStorage、AuthStorage.inMemory。请求认证解析
+// （auth_resolve.go）只依赖这里的接口。
 package ai
 
 // Credential-store contract for request-auth resolution. Mirrors upstream

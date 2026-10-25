@@ -1,3 +1,7 @@
+// 中文导读：provider 登录方法集合。
+//
+// 移植 amazon-bedrock、google-vertex、cloudflare-auth 的登录
+// 交互实现。
 package ai
 
 // Ports packages/ai/src/providers/amazon-bedrock.ts

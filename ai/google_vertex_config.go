@@ -1,3 +1,4 @@
+// 中文导读：Vertex 端点/凭证配置。
 package ai
 
 // GoogleVertexConfig configures Vertex API-key or Application Default Credentials requests.

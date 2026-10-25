@@ -1,3 +1,9 @@
+// 中文导读：原生 async generator 的 ECMA-262 语义建模。
+//
+// 建模 AsyncGenerator 的请求队列与 yield/return/throw（ECMA-262
+// 27.6.3.2-27.6.3.9）。generator 体是跑在 jsCoroutine 上的直线
+// Go 代码。注意 tslib 编译出的 __asyncGenerator（部分 SDK 内嵌）
+// reaction 数不同，由 tslib_async.go 单独建模——两者不能混用。
 package ai
 
 import "errors"

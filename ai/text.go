@@ -1,3 +1,7 @@
+// 中文导读：内容文本提取（utils/text.ts）。
+//
+// ContentText 按序取出 text 块并用换行（或指定分隔符）拼接；
+// 字符串内容原样透传。泛型覆盖 UserText/SystemText/各种块切片。
 package ai
 
 import "strings"

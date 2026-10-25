@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 流式块状态机（finalizeStreamingBlock 等）：块开关与累积。
 package ai
 
 import (

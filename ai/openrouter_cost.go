@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter 用量成本解析（utils/openrouter-cost.ts，#10286/#9980）。
 package ai
 
 import (

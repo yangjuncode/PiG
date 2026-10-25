@@ -1,3 +1,9 @@
+// 中文导读：请求体拼接的底层缓存与随机数设施。
+//
+// 支撑 stringSplice/message cache：quotedStringCache 缓存字符串的
+// JSON 编码，LRU 管理条目，maphash 做键散列，crypto/rand 生成
+// 不会出现在正文里的 nonce 作为 token 前缀，保证拼接结果字节级
+// 等于直接 marshal。
 package ai
 
 import (

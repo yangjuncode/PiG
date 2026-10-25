@@ -1,3 +1,11 @@
+// 中文导读：ECMAScript Promise / async / await 的 Go 建模。
+//
+// 上游 provider、stream 与 agent 代码里每个 await 的恢复顺序由
+// V8 微任务队列决定。本文件在 Go 里复刻同一机制：jsPromise、
+// jsResolvers、jsCoroutine 只能在 executor 的 turn/reaction/协程体
+// 内使用；executor 的 FIFO ready 队列就是微任务队列，反应永不
+// 内联执行。写在其上的 provider/流循环花掉与 V8 相同的 reaction
+// 数——这是事件交付时序与上游一致的根基。
 package ai
 
 import (

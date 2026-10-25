@@ -1,5 +1,8 @@
 //go:build unix
 
+// 中文导读：auth 文件修订号（unix）。
+//
+// 用文件元数据（inode/mtime 等）做外部改动检测的 unix 实现。
 package ai
 
 import (

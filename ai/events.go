@@ -1,3 +1,9 @@
+// 中文导读：AssistantMessageEvent——Pi 的封闭流事件联合。
+//
+// 定义流式响应的全部事件类型：Start/TextStart/TextDelta/.../
+// ToolCall*/Done/Error。外部 provider 可以构造已导出的变体，但不
+// 能新增变体（封闭联合用未导出方法密封）。序列化/反序列化保持
+// 上游 type 字段值与字段形状。
 package ai
 
 import (

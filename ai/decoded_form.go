@@ -1,3 +1,8 @@
+// 中文导读：不经过 JSON 编解码推断 round-trip 结果的优化。
+//
+// 与 agent/message_decoded_form.go 同类：对已知形状的值直接
+// 判断其 JSON round-trip 后的形态，避免真实 marshal/unmarshal——
+// 遇到不确定形状返回 false 回落到实际编解码。
 package ai
 
 import (

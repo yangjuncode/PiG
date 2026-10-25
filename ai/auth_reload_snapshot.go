@@ -1,3 +1,9 @@
+// 中文导读：单次模型操作的“读最新”快照语义。
+//
+// 对应 auth-storage.ts readLatestData 与 models-store.ts
+// readLatest：一次模型操作期间的读取要么拿到操作开始时的
+// 快照、要么拿到落盘后的新值，不会读到半写状态；用原子代际
+// 与 configvalue 桥实现。
 package ai
 
 // Ports the read freshness of packages/coding-agent/src/core/auth-storage.ts readLatestData and models-store.ts readLatest for one model operation.

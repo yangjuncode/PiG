@@ -1,3 +1,4 @@
+// 中文导读：OpenAI SDK HTTP 错误提取（completions 与 responses 两版）。
 package ai
 
 // Ports packages/ai/src/api/openai-completions.ts (SDK HTTP error extraction).

@@ -1,5 +1,6 @@
 //go:build go1.27 && goexperiment.jsonv2
 
+// 中文导读：Responses 请求体的 jsonv2 编码。
 package ai
 
 import (

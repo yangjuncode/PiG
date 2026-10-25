@@ -1,3 +1,7 @@
+// 中文导读：图像生成操作入口。
+//
+// Models 的 Images API：按模型路由到各 provider 的图像生成
+// 实现，统一请求/响应形状与遥测。
 package ai
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：ChatGPT 订阅 OAuth 登录（openai-chatgpt.ts），含回调服务器错误处理。
 package ai
 
 // Ports packages/ai/src/auth/oauth/openai-chatgpt.ts.

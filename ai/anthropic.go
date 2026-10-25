@@ -1,3 +1,4 @@
+// 中文导读：Anthropic provider：providers/anthropic.ts 的移植，注册 anthropic-messages 流与模型目录。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/providers/anthropic.ts.

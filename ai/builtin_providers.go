@@ -1,3 +1,8 @@
+// 中文导读：内置 provider 装配（providers/all.ts 等）。
+//
+// 移植 all.ts 的内置模型访问器、typesafe.ts、
+// cloudflare-workers-ai.ts 与 opencode/openrouter/vercel-ai-gateway
+// 的 classifier 注册——把目录数据装配成 ModelsProvider。
 package ai
 
 // Ports packages/ai/src/providers/all.ts (built-in model accessors and provider assembly), providers/typesafe.ts,

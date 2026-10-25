@@ -1,3 +1,7 @@
+// 中文导读：Model 的便利方法。
+//
+// CostRates 返回上游 Model.cost 形状的每百万 token 价格（nil
+// 模型无价）；同类小工具集中于此。
 package ai
 
 import "slices"

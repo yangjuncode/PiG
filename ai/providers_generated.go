@@ -3,6 +3,7 @@
 // Upstream: @earendil-works/pi-ai 1.4.0
 // Providers: 42
 
+// 中文导读：生成的 provider 注册数据（勿手改）。
 package ai
 
 // GeneratedProviders lists the catalog barrel's providers in barrel order (providers/all.ts getBuiltinProviders).

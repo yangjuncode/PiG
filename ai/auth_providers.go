@@ -1,3 +1,8 @@
+// 中文导读：各内置 provider 的认证方法表。
+//
+// 对应 upstream providers/*.ts 的 `auth` 字段、auth/helpers.ts 的
+// envApiKeyAuth 与 cloudflare-auth.ts。OAuth 方法适配到已移植的
+// OAuth provider 注册表（oauth_registry.go）。
 package ai
 
 // Built-in provider auth methods. Mirrors the `auth` field of each upstream

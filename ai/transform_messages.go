@@ -1,3 +1,8 @@
+// 中文导读：transcript 到 provider 消息的转换（transform-messages.ts）。
+//
+// 把规范化 Transcript 按各 API 的规则改写：tool result 与 tool call
+// 配对、role 顺序、内容块形状——ai/AGENTS.md 的 request validity
+// 契约即约束这里；pipeline-diff 会拿 Pi 的输出逐字节比对。
 package ai
 
 // Ports packages/ai/src/api/transform-messages.ts.

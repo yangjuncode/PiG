@@ -1,3 +1,4 @@
+// 中文导读：Azure provider（providers/azure.ts）：azureStreams(openAICompletionsApi()) 的本 provider 注册。
 package ai
 
 // Ports packages/ai/src/providers/azure.ts

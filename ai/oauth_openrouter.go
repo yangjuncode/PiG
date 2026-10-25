@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter OAuth（key 永不过期的 expiry 语义）。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/auth/oauth/openrouter.ts.

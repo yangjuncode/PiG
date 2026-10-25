@@ -1,5 +1,8 @@
 //go:build go1.27 && goexperiment.jsonv2
 
+// 中文导读：请求体编码的 jsonv2 实现（goexperiment.jsonv2）。
+//
+// go1.27+jsonv2 构建下的对应实现，与 v1 版产出相同字节。
 package ai
 
 import (

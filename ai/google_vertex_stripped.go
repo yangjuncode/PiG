@@ -1,5 +1,6 @@
 //go:build pig_strip_google_vertex
 
+// 中文导读：Vertex strip 占位实现。
 package ai
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

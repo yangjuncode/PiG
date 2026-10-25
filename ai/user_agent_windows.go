@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：User-Agent 平台段（windows）。
 package ai
 
 import (

@@ -1,3 +1,9 @@
+// 中文导读：按 undici 字节流语义读 HTTP/1 body。
+//
+// nativeBodyIterator 复刻 Pi 的 SDK 在 Node 下读响应的方式：
+// 每次 ReadChunk 等价于一次 values().next() 或
+// getReader().read() 的 await——使 body 消费的异步边界与上游
+// 逐块一致。
 package ai
 
 import (

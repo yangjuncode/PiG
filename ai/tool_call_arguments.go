@@ -1,3 +1,12 @@
+// 中文导读：工具调用参数的键序保留。
+//
+// JS 对象按插入序枚举成员（整数键除外），所以上游对模型发来
+// 的 arguments 做 JSON.stringify 时写回的是模型发送的顺序。Go
+// map 无序，因此 ToolCall 在 map 旁携带一个未导出的 parameterOrder
+// sidecar 记录模型原始顺序——只在顺序与排序序不同的时候记录。
+// 调用方之后增删的成员不会被虚构或丢弃：sidecar 只列出模型
+// 文本中出现的成员，未列出的成员按排序序排在其后。对应上游
+// validation.ts:317-339 的 structuredClone 契约与 json-parse.ts。
 package ai
 
 import (

@@ -1,3 +1,9 @@
+// 中文导读：模型目录的保序记录类型。
+//
+// 对应 model-catalog.ts 的 ChatModelCatalog/ImageModelCatalog/
+// ClassifierModelCatalog：providers/data/<id>.json 扁平化后的
+// “按模型 id 键控”的记录。orderedCatalog 保留插入序——上游用
+// Object.values/Object.keys 读它，枚举顺序就是 JSON 顺序。
 package ai
 
 // Ports packages/ai/src/model-catalog.ts: ChatModelCatalog, ImageModelCatalog and ClassifierModelCatalog (the record

@@ -1,3 +1,4 @@
+// 中文导读：Azure OpenAI Responses API（azure-openai-responses.ts）。
 package ai
 
 // Ports packages/ai/src/api/azure-openai-responses.ts.

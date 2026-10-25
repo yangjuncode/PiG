@@ -1,3 +1,8 @@
+// 中文导读：校验结果备忘（ValidationMemo）。
+//
+// 记住哪些 JSON 引用（tool result 的 details、tool call 的
+// arguments）已被 Frozen/校验过，同一引用再次进入校验路径时
+// 直接复用结论——避免流式/重复路径上的重复 schema 校验。
 package ai
 
 import (

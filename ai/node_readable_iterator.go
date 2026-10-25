@@ -1,3 +1,9 @@
+// 中文导读：Readable 的 asyncIterator 逐语句镜像。
+//
+// 在 jsAsyncGenerator 模型上复刻 createAsyncIterator
+// （lib/internal/streams/readable.js）：generator 体在 next() 与
+// await 续体内同步恢复，`yield chunk` 先 await 操作数再完成队首
+// 请求，return 经 finally 展开。注释逐条对应源语句。
 package ai
 
 // asyncIterator is Readable.prototype[Symbol.asyncIterator] with default options: the native async generator createAsyncIterator (lib/internal/streams/readable.js) on the jsAsyncGenerator model. The generator body resumes synchronously inside next() and inside await continuations, as V8 runs it.

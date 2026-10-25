@@ -1,3 +1,7 @@
+// 中文导读：Models 运行时的 provider 组装。
+//
+// 把目录条目 + 凭证解析结果组装为可调用的 provider（stream
+// 函数、能力位），并处理 provider 覆盖/自定义注册的合并顺序。
 package ai
 
 import (

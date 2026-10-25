@@ -1,3 +1,4 @@
+// 中文导读：Anthropic 流主循环：iterateSseMessages/iterateAnthropicEvents 与 stream() 的 for-await 移植。
 package ai
 
 // Ports packages/ai/src/api/anthropic-messages.ts:iterateSseMessages, iterateAnthropicEvents and the for-await loop of stream().

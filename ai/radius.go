@@ -1,3 +1,7 @@
+// 中文导读：Radius provider。
+//
+// 对应 upstream providers/radius.ts：pi-messages 网关 provider——
+// 模型目录加载、pi-messages 流的接入与 OAuth 状态接入。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/providers/radius.ts.

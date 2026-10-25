@@ -1,3 +1,11 @@
+// 中文导读：流消费者的同步延续所有权。
+//
+// StreamObservation 包装一个流消费回调：回调内每次 Await 会释放
+// 执行权、等上游异步操作就绪后通过同一 reaction 队列恢复——
+// 对应 JS 里 await 挂起当前 async 函数的语义。字段记录该
+// continuation 的生命周期：suspensions 计数进行中的挂起，
+// detached/acquiring/ended/completion 描述释放-重获执行权与
+// 终止分类的状态机。
 package ai
 
 import (

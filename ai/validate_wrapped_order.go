@@ -1,3 +1,7 @@
+// 中文导读：包装 schema 的键序保持校验。
+//
+// 反射遍历带序对象进行 schema 校验，保持上游 TypeBox 遍历
+// 产生的键序与错误顺序。
 package ai
 
 import (

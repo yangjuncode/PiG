@@ -1,3 +1,7 @@
+// 中文导读：JS 正则与数字边界语义补丁。
+//
+// jsSpaceClass 复刻 JavaScript 的 \s（Go 的 \s 仅 ASCII，缺 \v 与
+// Unicode 空格）等边界差异，供解析路径保持 JS 语义。
 package ai
 
 import (

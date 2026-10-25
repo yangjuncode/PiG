@@ -1,3 +1,8 @@
+// 中文导读：环境变量 API key 发现。
+//
+// 对应 upstream env-api-keys.ts 的 findEnvKeys/getEnvApiKey：
+// 按 provider 约定的环境变量名（含 *_API_KEY 等别名）查找凭证；
+// provider env 值经 provider_env.go 的 getProviderEnvValue 解析。
 package ai
 
 // Environment API-key discovery. Mirrors upstream packages/ai/src/env-api-keys.ts

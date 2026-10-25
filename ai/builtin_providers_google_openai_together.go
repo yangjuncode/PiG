@@ -1,3 +1,4 @@
+// 中文导读：Google/OpenAI/Together provider 函数（providers/{google,openai,together}.ts）。
 package ai
 
 // Ports packages/ai/src/providers/{google,openai,together}.ts: the provider functions of the Google, OpenAI and Together

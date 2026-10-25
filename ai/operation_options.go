@@ -1,3 +1,4 @@
+// 中文导读：Auth/ModelsStore 操作选项（AuthOperationOptions、ModelsStoreOperationOptions）。
 package ai
 
 import "context"

@@ -1,3 +1,9 @@
+// 中文导读：V8 Date.parse 的移植。
+//
+// 移植 V8 的 DateParser（src/date/dateparser.cc）与 Date.parse
+// 包装（date.cc ParseDateTimeString）——Node 每次 `Date.parse(string)`
+// 都走这段代码。保留 V8 的解析宽容度（分隔符、缺省字段、年份
+// 规则、时区写法），使与上游依赖该行为的代码结果一致。
 package ai
 
 // Ports V8's DateParser (src/date/dateparser.cc, dateparser-inl.h) and the Date.parse wrapper (src/date/date.cc ParseDateTimeString), which Node runs for every `Date.parse(string)`.

@@ -1,3 +1,7 @@
+// 中文导读：SDK 请求 URL 构造。
+//
+// 各 provider baseURL + path 的拼接与校验，复刻上游 URL 语义
+// （尾斜杠、相对路径解析）。
 package ai
 
 import (

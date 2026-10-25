@@ -1,3 +1,7 @@
+// 中文导读：verification URI 的可信校验。
+//
+// trustedURLHref 等价 `new URL(value).href`：URL 解析失败或
+// 协议不可信时 ok=false——保护“浏览器将打开此链接”的边界。
 package ai
 
 import (

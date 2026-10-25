@@ -1,3 +1,8 @@
+// 中文导读：tslib 编译产物的已 settle Promise 表示。
+//
+// tslibSettled 表示一个已兑现/已拒绝的 JS Promise——tslib 的
+// __awaiter/__generator 内部操作此类 settled 值，reaction 数
+// 与原生 Promise 不同，单列建模。
 package ai
 
 // tslibSettled is a settled JavaScript Promise: fulfilled with value, or rejected with err.

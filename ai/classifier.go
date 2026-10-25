@@ -1,3 +1,8 @@
+// 中文导读：分类器（classifier）模型操作。
+//
+// 移植 types.ts 与 utils/model-operations.ts 的 classifier 部分：
+// 分类器模型目录、请求构造与响应解析——用于标题生成、压缩
+// 边界判定等用小模型跑的任务。
 package ai
 
 // Ports the classifier parts of packages/ai/src/types.ts and packages/ai/src/utils/model-operations.ts.

@@ -1,5 +1,8 @@
 //go:build linux
 
+// 中文导读：socket 原始读取（linux）。
+//
+// Linux 下绕过部分 net 层的原始读，用于精确的读取边界控制。
 package ai
 
 import (

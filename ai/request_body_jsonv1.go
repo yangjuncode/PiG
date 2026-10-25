@@ -1,5 +1,9 @@
 //go:build !(go1.27 && goexperiment.jsonv2)
 
+// 中文导读：请求体编码的 encoding/json v1 实现。
+//
+// 非 jsonv2 实验构建下的 marshalRequestBody 路径（jsstring
+// 保证 JS 字符串语义）。
 package ai
 
 import (

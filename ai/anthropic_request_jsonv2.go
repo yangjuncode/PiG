@@ -1,5 +1,6 @@
 //go:build go1.27 && goexperiment.jsonv2
 
+// 中文导读：Anthropic 请求体的 jsonv2 编码路径。
 package ai
 
 import (

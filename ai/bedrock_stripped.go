@@ -1,5 +1,6 @@
 //go:build pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock strip 占位：pig_strip 构建下该 provider 被裁掉时的替代实现。
 package ai
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

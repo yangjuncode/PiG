@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock Converse 输入的有效性检查接线。
 package ai
 
 import (

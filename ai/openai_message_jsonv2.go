@@ -1,5 +1,6 @@
 //go:build go1.27 && goexperiment.jsonv2
 
+// 中文导读：OpenAI 消息编码的 jsonv2 路径。
 package ai
 
 import (

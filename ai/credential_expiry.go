@@ -1,3 +1,7 @@
+// 中文导读：OAuthCredentials.expires 语义（auth/types.ts 移植）。
+//
+// 凭证过期时间的解析与判定，保留上游的毫秒/秒单位与边界规则
+// （缺省、0、过去时间）。
 package ai
 
 // Ports packages/ai/src/auth/types.ts (OAuthCredentials.expires).

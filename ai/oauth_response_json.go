@@ -1,3 +1,6 @@
+// 中文导读：OAuth token 响应的 JSON 解析。
+//
+// token 端点响应的字段解析与错误处理。
 package ai
 
 import (

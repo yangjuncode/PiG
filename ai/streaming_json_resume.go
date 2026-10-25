@@ -1,3 +1,11 @@
+// 中文导读：流式工具参数的可恢复增量解析器。
+//
+// streamingArgumentsParser 对单个参数文本只增不减的工具调用提供
+// 与 parseStreamingJsonArguments 完全相同的返回值，但只扫描新增
+// 的字节：已被 ',' 分隔完成的成员直接保留，未闭合字符串保留已
+// 解码前缀。mode 记录扫描状态机当前阶段；一旦文本走到需要
+// 整文解析的形式（whole），就回落到完整解析器。这把“每个 delta
+// 都全量 parse 一次”的 O(n²) 降为每字节一次。
 package ai
 
 import (

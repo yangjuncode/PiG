@@ -1,3 +1,7 @@
+// 中文导读：per-model endpoint 可替换的 Provider 包装。
+//
+// endpointProvider 接口：持有模型 baseURL 的三个 HTTP API
+// provider 允许为单次请求替换 endpoint（网关/代理场景）。
 package ai
 
 import "context"

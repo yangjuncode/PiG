@@ -1,3 +1,4 @@
+// 中文导读：Mistral 流块的 JS 语义读取（mistral-conversations.ts:541-607）。
 package ai
 
 import (

@@ -1,5 +1,8 @@
 //go:build linux && !race
 
+// 中文导读：非 race 构建的 Linux 原始 socket 读。
+//
+// 直接 syscall 读 fd，去掉中间层（!race 构建）。
 package ai
 
 import (

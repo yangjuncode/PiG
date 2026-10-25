@@ -1,3 +1,4 @@
+// 中文导读：Anthropic 事件按 JS JSON 语义读取（anthropic-messages.ts:665-857）：数字、字符串边界的 JS 语义。
 package ai
 
 import (

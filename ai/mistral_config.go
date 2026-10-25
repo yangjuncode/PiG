@@ -1,3 +1,4 @@
+// 中文导读：Mistral provider 配置。
 package ai
 
 // MistralConfig configures the Mistral API provider.

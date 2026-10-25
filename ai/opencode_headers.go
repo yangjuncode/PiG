@@ -1,3 +1,6 @@
+// 中文导读：OpenCode 请求头（opencode-headers.ts）。
+//
+// OpenCode provider 的专用请求头构造。
 package ai
 
 // Ports packages/ai/src/providers/opencode-headers.ts.

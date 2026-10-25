@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 请求体旁路观测：记录实际发出的 wire 字节供 request validity/诊断。
 package ai
 
 import (

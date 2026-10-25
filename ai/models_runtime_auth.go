@@ -1,3 +1,8 @@
+// 中文导读：Models 运行时的认证刷新代际。
+//
+// refreshGenerations 给每个 provider 记一个递增代际：一次刷新
+// 开始时 ++，异步结果回来时代际不符即丢弃——保证慢的旧刷新
+// 不会覆盖新刷新的认证结果（标准 ABA 防护）。
 package ai
 
 import (

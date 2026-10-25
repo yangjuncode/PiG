@@ -1,3 +1,4 @@
+// 中文导读：OpenAI Codex Responses provider（providers/openai-codex-responses.ts），strict mode 默认开。
 package ai
 
 import (

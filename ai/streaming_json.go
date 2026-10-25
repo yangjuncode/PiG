@@ -1,3 +1,10 @@
+// 中文导读：流式 JSON 文本的容错解析（parseStreamingJson）。
+//
+// 工具调用参数在流式过程中是一段不断增长、通常未闭合的 JSON
+// 文本。上游 parseStreamingJson 的契约是“全函数”：任何无效或
+// 不完整输入都返回已解析出的对象前缀，连前缀都没有时返回空
+// 对象。本文件实现该解析器；streaming_json_resume.go 进一步提供
+// 增量版本——参数只增长时从上次停下的位置继续解析。
 package ai
 
 import (

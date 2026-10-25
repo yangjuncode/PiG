@@ -1,3 +1,9 @@
+// 中文导读：各 provider 的内置模型目录入口。
+//
+// 对应 upstream providers/<id>.models.ts 的 <ID>_MODELS /
+// <ID>_IMAGE_MODELS / <ID>_CLASSIFIER_MODELS 导出。每个函数按目录
+// 顺序返回该 provider 的模型（全新拷贝，按模型 id 键控），供
+// registry、模型选择与 /cost 使用。
 package ai
 
 // Ports the per-provider catalog exports of packages/ai/src/providers/<id>.models.ts: <ID>_MODELS, <ID>_IMAGE_MODELS and <ID>_CLASSIFIER_MODELS.

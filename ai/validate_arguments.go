@@ -1,3 +1,8 @@
+// 中文导读：工具调用与参数的校验（validation.ts）。
+//
+// validateToolCall/validateToolArguments：按工具 schema 校验模型
+// 发来的参数，沿用上游的错误分类与返回形状（校验失败时的
+// 修复结果 vs 硬错误）。
 package ai
 
 // Ports packages/ai/src/utils/validation.ts:validateToolCall, validateToolArguments.

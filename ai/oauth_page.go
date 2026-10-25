@@ -1,3 +1,6 @@
+// 中文导读：OAuth 回调完成页（oauth-page.ts）。
+//
+// 授权完成后展示给用户的 HTML 页面模板。
 package ai
 
 // Ports packages/ai/src/utils/oauth-page.ts.

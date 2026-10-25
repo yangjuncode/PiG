@@ -1,3 +1,7 @@
+// 中文导读：流转发/消费中的 continuation 驱动。
+//
+// 在 continuation executor 上驱动 provider 流的生产-消费接力，
+// 处理取消与终止的原子标记。
 package ai
 
 import (

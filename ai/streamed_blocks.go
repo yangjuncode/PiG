@@ -1,3 +1,8 @@
+// 中文导读：一条流式消息的打开块状态集。
+//
+// streamedBlocks 为每个打开的内容块维护：使 delta 追加为摊还
+// O(1) 的缓冲（accumulatedString）和只读新增字节的解析器。
+// 块以 release 结束——是 block_deltas.go 的底层存储。
 package ai
 
 import "encoding/json"

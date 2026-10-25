@@ -1,3 +1,8 @@
+// 中文导读：Models.Refresh——provider 目录/认证的刷新流程。
+//
+// 按 provider 逐个刷新远端模型目录与认证状态，汇总为
+// ModelsRefreshResult；与 models_runtime_auth.go 的代际机制
+// 配合丢弃过期结果。
 package ai
 
 import (

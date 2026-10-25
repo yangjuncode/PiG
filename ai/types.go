@@ -1,3 +1,10 @@
+// 中文导读：ai 包的公共类型层，对应上游 @mariozechner/pi-ai 的 types.ts。
+//
+// 这里定义所有 provider 共用的核心模型：API（provider-API 协议种类，
+// 开放字符串联合以兼容上游新增值）、Model、消息联合（User/Assistant/
+// ToolResult 等）、内容块（Text/Thinking/ToolCall/Image）、Usage 计费、
+// StreamOptions 以及各 provider 的 Stream 签名。后续 provider 实现
+// （anthropic.go、openai.go 等）都以这里的类型为输入输出契约。
 package ai
 
 // Mirrors @mariozechner/pi-ai from pi v0.69.0.

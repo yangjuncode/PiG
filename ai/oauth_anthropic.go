@@ -1,3 +1,4 @@
+// 中文导读：Anthropic OAuth 登录（auth/oauth/anthropic.ts，含 loginAnthropic）。
 package ai
 
 // Ports packages/ai/src/auth/oauth/anthropic.ts.

@@ -1,3 +1,4 @@
+// 中文导读：Codex Responses 的 SSE 流（其 parseSSE 自滤 data: 行）。
 package ai
 
 // Ports packages/ai/src/api/openai-codex-responses.ts.

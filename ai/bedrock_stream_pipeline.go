@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 流管线：eventstream 帧 → 事件 → AssistantMessageEvent 的装配。
 package ai
 
 import (

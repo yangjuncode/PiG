@@ -1,3 +1,10 @@
+// 中文导读：请求认证的解析入口。
+//
+// 对应 upstream auth/types.ts 的 ModelAuth/AuthResult/AuthCheck/
+// AuthContext 等类型、auth/resolve.ts 的 resolveProviderAuth 与
+// ModelsError、auth/context.ts 的 defaultProviderAuthContext，以及
+// models.ts 的 checkAuth/getAuth 路径。一次请求从这里得到“该用
+// 哪份凭证、以什么方式放到请求上”。
 package ai
 
 // Request-auth resolution. Mirrors upstream packages/ai/src/auth/types.ts

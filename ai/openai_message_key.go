@@ -1,3 +1,4 @@
+// 中文导读：OpenAI 消息级编码缓存键。
 package ai
 
 // oaiMessageKey records every value of m that its encoding reads (messageKey). It reports false for a message it cannot record whole, which is then encoded each time.

@@ -1,3 +1,4 @@
+// 中文导读：Google Generative AI provider（google-generative-ai.ts、google-shared.ts）。
 package ai
 
 // Ports packages/ai/src/api/google-generative-ai.ts.

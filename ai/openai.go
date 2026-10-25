@@ -1,3 +1,4 @@
+// 中文导读：OpenAI provider 主文件（openai-completions.ts）：Chat Completions API 的流实现。
 package ai
 
 // Ports packages/ai/src/api/openai-completions.ts.

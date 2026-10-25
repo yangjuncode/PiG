@@ -1,3 +1,4 @@
+// 中文导读：Google SDK 管线适配：@google/genai 的请求/流路径在 tslib 异步模型上的复刻。
 package ai
 
 import (

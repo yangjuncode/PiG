@@ -1,3 +1,6 @@
+// 中文导读：OAuth 公共类型。
+//
+// OAuth 凭证/方法/事件的类型定义。
 package ai
 
 import (

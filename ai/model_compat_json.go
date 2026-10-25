@@ -1,3 +1,7 @@
+// 中文导读：compat 标志的 JSON 编解码（types.ts 移植）。
+//
+// ModelCompat 与线形 JSON 的双向转换，含字段省略/默认语义与
+// 缓存的反射解析。
 package ai
 
 // Ports packages/ai/src/types.ts.

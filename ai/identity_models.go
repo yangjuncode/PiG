@@ -1,3 +1,8 @@
+// 中文导读：WithClientIdentity 包装的 Models 表面。
+//
+// ClientIdentityModels 是 generation/compaction 实际调用的
+// 方法子集；*Models、coding Model Runtime 与 durable Harness
+// 的 models 都满足它（identity.ts withClientIdentity）。
 package ai
 
 // Ports packages/ai/src/utils/identity.ts (withClientIdentity).

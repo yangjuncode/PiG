@@ -1,3 +1,7 @@
+// 中文导读：faux provider 的测试脚本驱动。
+//
+// 从环境变量/文件读取脚本，让 faux provider 按测试需要回放
+// 指定事件序列、延迟与错误，是 parity 测试的注入点。
 package ai
 
 import (

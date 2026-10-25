@@ -1,3 +1,8 @@
+// 中文导读：Radius 网关的 OAuth。
+//
+// 对应 upstream auth/oauth/radius.ts。Radius 是 pi-messages 网关：
+// OAuth client API 走配置的网关地址，仅交互式浏览器授权端点是
+// 发现出来的。模型目录加载由 radius.go 的 provider 负责。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/auth/oauth/radius.ts.

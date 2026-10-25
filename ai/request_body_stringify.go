@@ -1,3 +1,7 @@
+// 中文导读：请求体的 JSON.stringify 语义编码。
+//
+// 按 JS JSON.stringify 语义编码请求体（键序、undefined 省略、
+// 数字边界），是 marshalRequestBody 的实现路径。
 package ai
 
 import (

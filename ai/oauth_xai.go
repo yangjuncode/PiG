@@ -1,3 +1,4 @@
+// 中文导读：xAI OAuth。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/auth/oauth/xai.ts.

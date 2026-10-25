@@ -1,3 +1,7 @@
+// 中文导读：凭证的 JSON 线形（auth/types.ts 移植）。
+//
+// Credential 各类型（api_key、oauth 等）与磁盘 JSON 的双向转换，
+// 保持与 Pi auth 文件逐字段兼容——Pi 与 PiG 可互读同一文件。
 package ai
 
 // Ports packages/ai/src/auth/types.ts

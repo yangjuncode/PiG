@@ -1,3 +1,4 @@
+// 中文导读：OpenAI prompt cache 的 key 计算（上游 64 Unicode scalar 限制且不劈开 UTF-8 序列）。
 package ai
 
 import "unicode/utf8"

@@ -1,3 +1,7 @@
+// 中文导读：provider 原始流事件到统一事件的适配。
+//
+// 把 provider 响应中的原始事件字段（字符串/JSON）适配为
+// AssistantMessageEvent 的事件类型与错误文本。
 package ai
 
 import (

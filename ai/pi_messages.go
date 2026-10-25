@@ -1,3 +1,12 @@
+// 中文导读：Pi 自有消息协议 pi-messages 的 provider 实现。
+//
+// 对应上游 api/pi-messages.ts。流程：把 {model, context, options} 一次
+// POST 到 <baseUrl>/messages，响应是 SSE 流——序列化的 assistant
+// message 事件序列，最后以 done/error 终止。Radius gateway 使用该
+// 协议；任何实现该协议的后端都可以通过 models.json 里
+// "api": "pi-messages" 接入。事件到 AssistantMessage 的转换在
+// pi_messages_events.go，SSE 读取与 JS 微任务时序建模在
+// pi_messages_reader.go。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/api/pi-messages.ts.

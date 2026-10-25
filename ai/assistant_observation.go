@@ -1,3 +1,12 @@
+// 中文导读：流式 assistant 消息的“发布-观察”机制核心单元。
+//
+// assistantMessageCell 是生产者持有的发布单元：partial 消息在流式
+// 构造过程中不断变化，cell 通过 RWMutex 把当前状态发布给读者，
+// 而不与读者共享可变的构造数据（上游 event-stream.ts:44-91 排队同
+// 一 partial 引用）。seq 是发布计数：观察者在 seq 不变时读到的就是
+// 同一状态。unsettled/arguments 记录“某个工具调用的参数还在等
+// 延迟解析”的状态，配合 assistant_observation_settle.go 的惰性解析，
+// 使读者只在需要时为参数文本付一次解析成本。
 package ai
 
 import (

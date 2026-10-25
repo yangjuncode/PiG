@@ -1,3 +1,4 @@
+// 中文导读：OpenAI Responses API（openai-responses.ts + openai-responses-shared.ts）。
 package ai
 
 // Ports packages/ai/src/api/openai-responses.ts.

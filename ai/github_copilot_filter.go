@@ -1,3 +1,4 @@
+// 中文导读：GitHub Copilot 模型过滤（providers/github-copilot.ts filterModels）。
 package ai
 
 // Ports packages/ai/src/providers/github-copilot.ts filterModels.

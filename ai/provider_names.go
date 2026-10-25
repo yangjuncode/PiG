@@ -1,3 +1,7 @@
+// 中文导读：内置 provider 的展示名表。
+//
+// 对应上游 providers/*.ts 的 `name` 字段——登录选择器与
+// 界面展示用；保持上游拼写。
 package ai
 
 import "sync"

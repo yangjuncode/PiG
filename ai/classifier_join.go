@@ -1,3 +1,6 @@
+// 中文导读：classifier 并发结果的汇合。
+//
+// 多分类器请求的结果收集与错误传播。
 package ai
 
 import (

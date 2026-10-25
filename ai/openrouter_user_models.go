@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter 用户模型个性化目录（personalizeOpenRouterCatalog，15s 超时）。
 package ai
 
 // Ports packages/ai/src/providers/openrouter.ts personalizeOpenRouterCatalog (pi-mono commit ee409a85, #10672).

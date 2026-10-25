@@ -1,3 +1,7 @@
+// 中文导读：OAuth provider 注册表。
+//
+// 登记各 provider 的 OAuth 方法（device-code、浏览器授权等），
+// 供 auth_resolve 与登录流程按 provider id 查找。
 package ai
 
 import (

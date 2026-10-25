@@ -3,6 +3,7 @@
 // Upstream: @earendil-works/pi-ai 1.4.0
 // Models: 53
 
+// 中文导读：生成的 classifier 模型目录数据（make model-catalogs 产物，勿手改）。
 package ai
 
 // GeneratedClassifierModels is the static classifier model catalog (53 entries).

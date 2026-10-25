@@ -1,3 +1,8 @@
+// 中文导读：内置 provider 工厂注册。
+//
+// Go 静态链接 provider 工厂（替代上游动态 import）。
+// ProviderFactory 由 API key + model spec 构造 Provider；
+// pigstrip 集成使被裁 provider 不注册。
 package ai
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

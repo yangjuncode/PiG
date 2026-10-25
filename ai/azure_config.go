@@ -1,3 +1,4 @@
+// 中文导读：Azure OpenAI 端点配置（azure-openai-config.ts）：AzureEndpointOptions 扩展 StreamOptions。
 package ai
 
 // Ports packages/ai/src/api/azure-openai-config.ts

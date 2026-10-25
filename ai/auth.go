@@ -1,3 +1,9 @@
+// 中文导读：凭证存储（auth-storage）。
+//
+// 对应 upstream coding-agent 的 auth-storage.ts。凭证沿用 Pi 的 JSON
+// 形状与 proper-lockfile 目录锁——包括跨 Pi 与 PiG 两个进程并发
+// 访问同一 auth 文件的场景。auth_reload.go 处理外部改动重读，
+// auth_mutex.go 管理进程内快照所有权。
 package ai
 
 // Ports packages/coding-agent/src/core/auth-storage.ts

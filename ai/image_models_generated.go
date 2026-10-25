@@ -3,6 +3,7 @@
 // Upstream: @earendil-works/pi-ai 1.4.0
 // Models: 63
 
+// 中文导读：生成的图像模型目录数据。
 package ai
 
 // GeneratedImageModels is the static image model catalog (63 entries).

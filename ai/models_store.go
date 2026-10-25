@@ -1,3 +1,7 @@
+// 中文导读：models.json 的读写与原子落盘。
+//
+// 用户自定义 provider/模型配置（models.json）的加载、校验、保存；
+// 与 auth 文件一样处理外部改动重读与损坏恢复。
 package ai
 
 import (

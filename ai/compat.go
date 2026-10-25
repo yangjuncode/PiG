@@ -1,3 +1,8 @@
+// 中文导读：provider compat 层。
+//
+// 对应 upstream compat.ts：定义 StreamFunction 等 provider 调用签名
+// 与各 API 差异的兼容开关，是模型目录标记的 per-provider/per-model
+// 行为修正位。
 package ai
 
 // Ports packages/ai/src/compat.ts

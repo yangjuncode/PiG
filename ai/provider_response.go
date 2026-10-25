@@ -1,3 +1,6 @@
+// 中文导读：provider HTTP 响应的公共处理。
+//
+// 响应状态/错误体的统一读取与判定。
 package ai
 
 import (

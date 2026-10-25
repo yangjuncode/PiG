@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 重试退避：@smithy/core StandardRetryStrategy/DefaultRetryBackoffStrategy 与 parseRetryAfterHeader 的移植。
 package ai
 
 // Ports node_modules/@smithy/core/dist-es/submodules/retry (StandardRetryStrategy, DefaultRetryBackoffStrategy, parseRetryAfterHeader), the retry delay of Pi's Bedrock client.

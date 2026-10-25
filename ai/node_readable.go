@@ -1,3 +1,13 @@
+// 中文导读：Node Readable 流的字节模式异步迭代建模。
+//
+// 按 Node 24.19.0 lib/internal/streams/readable.js 建模 byte-mode
+// Readable 的 Symbol.asyncIterator 行为及其 EOS watcher 的 tick/
+// 事件顺序。@smithy/core 的事件流正是通过
+// `source[Symbol.asyncIterator]()` 读 AWS SDK 的 Node HTTP 响应
+// （http.IncomingMessage），对应 createAsyncIterator。每个函数
+// 名对应它镜像的 Node 函数；node_readable_test.go 用真实 Node
+// 回放 testdata 微任务轨迹。未建模：object 模式、字符串解码、
+// pipe、flowing 模式等——传输层是唯一写入方，这些不影响时序。
 package ai
 
 import "errors"

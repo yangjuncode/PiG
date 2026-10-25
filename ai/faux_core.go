@@ -1,3 +1,7 @@
+// 中文导读：faux provider 的核心构造（createFauxCore）。
+//
+// faux 流引擎的主体：按脚本驱动 start/delta/done 事件序列，
+// 是 faux.go 与 faux_deferred.go 的共享实现。
 package ai
 
 // Ports packages/ai/src/providers/faux.ts createFauxCore.

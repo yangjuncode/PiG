@@ -1,3 +1,11 @@
+// 中文导读：Node Web ReadableStream 的 promise 时序建模。
+//
+// 按 Node 24.19.0 lib/internal/webstreams/readablestream.js 在
+// jsPromise 模型上建模。上游 fetch 系 provider 的 response.body
+// 是 undici 字节流，经 ReadableStream.values() 或
+// getReader().read() 消费——用同一模型写的 body 管线消耗的
+// reaction 数与上游一致。未建模 BYOB reader、tee、pipeTo、
+// 非零 high-water mark 等：对 push 式源的读取何时 settle 无影响。
 package ai
 
 import "errors"

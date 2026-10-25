@@ -1,3 +1,8 @@
+// 中文导读：流式工具调用的 scratch 缓冲所有权。
+//
+// toolCallScratch 为值持有，保证发布一个 ToolCall 不会保留
+// 可变的解析器缓冲——上游对应 openai-completions/responses
+// 的 StreamingToolCallBlock/StreamingToolCall。
 package ai
 
 import "strconv"

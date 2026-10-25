@@ -1,3 +1,4 @@
+// 中文导读：Anthropic SSE delta 的快速解析路径：热点 JSON 字段直接扫描，避免完整 unmarshal。
 package ai
 
 import "strings"

@@ -1,3 +1,7 @@
+// 中文导读：SimpleStreamOptions.deferred（types.ts 移植）。
+//
+// 简单流的延迟选项：允许把简单流的某些决策推迟到流建立时，
+// 保持与上游同名字段相同语义。
 package ai
 
 // Ports packages/ai/src/types.ts (SimpleStreamOptions.deferred).

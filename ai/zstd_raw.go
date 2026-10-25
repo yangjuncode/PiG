@@ -1,5 +1,9 @@
 //go:build pig_strip_node_extensions
 
+// 中文导读：zstd 原始块编码辅助。
+//
+// 128KiB 原始块大小与单/双字节 content-range 常量，供 zstd
+// 压缩路径的字典/块处理使用。
 package ai
 
 import "encoding/binary"

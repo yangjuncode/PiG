@@ -1,3 +1,10 @@
+// 中文导读：Meta 的 OAuth（RFC 8628 设备授权）。
+//
+// 对应 upstream auth/oauth/meta.ts。Meta 把身份与 API 访问拆开：
+// identity token 不能用于推理，要经 Muse Code key-mint 端点换成
+// Model API key（约一天有效）。存储时 identity token 记为 Refresh、
+// minted key 记为 Access——于是标准 OAuth 刷新路径在 key 过期时
+// 自动重铸；identity token 本身不可续期。
 package ai
 
 // Mirrors upstream .upstream/current/packages/ai/src/auth/oauth/meta.ts.

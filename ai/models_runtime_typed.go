@@ -1,3 +1,8 @@
+// 中文导读：Models 的 typed 操作入口。
+//
+// ImagesOptions 等按操作类型分发的选项结构与入口：把 Models 的
+// per-request header 变换叠到上游 ImagesOptions 上，再路由到对应
+// provider 的 typed API。
 package ai
 
 import (

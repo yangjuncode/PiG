@@ -1,3 +1,4 @@
+// 中文导读：Codex websocket 帧协议编解码。
 package ai
 
 import (

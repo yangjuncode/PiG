@@ -1,3 +1,4 @@
+// 中文导读：内置 provider 构造器表：每个 provider 一个构造函数，由 builtinProvider 从共享目录装配。
 package ai
 
 // Ports packages/ai/src/providers/<id>.ts: one constructor per built-in provider, each assembled from the shared catalog by builtinProvider.

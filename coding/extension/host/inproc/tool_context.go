@@ -1,3 +1,14 @@
+// 中文导读：扩展工具调用的上下文工厂。
+//
+// 对应上游 runner.ts 的 createToolContext 以及 wrapper.ts /
+// tool-definition-wrapper.ts 中“每次工具调用构造一次 context”的
+// 逻辑。CreateToolContext 返回该次调用的 ToolContext：基础扩展
+// context + ExecuteTool/GetCallableTools/AppendEntry 三个可调用动作。
+// runner 未绑定 ExecuteTool 时注入 unavailableNestedCall，使嵌套
+// execute_tool 返回上游同款错误（call id 为 `<caller>/0`）。
+//
+// ToolCallContext 把 ToolContext 挂回 ctx，供工具包装器在每次调用
+// 入口调用一次。
 package inproc
 
 // Ports packages/coding-agent/src/core/extensions/runner.ts (createToolContext).

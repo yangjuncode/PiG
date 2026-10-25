@@ -1,3 +1,7 @@
+// 中文导读：Piglet strip 对 provider/模型的裁剪。
+//
+// strip.apis 命中的 provider 实现被剔除后：模型不再出现在
+// 目录、构建对应 provider 报错——与 api_strip.go 配套。
 package ai
 
 import (

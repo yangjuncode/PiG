@@ -1,3 +1,8 @@
+// 中文导读：TypeBox 严格校验的桥。
+//
+// 对应 durable/src/harness/tool.ts:structuredOutputError 里
+// Compile(schema).Check(value) 的严格语义——不做转换/强转，
+// 取 validator.Errors 的第一个错误。
 package ai
 
 // Ports the strict check durable/src/harness/tool.ts:structuredOutputError runs with TypeBox: Compile(schema).Check(value)

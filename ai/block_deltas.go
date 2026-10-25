@@ -1,3 +1,11 @@
+// 中文导读：流式内容块的增量累积器。
+//
+// 消费者对一条流式消息按 `text += delta`、`parseStreamingJson(
+// partialJson)` 逐事件应用增量（上游 packages/agent/src/proxy.ts
+// 的 processProxyEvent）。BlockDeltas 为每个打开的内容块维护
+// 状态：已累积字节放在一个增长的 buffer 里，工具调用参数从上
+// 个 delta 结束处继续解析——让每个 delta 的成本与自身大小
+// 成正比而不是与块总长成正比。块结束时调用 Release。
 package ai
 
 // BlockDeltas is the state a consumer of a streamed message keeps for its open blocks so that a delta costs the delta and not the block: the bytes of

@@ -1,3 +1,10 @@
+// 中文导读：body 读取的“就绪”判定（readiness 桥传输侧）。
+//
+// 回答一个问题：这次 body 读会在当前 turn 内完成，还是会变成一个
+// 外部完成（等网络）？判定只用传输层自己知道的信息——已在缓冲区
+// 的字节是 ready，必须等网络的读是 pending。不依赖 sleep、goroutine
+// 调度或 channel 长度这类非确定性信号，这是 JS 微任务时序移植到
+// Go 的关键桥。
 package ai
 
 import (

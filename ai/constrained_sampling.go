@@ -1,3 +1,9 @@
+// 中文导读：provider 侧约束采样（constrained sampling）助手。
+//
+// 移植 upstream api/constrained-sampling.ts：JSON-schema strict
+// 模式与 Lark/正则语法工具两类约束，把工具的参数 schema 翻译为
+// 各 provider 的结构化输出请求形状，并解析其响应。消费方是
+// OpenAI completions 与 responses 的请求构建器和流解析器。
 package ai
 
 import (

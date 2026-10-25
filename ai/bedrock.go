@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：AWS Bedrock provider（bedrock-converse-stream.ts）：ConverseStream API 的流实现。
 package ai
 
 // Ports packages/ai/src/api/bedrock-converse-stream.ts

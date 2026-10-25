@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter 模型列表形状与价格换算（openrouter-api.ts，pi-mono #10672）。
 package ai
 
 // Ports packages/ai/src/providers/openrouter-api.ts (pi-mono commit ee409a85, #10672): OpenRouter's model listing shapes and the price conversion that the

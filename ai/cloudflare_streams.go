@@ -1,3 +1,4 @@
+// 中文导读：Cloudflare 流装配（cloudflare-stream.ts resolveCloudflareModel/cloudflareStreams）。
 package ai
 
 // Ports packages/ai/src/providers/cloudflare-stream.ts (resolveCloudflareModel, cloudflareStreams).

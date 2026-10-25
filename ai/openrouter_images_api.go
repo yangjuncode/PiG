@@ -1,3 +1,4 @@
+// 中文导读：OpenRouter 图像 API 通道。
 package ai
 
 import (

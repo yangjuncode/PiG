@@ -1,3 +1,7 @@
+// 中文导读：types.ts / google-shared.ts 的联合与记录别名。
+//
+// OpenRouterRouting、VercelGatewayRouting 等网关路由偏好类型，
+// 按上游字段原样定义并逐字节透传到请求体。
 package ai
 
 // Union and record aliases for packages/ai/src/types.ts and api/google-shared.ts.

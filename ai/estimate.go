@@ -1,3 +1,7 @@
+// 中文导读：token 用量估算。
+//
+// 在 provider 未返回 usage 时按文本长度/内容块粗略估算 token 数，
+// 供 /cost 与压缩阈值使用；与上游的估算公式对齐。
 package ai
 
 import (

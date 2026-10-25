@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 错误响应的解析：Smithy eventstream 错误帧到 Go 错误。
 package ai
 
 import (

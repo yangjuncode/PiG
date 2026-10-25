@@ -1,3 +1,8 @@
+// 中文导读：内置模型注册表。
+//
+// 把 codegen 出的 GeneratedModels 切片建索引，支持三种查询：完整 id
+// （provider/model）、裸模型 id、以及仅模型名。状态栏、/cost 与
+// --diagnose 都从这里取模型元数据。
 package ai
 
 import (

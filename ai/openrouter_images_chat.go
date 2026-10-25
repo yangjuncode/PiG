@@ -1,3 +1,4 @@
+// 中文导读：经 chat completions 的 OpenRouter 图像路径。
 package ai
 
 import (

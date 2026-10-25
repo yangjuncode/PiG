@@ -1,3 +1,7 @@
+// 中文导读：User-Agent / 版本标识（utils/version.ts）。
+//
+// ProductVersion 对应 PI_AI_VERSION；user_agent_{unix,windows}.go
+// 提供平台部分。
 package ai
 
 // Ports packages/ai/src/utils/version.ts (PI_AI_VERSION as ProductVersion).

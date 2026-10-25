@@ -1,3 +1,13 @@
+// 中文导读：MCP server 变更事件（mcp_servers_change）的有序异步派发。
+//
+// 对应上游 runner.ts 中 mcpServers change listener 与
+// reportUnhandledMcpServers。上游用 `void this.emit(...)` 触发后不等
+// 处理器返回；Go 侧对应为：onMcpServersChange 立即捕获当时的 server
+// 列表并入队，然后由独占的 drain goroutine 按 FIFO 顺序逐个派发，
+// 保证多个连续变更的事件顺序不乱。同时立即执行 unhandled 报告。
+//
+// mcpServersState.reported 记录已报告过的 server 集合，用于去重，
+// 避免同一未处理 server 在每次变更时重复告警。
 package inproc
 
 // Ports packages/coding-agent/src/core/extensions/runner.ts (mcpServers change listener, reportUnhandledMcpServers).

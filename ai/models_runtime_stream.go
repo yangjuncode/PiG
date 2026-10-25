@@ -1,3 +1,7 @@
+// 中文导读：Models 运行时的流入口（lazy.ts 移植）。
+//
+// 对应 upstream api/lazy.ts：Models.Stream 立即返回流，provider
+// 在流背后惰性构建，setup 失败落成流的错误事件而非调用失败。
 package ai
 
 // Ports packages/ai/src/api/lazy.ts.

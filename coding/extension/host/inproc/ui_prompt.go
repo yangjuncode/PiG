@@ -1,3 +1,24 @@
+// 中文导读：扩展 UI 提示（对话框）生命周期事件 ui_prompt_start/end。
+//
+// 对应上游 runner.ts 的 uiPromptDepth / activeUIPrompt / withUIPrompt /
+// emitUIPromptEvent。核心规则：
+//
+//  1. 只有最外层 prompt 发事件：嵌套 prompt 只增加 depth，
+//     end 事件沿用 start 事件的 kind/title；
+//  2. 事件派发是异步 FIFO：上游 `void emit(event)` 把派发排进
+//     microtask，Go 侧用 pending 队列 + 独占 drain goroutine 保持
+//     顺序，但只等“handler 已被调用”这一刻，不等待 handler 完成，
+//     因此挂起的 start handler 不会挡住后续 end 事件；
+//  3. AwaitUIPromptEvents 给子进程桥一个同步点：等“调用前排入的
+//     所有事件的 handler 都已启动”，对应上游 microtask 先于
+//     withUIPrompt 的 promise settle 执行的语义；
+//  4. runner 失效（Invalidate）时丢弃队列并取消派发上下文。
+//
+// uiPromptContext 是包在绑定 UI 外面的装饰器：阻塞式对话框在进入时
+// 自动 BeginUIPrompt；SelectValue/ConfirmValue 等 value 型对话框
+// 优先走 DialogValueUIContext，UI 不支持时回落到 string 型方法并把
+// 结果包成 JSON；Clear* 系列方法同理，优先调用 UI 自己的 clearer，
+// 没有时发送空值（等价于上游 setXxx(undefined)）。
 package inproc
 
 import (

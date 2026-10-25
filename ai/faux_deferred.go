@@ -1,3 +1,7 @@
+// 中文导读：faux provider 的延迟能力（providers/faux.ts 移植）。
+//
+// deferred fetch/cancel 等可选能力的 faux 实现，供测试覆盖
+// lazy provider 路径。
 package ai
 
 // Ports packages/ai/src/providers/faux.ts

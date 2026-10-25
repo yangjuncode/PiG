@@ -1,3 +1,10 @@
+// 中文导读：EventStream 的单消费者异步迭代器。
+//
+// continuationEventIterator 在 continuation 模型上复刻上游
+// EventStream 的 async generator：有缓冲事件时 await yield 值；
+// 无事件时先 await 投递再 await yield 值。迭代器持有这些 promise
+// 及当前 next 的 waiter——消费者恢复时这批 promise 的反应都已
+// 跑完，因此下一次 next 可以复用它们。
 package ai
 
 import (

@@ -1,3 +1,8 @@
+// 中文导读：faux 测试 provider（providers/faux.ts 移植）。
+//
+// 可控的假 provider：按脚本产出确定性响应，用于 parity 场景
+// 与测试。契约：每个 resolved、未 abort 的响应都先发 start
+// 事件再发内容/终止事件——包括空错误响应。
 package ai
 
 // Ports packages/ai/src/providers/faux.ts

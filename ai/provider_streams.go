@@ -1,3 +1,9 @@
+// 中文导读：provider 的惰性能力声明与流装配。
+//
+// 对应 upstream api/lazy.ts 与 types.ts。LazyAPICapabilities 让调用方
+// 在不加载 provider 实现的情况下声明可选能力（deferred fetch/cancel
+// 等），ProviderStreams 则把“完整 stream”与“simple stream”两种入口
+// 装到一个结构里供上层按 API 选择。
 package ai
 
 // Ports packages/ai/src/api/lazy.ts

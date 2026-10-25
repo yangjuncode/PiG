@@ -1,3 +1,10 @@
+// 中文导读：tslib __await/__asyncGenerator/__asyncValues 的精确复刻。
+//
+// 按编译进 @google/genai 2.21.0（dist/node/index.mjs:7430-7452）
+// 的实现复刻。其微任务数与原生 async generator 不同：裸 yield
+// 直接 resolve 消费者 promise 而不 await 值，`yield __await(x)`
+// 走 Promise.resolve(x).then(fulfill, reject)。需要精确 reaction
+// 计数的路径（如 Google SDK 流）必须用这个模型而非 js_async_generator。
 package ai
 
 import (

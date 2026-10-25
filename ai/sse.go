@@ -1,3 +1,7 @@
+// 中文导读：Server-Sent Events 解析器。
+//
+// text/event-stream 的行解析：data:/event:/id:/注释行的缓冲与
+// 多行 data 拼接、事件边界判定，各 SSE provider 共用。
 package ai
 
 import (

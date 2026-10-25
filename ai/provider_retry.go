@@ -1,3 +1,9 @@
+// 中文导读：provider 请求重试的执行器。
+//
+// 对应 upstream utils/provider-retry.ts：对可重试的失败（限流、
+// 5xx、网络错误）做带抖动指数退避，解析 Retry-After 头；与
+// assistant_retry.go 的“不可重试错误模式表”配合——命中表中的
+// 限额/账单类错误立即放弃。
 package ai
 
 // Ports packages/ai/src/utils/provider-retry.ts.

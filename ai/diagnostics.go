@@ -1,3 +1,7 @@
+// 中文导读：AssistantMessage 诊断条目。
+//
+// 流式过程中产生的诊断（网关改写、修复、兼容性降级等）的类型
+// 与编解码，挂在 AssistantMessage.diagnostics 上供观测。
 package ai
 
 import (

@@ -1,3 +1,10 @@
+// 中文导读：请求体大字符串的编码复用（string splice）。
+//
+// pig additive (D112)。思路：rewrite 把 payload 里的大字符串换成
+// token 占位符，provider 按原路径 marshal 这个小 payload，join 再把
+// 每个字符串的缓存编码填回 token 落点。结果体与 marshalRequestBody
+// 直接编码真实 payload 的字节完全一致——但大字符串（如重复的
+// system prompt、历史消息）不必每个请求都重新 quote。
 package ai
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：传输层诊断：请求/连接指标的记录与暴露（--diagnose）。
 package ai
 
 import (

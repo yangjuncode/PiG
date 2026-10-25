@@ -1,3 +1,7 @@
+// 中文导读：models.json 的“读最新”实现。
+//
+// 对应 coding-agent 的 models-store.ts：带外部改动检测的读取，
+// 与 auth_reload_snapshot 同套新鲜度语义（profiling 打点）。
 package ai
 
 // Ports packages/coding-agent/src/core/models-store.ts.

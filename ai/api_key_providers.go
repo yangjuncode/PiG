@@ -1,3 +1,8 @@
+// 中文导读：使用裸 API key 认证的 provider 静态信息表。
+//
+// APIKeyProviderInfo 描述一个 provider 的 key 名、注册/管理链接
+// 等静态元数据，供登录提示与环境变量发现使用——区别于 OAuth/
+// 订阅流程。
 package ai
 
 import (

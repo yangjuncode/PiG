@@ -1,3 +1,8 @@
+// 中文导读：请求有效性校验的接线（requestvalidity 包）。
+//
+// 把 internal/requestvalidity 的检查接到 provider 发送缝：
+// -tags requestvalidity 构建下非法 transcript/线形体在该处
+// panic 或按 PIG_REQUEST_VALIDITY_REPORT 记录。
 package ai
 
 import (

@@ -1,5 +1,6 @@
 //go:build !pig_strip_mistral_conversations
 
+// 中文导读：Mistral provider（mistral-conversations.ts）。
 package ai
 
 // Ports packages/ai/src/api/mistral-conversations.ts.

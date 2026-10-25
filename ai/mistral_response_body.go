@@ -1,5 +1,6 @@
 //go:build !pig_strip_mistral_conversations
 
+// 中文导读：Mistral 响应体读取（readMistralEvents 的体处理）。
 package ai
 
 // Ports packages/ai/src/api/mistral-conversations.ts (readMistralEvents).

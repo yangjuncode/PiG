@@ -1,3 +1,8 @@
+// 中文导读：classifier API 共用的 HTTP 请求管线。
+//
+// 移植 provider-retry.ts 的 retryProviderRequest、classifier-shared.ts
+// 的 postClassifierRequest/parseClassifierUsage、llama-cpp-classify.ts
+// 的单次尝试超时与 headers.ts 的 providerHeadersToRecord。
 package ai
 
 // Ports the request plumbing shared by the classifier APIs: packages/ai/src/utils/provider-retry.ts

@@ -1,5 +1,6 @@
 //go:build pig_strip_mistral_conversations
 
+// 中文导读：Mistral strip 占位实现。
 package ai
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

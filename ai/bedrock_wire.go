@@ -1,5 +1,6 @@
 //go:build !pig_strip_bedrock_converse_stream
 
+// 中文导读：Bedrock 请求的线形结构：Converse API 的 Go 结构与 JSON 映射。
 package ai
 
 import (

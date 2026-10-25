@@ -1,3 +1,4 @@
+// 中文导读：GitHub Copilot 的 verification URI（oauth/github-copilot.ts）。
 package ai
 
 // Ports packages/ai/src/auth/oauth/github-copilot.ts.

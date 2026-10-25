@@ -1,3 +1,9 @@
+// 中文导读：lazy.ts forwardStream 的移植。
+//
+// forwardEvents = `for await (event of inner) outer.push(event)` +
+// `outer.end(await inner.result())`：在 turn 内运行，source 的每个
+// 事件经 push 转发；push 失败则返回该错误。注释详述该实现如何
+// 让转发的每个事件花掉与上游相同的 reaction 数。
 package ai
 
 import "context"

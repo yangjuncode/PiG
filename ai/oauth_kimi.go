@@ -1,3 +1,4 @@
+// 中文导读：Kimi OAuth 登录。
 package ai
 
 import (

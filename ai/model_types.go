@@ -1,3 +1,8 @@
+// 中文导读：模型类型与模型操作基础（model-operations.ts /
+// types.ts 移植）。
+//
+// ModelType 标记目录条目用途（chat/image/classifier），决定哪个
+// Models 操作接受该条目；本文件还有目录条目的通用操作。
 package ai
 
 import "time"

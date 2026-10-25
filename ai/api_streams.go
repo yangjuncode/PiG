@@ -1,3 +1,10 @@
+// 中文导读：按 API 种类装配 provider 流入口（legacy 别名层）。
+//
+// 对应 upstream legacy-api-aliases.ts：为每种 API 返回 stream /
+// streamSimple 两个函数。上游 api/*.lazy.ts 的动态 import 包装在 Go
+// 中被设计掉——provider 静态链接。关键语义：api/lazy.ts 的 lazyApi
+// 让 stream 立即返回、provider 在其后构建，所以缺 API key 这类 setup
+// 失败表现为流的错误事件而不是调用失败；nil model 才直接失败。
 package ai
 
 // Ports packages/ai/src/legacy-api-aliases.ts: the deprecated per-API stream and simple-stream functions.

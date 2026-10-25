@@ -1,3 +1,7 @@
+// 中文导读：采样参数的赋值合并。
+//
+// 把请求级采样参数（temperature/top_p/...）按上游优先级合并
+// 进 provider 请求体，含字段省略语义。
 package ai
 
 import (

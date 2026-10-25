@@ -1,3 +1,9 @@
+// 中文导读：Models——模型集合运行时（models.ts 移植）。
+//
+// ai 包的顶层入口：持有凭证存储、models.json 存储与 auth context，
+// 提供 Stream/Images/Refresh 等操作、provider 注册表访问与认证
+// 解析。其余 models_runtime_*.go 分文件实现关闭、信号、typed
+// 入口、刷新与流装配。
 package ai
 
 // Ports packages/ai/src/models.ts.

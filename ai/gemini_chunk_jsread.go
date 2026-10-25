@@ -1,3 +1,7 @@
+// 中文导读：Gemini 流块的 JS 语义读取。
+//
+// 用 jsjson/orderedjson 按 JS 的 JSON 语义解析 Gemini 流式块
+// （键序、数字、字符串边界），供 google.go 的流解码使用。
 package ai
 
 import (

@@ -1,5 +1,10 @@
 //go:build !pig_strip_node_extensions
 
+// 中文导读：Codex SSE 请求体的 zstd 压缩。
+//
+// 按 Pi 的 REQUEST_COMPRESSION_ZSTD_LEVEL=3 压缩
+// （openai-codex-responses.ts compressRequestBodyZstd）；编码器
+// 首次使用时构建并共享。
 package ai
 
 import (

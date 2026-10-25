@@ -1,3 +1,4 @@
+// 中文导读：GitHub Copilot provider + OAuth（auth/oauth/github-copilot.ts、api/github-copilot-headers.ts）。
 package ai
 
 // Ports packages/ai/src/auth/oauth/github-copilot.ts.

@@ -1,3 +1,9 @@
+// 中文导读：JSON Schema 的键枚举顺序保留。
+//
+// Go map 会丢失对象键顺序，但上游 Pi 按 properties 的枚举顺序
+// 输出 required 数组等成员。schemaObjectOrder 在 map 归一化之外
+// 旁路记录每个 schema 对象的原始键序，使序列化回 JSON 时与
+// 上游输出一致。
 package ai
 
 import (

@@ -1,3 +1,7 @@
+// 中文导读：Models 刷新信号的实现。
+//
+// 用 weak.Pointer + runtime.Cleanup 管理刷新控制器的生命周期：
+// 调用方释放信号后 GC 可回收，持有期间可取消/等待该次刷新。
 package ai
 
 import (

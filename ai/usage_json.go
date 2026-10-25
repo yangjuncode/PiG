@@ -1,3 +1,6 @@
+// 中文导读：Usage 的 JSON 编解码。
+//
+// token 用量结构的上游线形转换，含可选字段与总计派生。
 package ai
 
 import (

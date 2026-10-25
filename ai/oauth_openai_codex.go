@@ -1,3 +1,4 @@
+// 中文导读：OpenAI Codex 设备授权 OAuth（openai-codex.ts 的 device auth 起止/轮询）。
 package ai
 
 // Ports packages/ai/src/auth/oauth/openai-codex.ts.

@@ -1,5 +1,8 @@
 //go:build go1.27 && goexperiment.jsonv2
 
+// 中文导读：消息编码 splice 的 jsonv2 路径。
+//
+// jsonv2 构建下用 jsontext 做消息级编码与 splice 的对应实现。
 package ai
 
 import (

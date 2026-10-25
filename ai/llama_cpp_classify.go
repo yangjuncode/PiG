@@ -1,3 +1,7 @@
+// 中文导读：llama.cpp 分类器 API。
+//
+// 对应 upstream api/llama-cpp-classify.ts：本地 llama.cpp 服务器
+// 的分类器请求形状、单次尝试超时与响应解析。
 package ai
 
 // Ports packages/ai/src/api/llama-cpp-classify.ts.

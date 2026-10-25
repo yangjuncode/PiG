@@ -1,3 +1,7 @@
+// 中文导读：Node 式 HTTP 代理解析（node-http-proxy.ts 移植）。
+//
+// 解析 HTTP(S)_PROXY/NO_PROXY 等环境变量并判定目标是否走
+// 代理，规则与上游 Node 实现一致。
 package ai
 
 // Ports packages/ai/src/utils/node-http-proxy.ts

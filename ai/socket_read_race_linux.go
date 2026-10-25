@@ -1,5 +1,9 @@
 //go:build linux && race
 
+// 中文导读：race 构建下的 socket 读。
+//
+// race detector 下用 syscall.Read 而非原始汇编读：它向检测器
+// 记录读序，避免把对端写误报为数据竞争。
 package ai
 
 import "syscall"

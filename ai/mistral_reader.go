@@ -1,5 +1,6 @@
 //go:build !pig_strip_mistral_conversations
 
+// 中文导读：Mistral 事件读取器：readMistralEvents/边界判定/parseMistralEvent 与消费 for-await 的移植。
 package ai
 
 // Ports packages/ai/src/api/mistral-conversations.ts (readMistralEvents, findMistralEventBoundary, parseMistralEvent, and the `for await` in consumeChatStream that consumes them).

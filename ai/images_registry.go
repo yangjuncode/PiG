@@ -1,3 +1,7 @@
+// 中文导读：图像模型注册表。
+//
+// imageModelRegistry 首次使用时才把生成的图像模型按
+// provider/id 建索引（sync.OnceValue），不在每次启动时付成本。
 package ai
 
 import (

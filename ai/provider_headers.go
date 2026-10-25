@@ -1,3 +1,7 @@
+// 中文导读：provider 请求头记录互转。
+//
+// http.Header 与上游 Record<string,string> 形状的互转
+// （headers.ts 的 providerHeadersToRecord 等）。
 package ai
 
 import (

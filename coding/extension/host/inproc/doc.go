@@ -25,4 +25,13 @@
 // flag is a TS→Go translation rule (docs/parity/DIVERGENCES.md), not a divergence.
 //
 // upstream: .upstream/current/packages/coding-agent/src/core/extensions/runner.ts
+//
+// 中文导读：inproc 是扩展的进程内 Go 派发宿主。扩展由外部 loader 以
+// 预填充的 extension.Extension 状态容器形式交给本包，Runner 负责：
+// 按注册顺序把事件派发给各扩展的 typed handler（热路径）、聚合所有
+// 扩展注册的工具/命令/快捷键/flag/渲染器供 agent 核心与 TUI 消费、
+// 以及管理 staleness 生命周期——/reload 或会话替换时宿主调用
+// Runner.Invalidate，此后任何绑定到该 runner 的 context 再调 API
+// 都会得到 ErrStaleContext（对应 runner.ts:461-471）。加载与传输
+// 适配不在本包内；本包只拥有“上游 runner.ts 的派发引擎”这部分。
 package inproc

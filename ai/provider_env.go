@@ -1,3 +1,7 @@
+// 中文导读：provider 环境变量值解析。
+//
+// getProviderEnvValue：按 provider 约定解析环境变量（含项目
+// 级覆盖），auth_env_keys 的底层。
 package ai
 
 import (
