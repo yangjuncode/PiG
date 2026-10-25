@@ -368,6 +368,23 @@ func (storage *SqliteStorage) Commit(_ context.Context, batch []durable.StorageW
 		storage.retained.mu.Lock()
 		defer storage.retained.mu.Unlock()
 	}
+	// 原子提交管线（单 DB 事务内）：
+	// 1) 读元数据行取 nextSeq——这批写
+	//    的提交序号；
+	// 2) 校验：全局 ID 唯一性 + 文档动
+	//    作版本乐观锁（前置条件不过→回
+	//    滚整批）；
+	// 3) 逐条表写落盘，记下需要文本保
+	//    留的 entry（committedEntries）；
+	// 4) 应用文档动作；
+	// 5) 推进元数据（next_id 取存储值
+	//    与候选值的较大者——并发 mint
+	//    可能已发更大的号；next_seq+1）。
+	// 事务返回 nil=已落盘后才做三件
+	// 事：更新内存 nextId 水印、保留
+	// entry 原文、adopt 回调把提交序
+	// 号交给上层发版——顺序保证"先发
+	// 的序号一定已持久化"。
 	err = storage.db.Transaction(func(transaction SqliteExecutor) error {
 		metadata, err := transaction.Get("SELECT next_id, next_seq FROM " + storage.schema.Tables.DurableMetadata + " WHERE singleton = 1")
 		if err != nil {
