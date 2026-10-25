@@ -162,6 +162,9 @@ func (s *shapeScan) number() (fraction, ok bool) {
 }
 
 // skip reads any value.
+// 括号匹配跳过一个复合值：引号必须走 str() 完整解析
+// （内含转义括号不能计 depth），其余字符按深度计数，
+// depth 归零即整个值结束。字面量与数字按首字节分派。
 func (s *shapeScan) skip() bool {
 	switch s.peek() {
 	case '"':
@@ -208,6 +211,11 @@ func (s *shapeScan) literal(word string) bool {
 }
 
 // object reads an object whose members must follow shape.
+// 成员按声明序匹配：next 是"下一个期待的成员"指针——
+// 读到不匹配的名字时只能向前跳过 optional 成员，遇必需
+// 成员缺位即失败；对象结束后剩余的必需成员同样判负。
+// 顺序不灵活正是目的：编码器按固定序写，形状不符就是
+// 另一条编码路径（上游 typeof 检查的语义化版）。
 func (s *shapeScan) object(shape []shapeMember) bool {
 	if !s.eat('{') {
 		return false
@@ -293,6 +301,11 @@ func (s *shapeScan) value(kind shapeKind) bool {
 }
 
 // blocks reads an array of content blocks; image admits image blocks, assistant admits thinking and toolCall blocks.
+// 每个块用 `{"type":"xxx"` 前缀做判别式快速分型——消息编码
+// 器保证 type 成员在最前（contentBlockMemberOrder），所以
+// 前缀匹配足以决定走哪张成员表；image/assistant 两个开关
+// 让同一个函数服务 user/result 内容（无 thinking/toolCall）
+// 与 assistant 内容两种块域。
 func (s *shapeScan) blocks(image, assistant bool) bool {
 	if !s.eat('[') {
 		return false

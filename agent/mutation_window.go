@@ -118,6 +118,11 @@ func (o *registrationOrder) extensionTool(ctx context.Context, toolCallID string
 
 // registersLate reports whether a call registers after the extension tools before it, and returns the context that carries its turn. It is false for a
 // call with no extension tool before it, which the dispatcher registers in its own loop.
+// 判定"迟到登记"：本调用之前没有任何扩展工具（windows 为空）
+// 就在派发器自己的循环里登记，不算迟到；否则标记 late（让
+// 其后的扩展工具知道要等这次登记），给所有现存 window 计一
+// 个 dependent（settled 要等它们全登记完），并领取 lane 中
+// 的顺序位（place）保证同批迟到登记按源码顺序执行。
 func (o *registrationOrder) registersLate(ctx context.Context, toolCallID string, orderer QueueOrderable, args json.RawMessage) (context.Context, bool) {
 	if len(o.windows) == 0 {
 		return ctx, false
@@ -147,6 +152,12 @@ func (o *registrationOrder) prepared() {
 // enterRegistrationOrder runs on the call's goroutine before its tool starts. An edit or write registers in the queue now, after the start windows of the
 // extension tools before it closed and after the late registrations before it, and its ticket reaches the tool through the context. An extension tool that
 // follows such a call starts after the registration. A call with no turn returns its context unchanged.
+// 等序三步：先等前面所有扩展工具的同步前缀关闭
+// （window.closed），再等 lane 里自己的顺序位（同一批
+// 迟到登记间的 FIFO），最后才调 ReserveMutationOrder
+// 真正占队列位——任一提前都破坏上游按同步前缀结算
+// 的 registrationQueue 序。defer 里的 dependents-1
+// 保证无论登记成败，等这批 window 结算的调用都前进一步。
 func enterRegistrationOrder(ctx context.Context, toolCallID string) context.Context {
 	turn, ok := ctx.Value(registrationTurnKey{}).(registrationTurn)
 	if !ok || turn.toolCallID != toolCallID {
