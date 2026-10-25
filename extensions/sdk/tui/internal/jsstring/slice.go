@@ -1,5 +1,6 @@
 // Code generated from internal/jsstring/slice.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 面——slice。
 package jsstring
 
 import "unicode/utf8"

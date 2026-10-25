@@ -1,3 +1,4 @@
+// 中文导读：durable 环境——env；对应上游 packages/durable/src/env/index.ts。
 // Package env declares the portable execution environment of pi-durable: a file system and a shell that tools and
 // prompt sections use through a conversation's environment.
 //

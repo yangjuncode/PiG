@@ -1,5 +1,6 @@
 //go:build darwin
 
+// 中文导读：平台原生操作——modifiers_darwin。
 package nativeplatform
 
 import (

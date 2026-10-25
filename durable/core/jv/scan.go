@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——scan；职责：Member is one member of a JSON object text: its key as Parse decodes it, and the raw JSON text of its value。
 package jv
 
 import (

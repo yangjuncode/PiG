@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——line_reader。
 package node
 
 import (

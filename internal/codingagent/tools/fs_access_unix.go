@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：文件系统访问（unix 实现）。
 package tools
 
 import "syscall"

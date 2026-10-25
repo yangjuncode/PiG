@@ -1,3 +1,4 @@
+// 中文导读：内部包——termuxenv。
 // Package termuxenv prepares a PiG process for Termux on Android.
 //
 // Termux has no /etc and no /tmp. PiG's Android build links the C library

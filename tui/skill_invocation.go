@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——skill_invocation；对应上游 upstream skill-invocation-message.ts: a Box that holds a mouse region over the collapsed line or the expanded。
 package tui
 
 // skill_invocation.go: skill invocation display component.

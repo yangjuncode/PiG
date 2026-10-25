@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——truncation_result。
 package tui
 
 // TruncationResult captures every fact a renderer needs to format the

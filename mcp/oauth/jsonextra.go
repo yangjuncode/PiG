@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——jsonextra；对应上游 packages/mcp/src/oauth/types.ts (the `[key: string]: unknown` index signatures)。
 package oauth
 
 import (

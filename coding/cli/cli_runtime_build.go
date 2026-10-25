@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 运行时构建；对应上游 packages/coding-agent/src/main.ts createRuntime: the cwd-bound half of the runtime factory。
 package cli
 
 // Ports packages/coding-agent/src/main.ts createRuntime: the cwd-bound half of the runtime factory.

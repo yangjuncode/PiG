@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——path_utils；对应上游 packages/durable/src/tools/path-utils.ts。
 package tools
 
 import (

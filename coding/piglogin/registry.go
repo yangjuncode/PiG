@@ -1,3 +1,4 @@
+// 中文导读：pig 登录样式：登录 sprite 注册表。
 package piglogin
 
 import (

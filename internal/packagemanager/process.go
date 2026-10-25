@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——process；对应上游 packages/coding-agent/src/core/package-manager.ts (spawnCommand, runCommand)。
 package packagemanager
 
 import (

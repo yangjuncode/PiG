@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——host；职责：FileHost is the WHATWG host parser's result for a file URL's host: an。
 // Package nodeurl ports the Node URL host/path handling and fileURLToPath semantics used by PiG.
 package nodeurl
 

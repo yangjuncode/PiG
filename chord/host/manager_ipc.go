@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——manager_ipc；职责：Connected is Node's channel.connected。
 package host
 
 // Node's IPC channel (child_process.fork with serialization "json"), the channel manager.ts's child and parent speak:

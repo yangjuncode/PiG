@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——docs；职责：History is how a conversation document keeps its past。
 package session
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：ACP 安装。
 package cli
 
 import (

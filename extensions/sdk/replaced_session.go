@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——replaced_session；职责：ReplacedSessionContext is Pi's ReplacedSessionContext (types.ts:442-452): the command context of the replacement Session that NewSession, Fork and SwitchSession pass。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：包源解析：托管 git 源。
 package source
 
 // A port of the part of hosted-git-info 9.0.3 (lib/from-url.js, lib/parse-url.js, lib/hosts.js) that packages/coding-agent/src/utils/git.ts reads:

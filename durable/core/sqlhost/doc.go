@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable SQL 宿主——doc。
 // Package sqlhost is the native Go host of the Durable core (docs/plan/durable-core/ABI.md section 11, ADR-0001 D17).
 //
 // One Host owns one core session and one SQLite connection. A single owner goroutine calls the core's Step, applies each

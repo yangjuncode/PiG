@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：YAML 1.2 解析——zonelocal_unix。
 package yaml12
 
 import (

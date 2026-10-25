@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——fuel；职责：Export is the name of the exported mutable i64 global holding the count。
 // Package fuel meters a WebAssembly module: Instrument rewrites a module so that every basic block adds its own length
 // to a counter, the Wasm instruction count the count gate ratchets (docs/plan/durable-core, Durable plan 2 item 9). The
 // module is the shipped core with a counter; no wazero or runtime flag is involved, so the count is the same on every

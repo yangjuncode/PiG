@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——engine；对应上游 quickjs-wasi (MAX_STACK_SIZE) as used by packages/codemode/src/runtime/worker.ts。
 package codemode
 
 import (

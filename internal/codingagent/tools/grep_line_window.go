@@ -1,3 +1,4 @@
+// 中文导读：grep 结果行窗口：保留下下文行的滑动缓冲。
 package tools
 
 import (

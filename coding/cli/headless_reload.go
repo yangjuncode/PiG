@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：headless 模式资源重载；对应上游 packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload for a CLI build: the resource loader of a print, JSON or RPC Session reloads through these (cliResourceLoader.ReloadWith)。
 package cli
 
 // Ports packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload for a CLI build: the resource loader of a print, JSON or RPC Session reloads through these (cliResourceLoader.ReloadWith).

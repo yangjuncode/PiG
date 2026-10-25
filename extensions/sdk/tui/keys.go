@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——keys；职责：KeyID is pi-tui's KeyId: a key name such as "enter", "ctrl+c" or "ctrl+shift+f5"。
 package tui
 
 import "github.com/MichaelKinsy/PiG/extensions/sdk/tui/internal/engine"

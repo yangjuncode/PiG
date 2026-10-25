@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——inline_consts；对应上游 packages/codemode/src/runtime/inline.ts (DEFAULT_INTERRUPT_BUDGET)。
 package codemode
 
 // DefaultInterruptBudget is the interrupt polls an InlineSandbox execution may use before it fails with ErrorTimeout.

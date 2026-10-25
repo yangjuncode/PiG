@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——srcdir；职责：PackageDir is PackageDirPath for a test; it fails the test on error。
 package testenv
 
 import (

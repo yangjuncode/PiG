@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——file_autocomplete；对应上游 upstream CombinedAutocompleteProvider (autocomplete.ts:238)。
 package tui
 
 // Attachment autocomplete uses fd for fuzzy search. Direct path completion uses os.ReadDir.

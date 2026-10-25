@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——host；职责：B is the builder the store writes its steps into。
 // Package storehost is the synchronous SQLite host of ABI section 3 for the store alone: tooling that drives store.Store (the
 // benchmark engine, the storage-conformance provider) applies a step's commits and answers its reads with it.
 package storehost

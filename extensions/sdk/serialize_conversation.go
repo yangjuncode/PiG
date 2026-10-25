@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——serialize_conversation；职责：SerializeConversation is Pi's serializeConversation (core/compaction/utils.ts:120-155, exported from index.ts): the text a summarization request carries。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——testbudget。
 // Package testbudget sizes the deadlines tests use to bound a hang.
 //
 // A test that waits for a subprocess, an extension, or a shell command should

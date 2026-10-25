@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——terminal_write_log；对应上游 packages/tui/src/terminal.ts (PI_TUI_WRITE_LOG: writeLogPath, ProcessTerminal.write)。
 package tui
 
 // Ports packages/tui/src/terminal.ts (PI_TUI_WRITE_LOG: writeLogPath, ProcessTerminal.write).

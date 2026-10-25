@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——theme_overrides；职责：ViewOverridableTokens are the theme tokens a frontend view may override。
 package tui
 
 import (

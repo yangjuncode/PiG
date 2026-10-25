@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——cell_size；对应上游 packages/tui/src/tui.ts (queryCellSize, cell-size response handling)。
 package tui
 
 import (

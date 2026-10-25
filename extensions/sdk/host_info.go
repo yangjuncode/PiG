@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——host_info；职责：AgentDir is Pi's getAgentDir(): the agent configuration directory the host runs with (for PiG its own tree, not Pi's). It returns。
 package sdk
 
 import (

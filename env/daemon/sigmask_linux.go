@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：env 守护进程——sigmask_linux。
 package daemon
 
 import (

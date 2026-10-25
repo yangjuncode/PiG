@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——overlay_compositor；对应上游 upstream OverlayBounds。
 package tui
 
 import (

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 存储——store；职责：SchemaNewerError is the refusal applySqliteMigrations gives a store whose durable_schema.version is newer than SupportedSchemaVersion。
 // Package store owns pi-durable's SQLite format inside the core: the SQL table, the rows every commit writes (CONTRACT
 // section 3.1, row identity with pi-durable main), the single-writer guard, the in-memory metadata, cold open of the
 // live state (ADR D5), loads of committed non-live records, and the pig_ sidecar (ADR D6). Transcripts (entries, forks,

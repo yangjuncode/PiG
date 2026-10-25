@@ -1,5 +1,6 @@
 //go:build tinygo.wasm
 
+// 中文导读：durable 核心——hashmap；职责：This is a hashmap implementation for the map[T]T type。
 package runtime
 
 // This is a hashmap implementation for the map[T]T type.
@@ -313,7 +314,7 @@ func hashmapBucketPointer(i, keyWords uintptr, keyPointers, valuePointers bool) 
 // hashmapBucketLayouts holds the bucket layouts longer than an inline layout, by bucket size in words and whether keys
 // and values hold pointers (words<<2 | keys<<1 | values): a bucket is at most hashmapBucketHeaderSize +
 // 8*(hashmapMaxKeySize+hashmapMaxValueSize) bytes.
-var hashmapBucketLayouts [((hashmapBucketHeaderSize+8*(hashmapMaxKeySize+hashmapMaxValueSize))/unsafe.Sizeof(uintptr(0))+1)<<2]unsafe.Pointer
+var hashmapBucketLayouts [((hashmapBucketHeaderSize+8*(hashmapMaxKeySize+hashmapMaxValueSize))/unsafe.Sizeof(uintptr(0)) + 1) << 2]unsafe.Pointer
 
 //go:inline
 func hashmapBucketAddr(m *hashmap, buckets unsafe.Pointer, n uintptr) *hashmapBucket {

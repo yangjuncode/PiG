@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：profiling 设施——profiling；职责：Kinds are cpu, heap, allocs, block, mutex, goroutine, trace, metrics, and flight。
 // Package profiling writes Go runtime profiles when PIG_PROFILE names them.
 //
 // With PIG_PROFILE unset, Start performs one environment lookup and returns a

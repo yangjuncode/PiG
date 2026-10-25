@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：native 构建。
 package pigletbuild
 
 import (

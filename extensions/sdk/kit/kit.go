@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——kit；职责：Node is one component of a view. The set of nodes is closed: every Node is。
 // Package kit describes an extension surface as Pi's tui components (D107):
 // a declarative tree, the view, that PiG's host renders with its Go ports of
 // pi-tui, so the terminal shows what Pi's components draw.

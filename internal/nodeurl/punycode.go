@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——punycode。
 package nodeurl
 
 import "strings"

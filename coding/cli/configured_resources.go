@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：已配置资源；对应上游 packages/coding-agent/src/core/resource-loader.ts。
 package cli
 
 import (

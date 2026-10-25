@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——client；职责：CoreError is an error the core answered with: Pi's `{name, message}` (ABI section 8)。
 package driver
 
 import (

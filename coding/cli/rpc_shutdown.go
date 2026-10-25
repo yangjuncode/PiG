@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：RPC 关闭流程。
 package cli
 
 import (

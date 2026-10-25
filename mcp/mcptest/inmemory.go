@@ -1,3 +1,4 @@
+// 中文导读：MCP（Model Context Protocol）客户端——inmemory；对应上游 packages/mcp/src/transports/in-memory.ts。
 // Package mcptest holds test doubles for package mcp.
 package mcptest
 

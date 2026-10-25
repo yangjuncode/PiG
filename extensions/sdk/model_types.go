@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——model_types；对应上游 packages/coding-agent/src/core/model-registry.ts (findOfType, getModelsOfType, getAvailableOfType, getModelOfType, classify, generateImages, registerVirtualModel, unregisterVirtualModel) and the image and classifier implementations of packages/coding-agent/src/core/extensions/types.ts (ProviderConfig.images, ProviderConfig.classifiers)。
 package sdk
 
 // Ports packages/coding-agent/src/core/model-registry.ts (findOfType, getModelsOfType, getAvailableOfType, getModelOfType, classify, generateImages, registerVirtualModel, unregisterVirtualModel) and the image and classifier implementations of packages/coding-agent/src/core/extensions/types.ts (ProviderConfig.images, ProviderConfig.classifiers).

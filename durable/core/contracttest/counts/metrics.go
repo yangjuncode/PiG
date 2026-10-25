@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——metrics；职责：Metrics are the counts of one interval of a replay, by name. A name is "<scope>.<metric>": scope "storage" (what the host。
 package counts
 
 import (

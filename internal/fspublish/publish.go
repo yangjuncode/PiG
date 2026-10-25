@@ -1,3 +1,4 @@
+// 中文导读：内部包——publish。
 // Package fspublish makes a file available at a new path without replacing a file that is already there: a fully written stage at its final path (Publish), or an existing file at a second path (Duplicate).
 package fspublish
 

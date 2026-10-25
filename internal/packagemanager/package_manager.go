@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——package_manager；对应上游 upstream DefaultPackageManager.checkForAvailableUpdates (packages/coding-agent/src/core/package-manager.ts:1186-1253)。
 package packagemanager
 
 import (

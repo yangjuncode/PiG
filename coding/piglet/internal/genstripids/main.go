@@ -11,6 +11,7 @@
 //
 // -print-tags prints the comma-separated build tags of every strip ID a Piglet
 // Binary can compile out (make piglet-strip-build builds and vets with them).
+// 中文导读：CLI 入口：参数解析、模式分发。
 package main
 
 import (

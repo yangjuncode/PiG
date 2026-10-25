@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——gitignore；对应上游 the gitignore matching of the `ignore` crate 0.4.33 (gitignore.rs, dir.rs) as list.rs uses it: `.gitignore`。
 package daemon
 
 // Ports the gitignore matching of the `ignore` crate 0.4.33 (gitignore.rs, dir.rs) as list.rs uses it: `.gitignore`

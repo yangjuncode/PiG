@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 存储——lazy；职责：SQLEntryBounds is history.SQLBounds: a conversation's newest entry, newest head marker and its head at or below a。
 package store
 
 // The texts of the context reads. A host that answers them from the context it derived compares a statement's text with these,

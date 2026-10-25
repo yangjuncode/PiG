@@ -1,5 +1,6 @@
 // Code generated from internal/jsstring/utf16.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 面——utf16；职责：StreamText is the text process.stdout.write, console.error and a "utf8" file write send for a JavaScript string: valid UTF-8 is unchanged and a lone surr。
 // Package jsstring preserves JavaScript UTF-16 units at Go string boundaries. Lone surrogate units use WTF-8; ordinary Unicode strings retain their normal UTF-8 encoding.
 package jsstring
 

@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：durable Node 环境——fileid_windows。
 package node
 
 import (

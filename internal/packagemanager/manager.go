@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——manager；对应上游 .upstream/v0.99.1/packages/coding-agent/src/core/package-manager.ts:1821-1838 (getGitDependencyInstallArgs)。
 package packagemanager
 
 import (

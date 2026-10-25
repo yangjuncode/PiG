@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 错误类型。
 package cli
 
 import (

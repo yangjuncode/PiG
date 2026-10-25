@@ -4,6 +4,7 @@
 // rpc-types.ts. Extension UI dialogs use extension_ui_request and
 // extension_ui_response records on the same stream.
 
+// 中文导读：RPC 模式：JSONL 命令/事件循环；对应上游 packages/coding-agent/src/modes/rpc/rpc-mode.ts:get_available_models。
 package cli
 
 import (

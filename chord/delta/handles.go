@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——handles；职责：Object is a draft handle of a JSON object. It is usable only while its。
 package delta
 
 import (

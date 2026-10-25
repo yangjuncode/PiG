@@ -1,3 +1,4 @@
+// 中文导读：工具 details 到扩展线形的转换：缺失 details 保持 nil，渲染器私有状态不进入扩展元数据。
 package tools
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

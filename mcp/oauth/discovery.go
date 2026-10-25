@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——discovery；对应上游 packages/mcp/src/oauth/discovery.ts。
 package oauth
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——pioracle。
 // Package pioracle runs the compiled Pi modules vendored for the Node extension runtime against Go test inputs, so a test compares Pig with Pi itself rather than with a transcription of Pi's behavior.
 package pioracle
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// 中文导读：Go 扩展 SDK 的 JSON 设施——encode；职责：Field is ignored by this package。
 // Package json implements encoding/json's Go mapping with JavaScript string semantics.
 // Lone UTF-16 units use WTF-8 in Go strings and standard surrogate escapes on the wire.
 // The mapping between JSON and Go values is described in the documentation for

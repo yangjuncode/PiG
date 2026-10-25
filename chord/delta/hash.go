@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——hash。
 package delta
 
 import (

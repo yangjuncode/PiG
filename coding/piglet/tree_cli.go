@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：piglet tree 命令。
 package piglet
 
 import (

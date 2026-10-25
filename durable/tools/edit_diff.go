@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——edit_diff；对应上游 packages/durable/src/tools/edit-diff.ts: line-ending detection, BOM。
 package tools
 
 // Ports packages/durable/src/tools/edit-diff.ts: line-ending detection, BOM

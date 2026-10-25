@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——theme_palette；职责：NewThemeFromANSIPalette is the inverse of [Theme.ANSIPalette]: the theme whose Fg and Bg draw with the given opening escape sequences. A subprocess extension。
 package tui
 
 import (

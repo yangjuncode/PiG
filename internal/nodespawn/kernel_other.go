@@ -1,5 +1,6 @@
 //go:build !linux && !windows
 
+// 中文导读：Node 进程 spawn——kernel_other。
 package nodespawn
 
 import "runtime"

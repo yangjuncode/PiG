@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——stored_credential；职责：ReadStoredCredential is Pi's readStoredCredential (core/auth-storage.ts, exported from index.ts): a one-off synchronous read of the credential stored for providerI。
 package sdk
 
 import (

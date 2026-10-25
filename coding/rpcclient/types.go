@@ -1,3 +1,4 @@
+// 中文导读：RPC 客户端：Piglet YAML schema 类型与解析。
 package rpcclient
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——image_dimension_note；职责：ResizedImage is Pi's ResizedImage (utils/image-resize-core.ts): the image as base64 data and its MIME type, and the dimensions FormatDimensionNote reads. D。
 package sdk
 
 import (

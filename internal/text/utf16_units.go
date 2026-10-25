@@ -1,3 +1,4 @@
+// 中文导读：内部包——utf16_units。
 package text
 
 import (

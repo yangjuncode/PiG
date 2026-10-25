@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：启动资源解析。
 package cli
 
 import (

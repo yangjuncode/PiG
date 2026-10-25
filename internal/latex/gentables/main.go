@@ -6,6 +6,7 @@
 //
 // It reads the pinned mirror at .upstream/current and writes internal/latex/symbols.go.
 // Each table is built on its first lookup, not when the process starts: most runs render no LaTeX.
+// 中文导读：内部包——main。
 package main
 
 import (

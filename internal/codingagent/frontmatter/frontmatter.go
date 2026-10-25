@@ -1,3 +1,4 @@
+// 中文导读：markdown frontmatter 解析（skill/prompt 文件头）。
 // Package frontmatter parses YAML frontmatter blocks from markdown files.
 package frontmatter
 

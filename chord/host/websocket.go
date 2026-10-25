@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——websocket；对应上游 packages/chord/src/websocket.ts。
 package host
 
 // Ports packages/chord/src/websocket.ts.

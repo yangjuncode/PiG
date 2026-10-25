@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：chord 宿主——manager_unix；职责：ProcessChannel is Pi's `process` as an IPC channel: the Node IPC channel the parent opened on NODE_CHANNEL_FD。
 package host
 
 import (

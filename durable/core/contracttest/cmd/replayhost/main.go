@@ -4,6 +4,8 @@
 // writing the store through modernc SQLite, killed after a commit, a trace of statements only, replayed by the Node tools).
 //
 //	replayhost --db <store> --trace <out> --script <trace to replay> [--from-seq N]
+//
+// 中文导读：durable 核心——main。
 package main
 
 import (

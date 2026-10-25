@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——theme_json；职责：ThemeColorToken is one token of the theme "colors" object: its description and whether a theme may omit it。
 package tui
 
 // theme_json.go ports upstream modes/interactive/theme/theme-schema.ts: the

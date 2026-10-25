@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——image_processor；对应上游 packages/durable/src/tools/image-processor.ts。
 package tools
 
 import (

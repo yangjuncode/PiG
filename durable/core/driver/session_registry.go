@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——session_registry；职责：Extension is the last selected extension that provides or wraps the tool (agent.ts toolExtension); set in an agent's。
 package driver
 
 import (

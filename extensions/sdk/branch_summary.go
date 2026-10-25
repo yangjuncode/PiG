@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——branch_summary；职责：FileOperations is Pi's FileOperations (core/compaction/utils.ts): the files a branch's tool calls read, wrote and edited. Each list is a JavaScript Set in。
 package sdk
 
 import (

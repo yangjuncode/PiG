@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：Pi 文件锁——stat_unix。
 package pilock
 
 import (

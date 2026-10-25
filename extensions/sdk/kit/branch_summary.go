@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——branch_summary；职责：BranchSummary is coding-agent's BranchSummaryMessageComponent(message,。
 package kit
 
 // BranchSummary is coding-agent's BranchSummaryMessageComponent(message,

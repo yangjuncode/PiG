@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——tui_surface_program_status；职责：SetProgramStatus implements [Terminal]: it records status and reports it。
 package tui
 
 import (

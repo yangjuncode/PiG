@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——context。
 package history
 
 import "slices"

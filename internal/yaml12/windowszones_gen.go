@@ -3,6 +3,7 @@
 // Source: CLDR 48.0 windowsZones.xml, SHA-256 9cf3db6a31fb382fee21b70be6feba1e82766b0fcd06e6261fb7936a73e537ff.
 // Node v24.22.1, ICU 78.3.
 
+// 中文导读：YAML 1.2 解析——windowszones_gen。
 package yaml12
 
 var windowsZones = []windowsZone{

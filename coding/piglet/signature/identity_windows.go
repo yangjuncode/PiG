@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：Piglet 签名：签名者身份。
 package signature
 
 import (

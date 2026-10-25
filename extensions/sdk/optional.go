@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——optional。
 package sdk
 
 // Bool returns a pointer to v for an optional boolean field. Nil leaves the option unset; Bool(false) explicitly disables it.

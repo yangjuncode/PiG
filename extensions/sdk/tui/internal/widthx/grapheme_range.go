@@ -1,5 +1,6 @@
 // Code generated from tui/widthx/grapheme_range.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的宽度计算——grapheme_range；对应上游 upstream extractAnsiCode: CSI ends at m|G|K|H|J; OSC/APC end at BEL or。
 package widthx
 
 import (

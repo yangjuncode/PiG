@@ -3,6 +3,7 @@
 
 //go:build pigfault
 
+// 中文导读：durable SQL 宿主——probe_on；职责：QueuedPosts is the number of items waiting in the owner mailbox. A test that holds the owner in a commit (Options.OnCommit) waits on。
 package sqlhost
 
 // QueuedPosts is the number of items waiting in the owner mailbox. A test that holds the owner in a commit (Options.OnCommit) waits on

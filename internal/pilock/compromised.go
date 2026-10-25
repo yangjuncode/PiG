@@ -1,3 +1,4 @@
+// 中文导读：Pi 文件锁——compromised；职责：CompromisedError is the ECOMPROMISED error that proper-lockfile 4.1.2 passes to onCompromised (lib/lockfile.js:119-138,153-156,185-201). Cause is the failed st。
 package pilock
 
 import (

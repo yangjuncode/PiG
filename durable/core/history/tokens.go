@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——tokens；职责：EstimateMessageTokens is pi-ai's estimateMessageTokens for the message JSON msg。
 package history
 
 import "math"

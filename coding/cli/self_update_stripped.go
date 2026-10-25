@@ -1,5 +1,6 @@
 //go:build pig_strip_self_update
 
+// 中文导读：CLI 层：自更新命令。
 package cli
 
 import (

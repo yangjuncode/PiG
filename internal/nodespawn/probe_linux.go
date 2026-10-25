@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：Node 进程 spawn——probe_linux。
 package nodespawn
 
 import (

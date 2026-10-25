@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——ids；对应上游 packages/durable/src/ids.ts。
 package durable
 
 // Ports packages/durable/src/ids.ts

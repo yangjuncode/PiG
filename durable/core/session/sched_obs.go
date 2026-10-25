@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_obs。
 package session
 
 import (

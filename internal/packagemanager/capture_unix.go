@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：包管理器内部实现——capture_unix。
 package packagemanager
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——connection；对应上游 packages/env/src/index.ts。
 // Package env is the remote execution environment of Pi Durable: an agent's tools run on another machine, usually over
 // SSH, while the Durable worker, its storage and credentials stay local.
 //

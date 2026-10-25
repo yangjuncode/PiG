@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——highlight；对应上游 packages/coding-agent/src/utils/syntax-highlight.ts and the highlightCode and getCliHighlightTheme helpers of packages/coding-agent/src/modes/interactive/theme/theme.ts。
 package tui
 
 // Ports packages/coding-agent/src/utils/syntax-highlight.ts and the highlightCode and getCliHighlightTheme helpers of packages/coding-agent/src/modes/interactive/theme/theme.ts.

@@ -1,5 +1,6 @@
 // Command generate-schemas writes the JSON Schema artifacts of the configuration files (models.json, settings.json, keybindings.json and
 // themes) to schemas/. It is the counterpart of packages/coding-agent/scripts/generate-schemas.ts.
+// 中文导读：命令入口——main。
 package main
 
 import (

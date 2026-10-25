@@ -1,3 +1,4 @@
+// 中文导读：TypeBox schema 构造。
 // Package configschema renders the JSON Schema artifacts of Pi's configuration files (models.json, settings.json, keybindings.json and
 // themes) from Go schema trees. The trees mirror the TypeBox schemas of Pi's coding-agent and ai packages, and Render mirrors
 // packages/coding-agent/scripts/generate-schemas.ts: node order, annotation placement and $defs extraction follow the TypeScript output.

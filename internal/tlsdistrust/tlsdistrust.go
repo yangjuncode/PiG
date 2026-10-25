@@ -1,3 +1,4 @@
+// 中文导读：内部包——tlsdistrust；职责：ErrDistrusted is matched by errors.Is for every [DistrustedError]。
 // Package tlsdistrust refuses TLS connections whose verified certificate chain contains a CA key that is
 // known to be compromised, or a root certificate that Mozilla removed from NSS after the October 2026
 // eMudhra incident (Mozilla bug 2083449).

@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——ssh；对应上游 packages/env/src/ssh.ts。
 package env
 
 // Ports packages/env/src/ssh.ts

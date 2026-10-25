@@ -1,3 +1,4 @@
+// 中文导读：评测设施——provider；对应上游 packages/evals/evals/openai-provider.docs.eval.ts and custom-provider.docs.eval.ts。
 package evalsuites
 
 // Ports packages/evals/evals/openai-provider.docs.eval.ts and custom-provider.docs.eval.ts.

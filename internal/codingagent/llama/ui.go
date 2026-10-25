@@ -1,3 +1,4 @@
+// 中文导读：llama 设置 UI。
 package llama
 
 import (

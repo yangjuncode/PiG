@@ -1,3 +1,4 @@
+// 中文导读：评测设施——judges；职责：JudgeScore is one judge's verdict。
 package evals
 
 // The judges the eval suites use, ported from vitest-evals 0.15.0 (dist/judges/structuredOutputJudge.mjs and

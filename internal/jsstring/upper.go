@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——upper；职责：UpperRune is String.prototype.toUpperCase of the single character r: its SpecialCasing expansion, or the simple uppercase mapping。
 package jsstring
 
 import (

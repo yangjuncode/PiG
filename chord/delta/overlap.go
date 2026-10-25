@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——overlap；对应上游 packages/chord/src/delta/index.ts (overlap)。
 package delta
 
 import "unicode/utf16"

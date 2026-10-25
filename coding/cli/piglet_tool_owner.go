@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：piglet 工具归属。
 package cli
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

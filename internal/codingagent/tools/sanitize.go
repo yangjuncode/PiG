@@ -10,6 +10,7 @@
 // because the rules are tiny and we want predictable behavior under
 // the parity audit.
 
+// 中文导读：工具输出/路径的清洗。
 package tools
 
 import (

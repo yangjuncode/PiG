@@ -1,3 +1,4 @@
+// 中文导读：保序 JSON——orderedjson；职责：Object is a JSON object with its keys in JavaScript enumeration order: the array-index keys ("0", "7", "42") in ascending order, then the other keys 。
 // Package orderedjson holds JSON objects that keep their keys in the order
 // they were read or set, the way a JavaScript object does. MCP schemas and
 // tool arguments cross the client unchanged, so their key order must survive

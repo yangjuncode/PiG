@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——lane；职责：Place is one call's reservation in a Lane. A nil *Place is no reservation: Wait, Release and Pass do nothing。
 package jsloop
 
 import (

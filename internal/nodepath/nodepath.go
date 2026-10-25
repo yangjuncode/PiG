@@ -1,3 +1,4 @@
+// 中文导读：内部包——nodepath；对应上游 Node 24 lib/path.js resolve and normalizeString。
 // Package nodepath ports the parts of Node's path module Pi resolves file
 // paths with. Resolve is path.resolve for the host platform. Win32Resolve and
 // PosixResolve are path.win32.resolve and path.posix.resolve with the

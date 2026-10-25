@@ -1,3 +1,4 @@
+// 中文导读：内部包——resolvepath；对应上游 packages/coding-agent/src/utils/paths.ts:75-106。
 // Package resolvepath resolves user-supplied resource paths the way Pi's
 // resolvePath does. It sits below internal/codingagent and coding/packagecontent
 // so both share one implementation.

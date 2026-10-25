@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable SQL 宿主——host；职责：ErrClosed is returned for an event sent after Close。
 package sqlhost
 
 import (

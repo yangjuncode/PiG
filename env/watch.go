@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——watch；对应上游 packages/env/src/watch.ts。
 package env
 
 // Ports packages/env/src/watch.ts

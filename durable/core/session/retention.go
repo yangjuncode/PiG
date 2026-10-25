@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心会话——retention；对应上游 packages/durable/src/session/session.ts document retention (#touchDocument, #scheduleDocumentSweep, #sweepDocuments,。
 package session
 
 import "math"

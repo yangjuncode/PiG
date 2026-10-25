@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——ai_gateway_pricing；对应上游 packages/ai/scripts/ai-gateway-pricing.ts。
 package main
 
 // Ports packages/ai/scripts/ai-gateway-pricing.ts.

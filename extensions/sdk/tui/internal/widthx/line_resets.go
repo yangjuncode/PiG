@@ -6,6 +6,7 @@
 //   - applyLineResets             : tui.ts:427 (TUI.applyLineResets)
 //   - isImageLine                 : terminal-image.ts:106
 
+// 中文导读：Go 扩展 SDK 的宽度计算——line_resets；对应上游 upstream TUI.SEGMENT_RESET (`"\x1b[0m\x1b]8;;\x07"`)。
 package widthx
 
 import "strings"

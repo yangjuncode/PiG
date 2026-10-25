@@ -1,3 +1,4 @@
+// 中文导读：内部包——copy。
 // Package scalarjson supports JSON-normalized scalar copies without serialization.
 package scalarjson
 

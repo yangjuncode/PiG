@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——stack；对应上游 pi-tui's stack.ts, h-stack.ts, and v-stack.ts: flexbox-style horizontal。
 package tui
 
 import (

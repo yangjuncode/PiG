@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——spawn；职责：Child is a started test child with its containment。
 package testenv
 
 import (

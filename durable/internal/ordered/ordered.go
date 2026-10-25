@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——ordered。
 // Package ordered gives the dynamic JSON members of a decoded Go value the key order of their JSON text.
 //
 // Pi decodes a stored record with JSON.parse, so an object inside a dynamic member (a JsonValue such as a task's checkpoint or an entry's data) keeps the key order of the text. encoding/json decodes such a member into a Go map, which has no order. Restore replaces each dynamic member with the same text decoded into insertion-ordered objects.

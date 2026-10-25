@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——context；职责：ErrUnsupportedSubprocessUI is returned for UI methods whose upstream API。
 package sdk
 
 import (

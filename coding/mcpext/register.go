@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 注册。
 package mcpext
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——schema；对应上游 packages/durable/src/storage/sqlite/schema.ts。
 package sqlite
 
 // Ports packages/durable/src/storage/sqlite/schema.ts

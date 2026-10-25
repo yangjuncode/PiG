@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——inspect；职责：Inspect is Harness.inspect (harness.ts inspect, a readOnLine job): the core answers the inspect query "harness" with。
 package driver
 
 import (

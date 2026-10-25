@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——codec；对应上游 packages/chord/src/delta/index.ts (encoder, decoder)。
 package delta
 
 import "encoding/json"

@@ -1,3 +1,4 @@
+// 中文导读：内部包——truncate；职责：Result is truncateHead's or truncateTail's result: the kept content and what was cut。
 // Package truncate holds the line and byte walks of Pi's truncateHead and truncateTail (packages/coding-agent/src/core/tools/truncate.ts), shared by
 // the tools' result truncation, the bash-execution block's context limit and durable's truncateHead, which import cycles keep in different packages.
 //

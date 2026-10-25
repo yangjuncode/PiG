@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——read_image；对应上游 packages/durable/src/tools/read.ts (readImage, imageModel, imageError) and the limits of image-processor.ts。
 package tools
 
 import (

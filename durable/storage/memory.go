@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——memory；对应上游 packages/durable/src/storage/memory.ts。
 // Package storage holds the in-memory reference implementation of the durable Storage contract.
 package storage
 

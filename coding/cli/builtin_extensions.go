@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：内置扩展装载；对应上游 .upstream/v0.99.2/packages/coding-agent/src/extensions/index.ts:8。
 package cli
 
 import (

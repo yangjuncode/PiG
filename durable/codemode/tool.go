@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/codemode.ts (createCodemodeTool, createCodemodeExtension, outcomeOf, toolResult).
 
+// 中文导读：durable 的 codemode——tool；对应上游 packages/durable/src/codemode/codemode.ts (createCodemodeTool, createCodemodeExtension, outcomeOf, toolResult)。
 // Package codemode is durable code mode: a tool that runs model-written JavaScript in a QuickJS sandbox, whose script
 // survives a restart.
 //

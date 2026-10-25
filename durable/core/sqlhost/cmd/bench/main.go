@@ -20,6 +20,7 @@
 // bench/run.ts line per run (timingLine). --cpuprofile writes the pprof CPU profile of that measured run.
 //
 // CONTRACT_CRASH_AFTER=<seq> kills the process right after the commit that consumed that seq (contracttest.Writer).
+// 中文导读：durable SQL 宿主——main。
 package main
 
 import (

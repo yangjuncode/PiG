@@ -1,5 +1,6 @@
 //go:build !linux
 
+// 中文导读：测试环境设施——hardlinks_other。
 package testenv
 
 import "testing"

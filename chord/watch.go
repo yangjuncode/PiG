@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——watch；对应上游 packages/chord/src/watch.ts (WatchEnd, WatchHandle)。
 package chord
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 模型解析。
 package cli
 
 import "github.com/MichaelKinsy/PiG/internal/codingagent"

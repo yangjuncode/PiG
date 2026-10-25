@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——engine_exports。
 package codemode
 
 // qjsExports lists the QuickJS exports a vm calls, in the order of QJS_EXPORTS in

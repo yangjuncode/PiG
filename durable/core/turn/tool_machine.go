@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——tool_machine；职责：ToolTask implements the pi.tool task over a Host。
 package turn
 
 import (

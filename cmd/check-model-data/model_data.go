@@ -1,3 +1,4 @@
+// 中文导读：命令入口——model_data；对应上游 packages/ai/scripts/model-data.ts。
 package main
 
 // Ports packages/ai/scripts/model-data.ts.

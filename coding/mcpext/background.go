@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 后台进程。
 package mcpext
 
 import "sync"

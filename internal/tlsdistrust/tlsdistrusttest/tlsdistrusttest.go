@@ -1,3 +1,4 @@
+// 中文导读：内部包——tlsdistrusttest；职责：Intermediates are the eight intermediates eMudhra issued under emSign Root TLS CA - G3 and emSign Root CS CA - G3。
 // Package tlsdistrusttest holds the public certificates of the October 2026 eMudhra incident and builds, for
 // tests only, a server certificate signed by a compromised intermediate.
 //

@@ -2,6 +2,7 @@
 // Copyright (C) 1999-2016, International Business Machines Corporation and others.
 // ICU DictionaryCache::populateDictionary and break-engine selection translation; see LICENSES/Unicode-3.0.txt.
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——segments；对应上游 packages/tui/src/utils.ts。
 package wordsegmenter
 
 // Ports packages/tui/src/utils.ts

@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——render；对应上游 packages/telemetry/src/render.ts。
 package telemetry
 
 // Ports packages/telemetry/src/render.ts.

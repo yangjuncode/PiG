@@ -1,3 +1,4 @@
+// 中文导读：会话条目模型——entry；对应上游 upstream appendThinkingLevelChange in agent-session.ts. Persisted as。
 // Package sessionentry holds the session log's entry values (core/session-manager.ts SessionHeader, SessionEntry and the entry types).
 // It imports nothing from the coding-agent packages, so the extension API can type its events with them.
 package sessionentry

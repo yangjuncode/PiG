@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——unprivileged。
 package testenv
 
 import (

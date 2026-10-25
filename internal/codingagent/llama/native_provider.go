@@ -1,3 +1,4 @@
+// 中文导读：llama 的 native provider 实现。
 package llama
 
 import (

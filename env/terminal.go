@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——terminal；对应上游 packages/env/src/terminal.ts。
 package env
 
 // Ports packages/env/src/terminal.ts

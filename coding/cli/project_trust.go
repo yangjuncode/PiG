@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：项目信任。
 package cli
 
 import (

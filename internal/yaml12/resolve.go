@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——resolve；对应上游 yaml 2.9.0 src/compose/resolve-props.ts, resolve-end.ts, resolve-flow-scalar.ts, resolve-block-scalar.ts and the util-*.ts helpers. Copyright Eemeli Aro, ISC licence (see lexer.go). Comment text and node spacing, which never reach a parsed value or an error, are not kept。
 package yaml12
 
 // Ports yaml 2.9.0 src/compose/resolve-props.ts, resolve-end.ts, resolve-flow-scalar.ts, resolve-block-scalar.ts and the util-*.ts helpers. Copyright Eemeli Aro, ISC licence (see lexer.go). Comment text and node spacing, which never reach a parsed value or an error, are not kept.

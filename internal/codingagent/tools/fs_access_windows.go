@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：文件系统访问（windows 实现）。
 package tools
 
 import (

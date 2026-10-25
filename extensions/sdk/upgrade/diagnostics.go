@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK 的升级面——diagnostics；职责：Diagnostic is one positioned compiler message。
 package upgrade
 
 import (

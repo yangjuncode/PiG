@@ -1,3 +1,4 @@
+// 中文导读：Node 进程 spawn——kernel_linux。
 package nodespawn
 
 import (

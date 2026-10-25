@@ -1,3 +1,4 @@
+// 中文导读：JS 语义平价设施——opt；职责：Opt is an object member that JavaScript can leave undefined (JSON.stringify omits it), set to null, or set to a value。
 package jsparity
 
 // Opt is an object member that JavaScript can leave undefined (JSON.stringify omits it), set to null, or set to a value.

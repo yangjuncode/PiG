@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——guard；职责：FromEnv is the options a gate run sets in the environment, with the defaults above。
 // Package guard bounds a native host process of the conformance gate: a request that runs too long, a heap that grows past a
 // limit, or a parent that has gone. A core step is a synchronous call, so a step that never returns (a scheduler loop with no
 // hop to the host) also never lets its parent time out: the parent blocks in a read, the gate kills the parent, and the child

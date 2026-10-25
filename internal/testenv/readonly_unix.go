@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：测试环境设施——readonly_unix。
 package testenv
 
 import (

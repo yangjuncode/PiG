@@ -1,3 +1,4 @@
+// 中文导读：内部包——pigdocs；职责：SubDir is the docs directory name under the pig config root。
 // Package pigdocs materializes the reference documentation embedded in Stock
 // Pig under the user's config root.
 //

@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——write；对应上游 packages/durable/src/tools/write.ts。
 package tools
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：扩展缓存 GC。
 package cli
 
 import (

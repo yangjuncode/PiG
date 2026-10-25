@@ -1,3 +1,4 @@
+// 中文导读：MCP 包文档。
 // Package piglogin is PiG's built-in sprite login: the sprite's 16-by-14 pig, which the startup header shows in Pi's logo
 // slot, the full login art (the 12-pixel "PiG." hero wordmark with its drop shadow beside that pig) that /sprite preview shows,
 // the sprites `/sprite` chooses from, and the selection kept under $PIG_HOME/state/pig-standard/login.json.

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——sql；职责：Unbounded is the Max of a Need whose range has no upper bound: through the conversation's newest entry。
 package history
 
 // The SQL a host runs to answer a Need. Record columns are read as BLOB so rows return bytes without a UTF-16

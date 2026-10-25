@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——remote；对应上游 packages/chord/src/remote.ts: references on objects of other hosts. One RemoteBinding per host and key is shared。
 package host
 
 // Ports packages/chord/src/remote.ts: references on objects of other hosts. One RemoteBinding per host and key is shared

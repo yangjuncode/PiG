@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——session_graph；职责：Handle is the host's name for the object, which an option that takes the object (createAgentSession) puts on the wire。
 package sdk
 
 import (

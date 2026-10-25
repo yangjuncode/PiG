@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：终止关闭流程。
 package cli
 
 import (

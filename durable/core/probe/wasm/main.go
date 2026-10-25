@@ -4,6 +4,7 @@
 
 // Command wasm is the probe core as a WASI reactor (ABI.md section 4): build it with
 // GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared.
+// 中文导读：durable 核心——main；职责：Command wasm is the probe core as a WASI reactor (ABI.md section 4): build it with。
 package main
 
 import (

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——derive；职责：View is a derived context. It aliases store memory: it stays valid until the next call that changes the store or。
 package history
 
 import (

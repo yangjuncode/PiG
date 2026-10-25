@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: The image-rs Developers
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——png；职责：MAX_IDAT_CHUNK_LEN is u32::MAX >> 1, more than any image here holds。
 package images
 
 import (

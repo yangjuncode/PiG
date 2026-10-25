@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——native_modifiers；职责：ModifierKey mirrors upstream native-platform.ts ModifierKey。
 package tui
 
 import "github.com/MichaelKinsy/PiG/internal/nativeplatform"

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——model_runtime；职责：ModelRuntime is Pi's `ModelRuntime` class (core/model-runtime.ts): the configured model collection an extension builds over its own credential and model fi。
 package sdk
 
 import (

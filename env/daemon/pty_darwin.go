@@ -1,5 +1,6 @@
 //go:build darwin
 
+// 中文导读：env 守护进程——pty_darwin；对应上游 packages/env/daemon/src/pty.rs。
 package daemon
 
 // Ports packages/env/daemon/src/pty.rs

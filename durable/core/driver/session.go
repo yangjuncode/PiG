@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——session；职责：ErrUnsupported is the error of a public operation the native session does not serve yet (PROTOCOL.md, "Not supported")。
 package driver
 
 import (

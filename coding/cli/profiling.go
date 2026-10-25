@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：CLI 层：profiling 支持。
 package cli
 
 import (

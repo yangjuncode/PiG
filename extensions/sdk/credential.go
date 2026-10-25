@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——credential；对应上游 packages/ai/src/auth/types.ts (Credential) for provider objects' auth methods。
 package sdk
 
 // Ports packages/ai/src/auth/types.ts (Credential) for provider objects' auth methods.

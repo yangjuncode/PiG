@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——mouse；对应上游 the normalized mouse API from pi-tui's tui.ts: TuiMouseEvent,。
 package tui
 
 import "slices"

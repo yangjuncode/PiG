@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——manager；对应上游 packages/chord/src/manager.ts, the host manager that packages/chord/src/node.ts exports (Node only in Pi): it。
 package host
 
 // Ports packages/chord/src/manager.ts, the host manager that packages/chord/src/node.ts exports (Node only in Pi): it

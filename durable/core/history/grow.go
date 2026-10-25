@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——grow。
 package history
 
 // push appends v to s, growing a full slice by an eighth. The runtime's own rule rounds a grown slice up to the next power

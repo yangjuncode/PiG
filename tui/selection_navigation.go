@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——selection_navigation；职责：PageSelectionIndex is getPageSelectionIndex of Pi PR #7680 (packages/tui/src/selection-navigation.ts): the index a。
 package tui
 
 import "slices"

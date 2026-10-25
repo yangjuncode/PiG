@@ -1,3 +1,4 @@
+// 中文导读：内部包——reasoning_options；对应上游 packages/ai/scripts/models-dev-reasoning-options.ts。
 package modelgen
 
 // Ports packages/ai/scripts/models-dev-reasoning-options.ts

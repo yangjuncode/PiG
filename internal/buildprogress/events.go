@@ -1,3 +1,4 @@
+// 中文导读：内部包——events。
 // Package buildprogress reports product-neutral diagnostics for explicit builds.
 package buildprogress
 

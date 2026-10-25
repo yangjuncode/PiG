@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——compaction_cutpoint；职责：CutPointResult is Pi's CutPointResult。
 package sdk
 
 // Pi's findCutPoint and findTurnStartIndex (core/compaction/compaction.ts) over the session entries an extension gets (for example from

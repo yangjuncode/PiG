@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——manager_ipc_frames。
 package host
 
 // libuv's IPC framing, which Node's IPC channel speaks on Windows (uv_pipe_t with ipc set; unix domain sockets carry

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——compactplan；职责：SelectParams are the inputs of the select phase besides the context view。
 package history
 
 // The decisions of the built-in pi.compaction task (src/harness/compaction.ts, spec section 8.7) as pure functions of

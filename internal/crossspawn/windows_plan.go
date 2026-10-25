@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MIT AND ISC
 
 // Ports packages/coding-agent/src/utils/child-process.ts (Windows spawnProcess routing through cross-spawn).
+// 中文导读：跨平台 spawn——windows_plan；对应上游 packages/coding-agent/src/utils/child-process.ts (Windows spawnProcess routing through cross-spawn)。
 package crossspawn
 
 import (

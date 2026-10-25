@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 存储——sidecar；职责：Idle is called by the session at an idle boundary (a run settled, nothing live): the store writes due sidecar chunks。
 package store
 
 import (

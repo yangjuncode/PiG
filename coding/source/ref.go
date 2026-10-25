@@ -1,3 +1,4 @@
+// 中文导读：包源解析：源引用。
 // Package source parses the source-reference vocabulary shared by package
 // installation and Pig piglet resource origins. It preserves upstream Pi's
 // npm/git/local grammar while allowing Pig products to contribute explicit

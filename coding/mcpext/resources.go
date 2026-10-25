@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 资源；对应上游 packages/coding-agent/src/extensions/mcp/resources.ts。
 package mcpext
 
 import (

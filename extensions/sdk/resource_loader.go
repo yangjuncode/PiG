@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——resource_loader；职责：ResourceCollision is Pi's ResourceCollision: two resources with one name。
 package sdk
 
 import (

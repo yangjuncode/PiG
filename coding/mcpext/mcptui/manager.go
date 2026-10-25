@@ -1,3 +1,4 @@
+// 中文导读：MCP 终端视图：MCP 扩展管理器（extensions/mcp/index.ts）；对应上游 packages/coding-agent/src/extensions/mcp/ui.ts (the manager view)。
 package mcptui
 
 // Ports packages/coding-agent/src/extensions/mcp/ui.ts (the manager view).

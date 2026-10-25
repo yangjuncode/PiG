@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——cloudflare；对应上游 packages/chord/src/sqlite/cloudflare.ts。
 // Package cloudflare adapts the SQLite storage of a Cloudflare Durable Object to the portable Chord SQLite facade. It
 // is the Go counterpart of Pi's `@earendil-works/chord/sqlite/cloudflare` and links no SQLite driver or Workers binding:
 // the caller supplies the Durable Object's `ctx.storage` as a DurableObjectSqliteStorage.

@@ -2,6 +2,7 @@
 
 //go:build linux
 
+// 中文导读：profiling 设施——metrics_linux；职责：PeakRSSBytes is the process's peak resident set in bytes, or -1. It reads VmHWM from /proc/self/status, the high-water mark of the process's own address sp。
 package profiling
 
 import (

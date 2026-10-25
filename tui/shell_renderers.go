@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——shell_renderers；对应上游 the call half of upstream packages/coding-agent/src/core/tools/。
 package tui
 
 // shell_renderers.go: call-side presentation for the built-in shell tools.

@@ -1,3 +1,4 @@
+// 中文导读：Node 进程 spawn——start。
 package nodespawn
 
 import (

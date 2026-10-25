@@ -1,3 +1,4 @@
+// 中文导读：内部包——log；职责：Log is Math.log as V8 computes it: fdlibm's __ieee754_log (V8 src/base/ieee754.cc log). Go's math.Log is within 1 ulp of it but differs in the las。
 // Package jsmath implements ECMAScript Math functions with the results V8 returns, where Go's math package rounds differently.
 package jsmath
 

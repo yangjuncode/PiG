@@ -1,3 +1,4 @@
+// 中文导读：内部包——outputfiles；对应上游 packages/coding-agent/src/utils/output-files.ts。
 // Package outputfiles creates the files pi writes so the model can use output
 // it was not shown in full: the full text of truncated tool output, binary MCP
 // resources and images shown by codemode scripts. Every output file is created

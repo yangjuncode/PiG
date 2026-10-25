@@ -1,3 +1,4 @@
+// 中文导读：内部包——linkerexec；职责：Linker is the system linker that maps a PIE executable, such as。
 // Package linkerexec starts programs on Android builds that forbid executing
 // files in an app's data directory.
 //

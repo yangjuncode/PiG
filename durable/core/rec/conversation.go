@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——conversation；职责：Conversation is a conversation record (spec §2 ConversationRecord): `{id, parent?: {conversationId, at}, owner?:。
 package rec
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

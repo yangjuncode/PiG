@@ -1,3 +1,4 @@
+// 中文导读：配置的模型 schema。
 package configschema
 
 // Mirrors packages/ai/src/providers/model-schema.ts.

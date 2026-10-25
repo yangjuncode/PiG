@@ -19,6 +19,7 @@
 // It fails when a module already holds either section, when the module has no function names, and when fewer than minMatched
 // of the names in the list match a function: a renamed function must not silently drop out of the hints. -allow-stale (for
 // regenerating the list, README.md) skips the last check.
+// 中文导读：durable 核心——main。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——ctxowner。
 // Package ctxowner joins the lifetime of one context with the request values of another.
 package ctxowner
 

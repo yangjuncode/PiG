@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——entryscan；职责：Ranger is implemented by a storage that serves a conversation's visible entry range from decoded entries it retains。
 // Package entryscan is the read-only range seam between the Harness context derivation and the storages that retain
 // decoded entries.
 package entryscan

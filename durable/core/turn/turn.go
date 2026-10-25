@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——turn。
 // Package turn is the agent turn: the built-in pi.generation and pi.tool tasks (spec §8.3-8.6) as session.TaskImpl
 // definitions. Generation phases prepare, request, retry, poll and tools; tool phases call and execute; sequential and
 // parallel rounds; the usage ledger; streaming partials committed with pi-durable main's fixed-interval throttle

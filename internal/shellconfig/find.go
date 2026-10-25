@@ -1,3 +1,4 @@
+// 中文导读：内部包——find；对应上游 packages/coding-agent/src/utils/shell.ts (findExecutableOnPath)。
 package shellconfig
 
 import (

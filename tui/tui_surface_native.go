@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——tui_surface_native；职责：NativeComponent is a component that a frontend session draws as a。
 package tui
 
 import (

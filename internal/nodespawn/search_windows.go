@@ -4,6 +4,7 @@
 
 //go:build windows
 
+// 中文导读：Node 进程 spawn——search_windows。
 package nodespawn
 
 import (

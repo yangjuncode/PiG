@@ -1,3 +1,4 @@
+// 中文导读：内部包——semver；职责：SemVer is a parsed version (classes/semver.js). Prerelease identifiers keep their text: node-semver's numeric identifiers are canonical digit strings。
 // Package nodesemver translates the npm semver package (semver 7.8.5) calls Pi's package manager makes. ValidRange, Satisfies and MaxSatisfying are validRange, satisfies and maxSatisfying; Parse is valid, and SemVer.Compare gives gt and rcompare. It implements node-semver's default options only (loose and includePrerelease false) and keeps its regular expressions, including the length-bounded forms its Range and SemVer parsers match against.
 package nodesemver
 

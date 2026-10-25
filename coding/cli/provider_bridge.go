@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：provider 桥。
 package cli
 
 import (

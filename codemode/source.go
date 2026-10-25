@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——source；对应上游 packages/codemode/src/source.ts (CODEMODE_OPTIONS_PREFIX)。
 package codemode
 
 import (

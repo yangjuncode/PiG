@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：交互模式构建。
 package cli
 
 import (

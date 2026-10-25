@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/package-manager.ts.
+// 中文导读：package 内容与 glob：自动加载模式；对应上游 packages/coding-agent/src/core/package-manager.ts。
 package packagecontent
 
 import "strings"

@@ -1,3 +1,4 @@
+// 中文导读：内部包——rename。
 // Package fsretry retries file system operations that Windows refuses for a
 // short time while another process holds a file open.
 package fsretry

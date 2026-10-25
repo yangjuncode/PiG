@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Joyent, Inc. and other Node contributors
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Node 进程 spawn——cmdline；职责：QuoteCmdArg is libuv's quote_cmd_arg. An empty argument becomes "". An。
 // Package nodespawn builds the Windows command line that Node's
 // child_process.spawn(file, args) passes to CreateProcessW when neither shell
 // nor windowsVerbatimArguments is set. Node prepends file to args as argv[0],

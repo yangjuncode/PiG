@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——exec；对应上游 packages/durable/src/env/node.ts (NodeExecutionEnv.exec)。
 package node
 
 import (

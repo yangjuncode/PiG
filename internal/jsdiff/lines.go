@@ -1,3 +1,4 @@
+// 中文导读：内部包——lines；职责：LineRun is one part of a line diff: Count lines kept, added or removed. Start is the index of its first line in the text its lines come。
 package jsdiff
 
 import "strings"

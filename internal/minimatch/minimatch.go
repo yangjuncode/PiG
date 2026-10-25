@@ -1,3 +1,4 @@
+// 中文导读：内部包——minimatch；对应上游 minimatch 10.2.6 index.js (Minimatch.make, parse, matchOne, match) with its default options。
 // Package minimatch ports minimatch 10.2.6 (the glob matcher Pi uses for model scopes and package resource filters): brace expansion, `!`
 // negation, `**`, character classes, extglobs and dot handling. Matching of one path portion is a regular expression, as in minimatch.
 package minimatch

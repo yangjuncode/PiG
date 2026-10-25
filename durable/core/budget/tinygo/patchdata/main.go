@@ -12,6 +12,7 @@
 //
 // The words after the address are [start, end) pairs the scan leaves out: the .data and .bss symbols in pointerFreeGlobals,
 // merged where adjacent. It fails when they need more pairs than the runtime holds, or when the pairs are not unset.
+// 中文导读：durable 核心——main。
 package main
 
 import (

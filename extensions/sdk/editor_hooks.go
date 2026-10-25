@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——editor_hooks；职责：EditorStatus is the working, compaction, summarization or retry status the host shows while the editor embeds it (an。
 package sdk
 
 import (

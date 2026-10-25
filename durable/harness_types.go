@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——harness_types；对应上游 the subset of packages/durable/src/harness/types.ts that packages/durable/src/types.ts references:。
 package durable
 
 import (

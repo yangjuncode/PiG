@@ -1,3 +1,4 @@
+// 中文导读：会话导出（HTML）。
 // Package export provides HTML session export.
 //
 // Ports packages/coding-agent/src/core/export-html/index.ts using embedded pinned templates and vendor assets.

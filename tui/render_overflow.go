@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——render_overflow；职责：TUICrashLogName is the upstream crash-log filename for over-wide rows that reach the main-screen differential renderer。
 package tui
 
 import (

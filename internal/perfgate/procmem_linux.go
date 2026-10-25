@@ -2,6 +2,7 @@
 
 //go:build linux
 
+// 中文导读：内部包——procmem_linux。
 package perfgate
 
 import (

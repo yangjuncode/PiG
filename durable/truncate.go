@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——truncate；对应上游 packages/durable/src/truncate.ts。
 package durable
 
 import (

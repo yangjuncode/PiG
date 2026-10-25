@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 opentui
 // SPDX-License-Identifier: MIT
 
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——stdin_buffer；对应上游 packages/tui/src/stdin-buffer.ts。
 package tui
 
 // Ports packages/tui/src/stdin-buffer.ts.

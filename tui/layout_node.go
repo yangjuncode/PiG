@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——layout_node；对应上游 pi-tui's layout-node.ts: the contract layer shared by the layout engine。
 package tui
 
 // Ports pi-tui's layout-node.ts: the contract layer shared by the layout engine

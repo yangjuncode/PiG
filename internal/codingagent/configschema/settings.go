@@ -1,3 +1,4 @@
+// 中文导读：settings schema。
 package configschema
 
 import "github.com/MichaelKinsy/PiG/ai"

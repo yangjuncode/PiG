@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——spec；职责：ID is the abi_id every core exports: the hex sha256 of Canonical。
 // Package spec holds the normative tables of ABI 1 (docs/plan/durable-core/ABI.md sections 4-8) and computes abi_id, the
 // sha256 of their canonical rendering. It is build tooling, not core: the core carries the result as the constant
 // abi.ID, which go generate ./durable/core/abi writes and this package's test checks.

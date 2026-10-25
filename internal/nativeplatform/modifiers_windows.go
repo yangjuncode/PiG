@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：平台原生操作——modifiers_windows。
 package nativeplatform
 
 import (

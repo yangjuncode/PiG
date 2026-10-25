@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——store；对应上游 the StoredSpan, StoredTrace, TraceQuery, MetricQuery, StoredMetric and TelemetryStore declarations of。
 package telemetry
 
 // Ports the StoredSpan, StoredTrace, TraceQuery, MetricQuery, StoredMetric and TelemetryStore declarations of

@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——tx；职责：TaskDef is the part of a task definition the Session layer needs to create a。
 package session
 
 import (

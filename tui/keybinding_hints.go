@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——keybinding_hints；对应上游 upstream's rawKeyHint which skips the keybinding lookup。
 package tui
 
 import (

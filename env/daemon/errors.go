@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——errors；对应上游 packages/env/daemon/src/errors.rs。
 package daemon
 
 // Ports packages/env/daemon/src/errors.rs

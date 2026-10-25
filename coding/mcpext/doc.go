@@ -1,3 +1,4 @@
+// 中文导读：MCP 包文档。
 // Package mcpext is the built-in MCP integration (`builtin:mcp`).
 //
 // It connects the servers from `mcp.json` and the servers extensions register

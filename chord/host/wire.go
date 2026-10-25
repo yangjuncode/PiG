@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——wire；对应上游 packages/chord/src/wire.ts。
 package host
 
 // Ports packages/chord/src/wire.ts.

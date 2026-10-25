@@ -1,3 +1,4 @@
+// 中文导读：会话条目模型——union；职责：FileEntry is session-manager.ts FileEntry, `SessionHeader | SessionEntry`: one record of a session file. The members are SessionHeader and。
 package sessionentry
 
 import (

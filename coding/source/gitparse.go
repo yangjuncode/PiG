@@ -1,3 +1,4 @@
+// 中文导读：包源解析：git 源解析；对应上游 packages/coding-agent/src/utils/git.ts parseGitUrl: Git sources of every historical spelling, with hosted-git-info's lookup for the hosted。
 package source
 
 // Ports packages/coding-agent/src/utils/git.ts parseGitUrl: Git sources of every historical spelling, with hosted-git-info's lookup for the hosted

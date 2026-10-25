@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/rpc/jsonl.ts
+// 中文导读：RPC 客户端：JSONL 帧读写；对应上游 packages/coding-agent/src/modes/rpc/jsonl.ts。
 package rpcclient
 
 import (

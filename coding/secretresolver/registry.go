@@ -1,3 +1,4 @@
+// 中文导读：secret 解析：登录 sprite 注册表。
 // Package secretresolver provides the product-neutral resolver seam for typed
 // Piglet secret refs. Raw Pig registers no resolver; products contribute
 // namespaced schemes and enforce their own authorization.

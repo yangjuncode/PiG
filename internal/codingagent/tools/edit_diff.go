@@ -1,3 +1,4 @@
+// 中文导读：edit-diff 助手：编辑前后 diff 的计算。
 // Package tools: edit-diff helpers.
 //
 // Mirrors upstream packages/coding-agent/src/core/tools/edit-diff.ts:

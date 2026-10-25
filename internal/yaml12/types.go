@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——types；职责：Date is a JavaScript Date; MS is its time value, NaN for an invalid date。
 package yaml12
 
 // Go values for the JavaScript objects the library's named tags build.

@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——flow；对应上游 packages/mcp/src/oauth/flow.ts。
 package oauth
 
 import (

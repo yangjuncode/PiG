@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——builtin_tool；对应上游 packages/coding-agent/src/core/tools/{read,write,edit,bash,powershell,grep,find,ls}.ts (create<Tool>ToolDefinition, create<Tool>Tool, createCodingTools,。
 package sdk
 
 // Ports packages/coding-agent/src/core/tools/{read,write,edit,bash,powershell,grep,find,ls}.ts (create<Tool>ToolDefinition, create<Tool>Tool, createCodingTools,

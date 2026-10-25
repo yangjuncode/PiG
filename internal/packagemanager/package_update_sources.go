@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——package_update_sources；职责：GitPackageSource is the host, repository path and ref of a Git package source。
 package packagemanager
 
 import (

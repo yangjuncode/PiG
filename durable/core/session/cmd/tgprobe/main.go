@@ -1,4 +1,5 @@
 // Command tgprobe links the session layer's packages so the TinyGo build can prove they compile without reflection.
+// 中文导读：durable 核心会话——main。
 package main
 
 import (

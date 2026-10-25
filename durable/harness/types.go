@@ -1,5 +1,6 @@
 // Ports packages/durable/src/harness/types.ts: the declarations that src/types.ts does not need. The rest live in the root package (durable/harness_types.go).
 
+// 中文导读：durable harness：持久化代理运行的宿主层——types；对应上游 packages/durable/src/harness/types.ts: the declarations that src/types.ts does not need. The rest live in the root package (durable/harness_types.go)。
 package harness
 
 import (

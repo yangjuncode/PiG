@@ -1,3 +1,4 @@
+// 中文导读：JS 事件循环建模——lane；职责：Place is one call's reservation in a Lane. A nil *Place is no reservation: Wait, Release and Pass do nothing。
 package jsloop
 
 import (

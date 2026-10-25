@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——genericurl；职责：URL is the part of a WHATWG URL that Node's `new URL(value)` exposes as protocol, username, password, hostname, pathname and hash, for any scheme。
 package nodeurl
 
 import (

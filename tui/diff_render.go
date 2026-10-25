@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——diff_render；对应上游 upstream diff.ts (147 LOC). Produces colored diff output with:。
 package tui
 
 // diff_render.go: intra-line word-level diff rendering.

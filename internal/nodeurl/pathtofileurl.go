@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——pathtofileurl；职责：PathToFileURL is Node 24.19.0's url.pathToFileURL(path, { windows }).href. It resolves path as path.posix or path.win32 does, keeps a。
 package nodeurl
 
 import (

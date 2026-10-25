@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——document；职责：ScopeKind is the owner kind of a document (spec §3.2)。
 package rec
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

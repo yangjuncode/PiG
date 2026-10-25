@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_index；对应上游 packages/durable/src/harness/scheduler.ts (the in-memory indexes of upstream cb437549): the ownership tree。
 package session
 
 // Ports packages/durable/src/harness/scheduler.ts (the in-memory indexes of upstream cb437549): the ownership tree

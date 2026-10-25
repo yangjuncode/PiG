@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——httpurl；职责：HTTPURL is the part of a WHATWG http or https URL that Node's `new URL(value)` exposes as protocol, hostname, port, pathname, search and hash. Pathnam。
 package nodeurl
 
 // Implements the WHATWG URL parser (https://url.spec.whatwg.org/#concept-basic-url-parser) for an http or https input without a base: the subset behind Node's `URL.canParse(raw)` and the protocol, hostname, port, search and hash of `new URL(raw)`.

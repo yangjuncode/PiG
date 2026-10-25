@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——session_api；职责：Admission is sealed synchronously, before the owner is asked (session.ts snapshot :164 and snapshotAsOf :318 #assertUsable)。
 package driver
 
 import (

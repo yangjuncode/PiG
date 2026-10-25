@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：fused 校验。
 package pigletbuild
 
 import (

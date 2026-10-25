@@ -1,3 +1,4 @@
+// 中文导读：Node fs 语义——readdir。
 // Package nodefs ports the fs contracts Pi relies on: the directory order of fs.readdirSync and fs.existsSync.
 package nodefs
 

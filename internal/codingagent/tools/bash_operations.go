@@ -4,6 +4,7 @@
 // Mirrors upstream core/tools/bash.ts BashOperations and
 // createLocalShellOperations. internal/childwait applies utils/child-process.ts
 // waitForChildProcess for the post-exit stdio grace.
+// 中文导读：bash/powershell 工具与用户 bash 共享的 shell 进程执行。
 package tools
 
 import (

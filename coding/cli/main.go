@@ -19,6 +19,8 @@
 //	--cwd <dir>                 Working directory (default: current dir)
 //	--agent-dir <dir>           Agent config directory (default: <config>/agent)
 //	--version                   Print version and exit
+//
+// 中文导读：CLI 入口：参数解析、模式分发；对应上游 upstream main.ts:459-466。
 package cli
 
 import (

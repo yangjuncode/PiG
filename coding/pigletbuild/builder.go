@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：piglet 构建器（BuilderReadiness 自动选择探针）。
 package pigletbuild
 
 import (

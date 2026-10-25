@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——latin1；职责：FromLatin1 is the string Node's fetch (undici) returns from Headers.get for the raw header bytes s: each byte is one code point (Latin-1), so the。
 package jsstring
 
 import (

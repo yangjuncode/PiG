@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/output.ts.
 
+// 中文导读：durable 的 codemode——output；对应上游 packages/durable/src/codemode/output.ts。
 package codemode
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——retention；职责：DocumentCacheSizes is what the document cache holds。
 package session
 
 import (

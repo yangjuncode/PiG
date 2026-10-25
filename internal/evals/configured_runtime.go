@@ -1,3 +1,4 @@
+// 中文导读：评测设施——configured_runtime；对应上游 packages/evals/evals/configured-runtime.ts。
 package evals
 
 // Ports packages/evals/evals/configured-runtime.ts.

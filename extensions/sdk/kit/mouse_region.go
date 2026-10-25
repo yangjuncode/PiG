@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——mouse_region；职责：MouseRegion is pi-tui's MouseRegion(child, onMouse): mouse handling added to。
 package kit
 
 // MouseRegion is pi-tui's MouseRegion(child, onMouse): mouse handling added to

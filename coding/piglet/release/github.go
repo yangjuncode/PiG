@@ -1,3 +1,4 @@
+// 中文导读：Piglet release：GitHub release。
 package release
 
 import (

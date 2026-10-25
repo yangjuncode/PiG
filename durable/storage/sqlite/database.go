@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——database；对应上游 packages/durable/src/storage/sqlite/database.ts。
 // Package sqlite is the portable SQLite storage core of pi-durable: the durable schema, its migrations, and
 // SqliteStorage. The database facade and the migration runner are Chord's (chord/sqlite); durable/storage/sqlite/node
 // and durable/storage/sqlite/cloudflare open storage on Chord's drivers.

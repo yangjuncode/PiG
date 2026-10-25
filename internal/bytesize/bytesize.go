@@ -1,3 +1,4 @@
+// 中文导读：内部包——bytesize。
 // Package bytesize parses the byte sizes PiG commands accept, such as 5GiB.
 package bytesize
 

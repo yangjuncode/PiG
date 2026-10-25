@@ -1,5 +1,6 @@
 //go:build pig_strip_export_html
 
+// 中文导读：CLI 层：export flag。
 package cli
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

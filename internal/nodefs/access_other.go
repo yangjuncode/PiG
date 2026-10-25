@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Node fs 语义——access_other；对应上游 packages/coding-agent/src/utils/shell.ts (the accessSync(path, F_OK) existence check of shellPathExists)。
 package nodefs
 
 import "golang.org/x/sys/unix"

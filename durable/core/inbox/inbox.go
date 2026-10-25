@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——inbox；职责：Def is InboxDoc: one conversation's submissions waiting for a boundary, in ID order. Its value is {items}; an item is。
 // Package inbox is the Session-side submission queue of src/harness/inbox.ts and submissions.ts: the built-in pi.inbox
 // document, the boundaries that place queued items, and admission, abort and withdrawal of submissions. It runs inside a
 // session.Tx and holds no state.

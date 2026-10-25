@@ -1,5 +1,6 @@
 //go:build darwin
 
+// 中文导读：平台原生操作——clipboard_darwin；对应上游 packages/tui/src/native-platform.ts。
 package nativeplatform
 
 // Ports packages/tui/src/native-platform.ts

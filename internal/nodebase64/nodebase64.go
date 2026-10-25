@@ -1,3 +1,4 @@
+// 中文导读：内部包——nodebase64；职责：Decode mirrors Node's Buffer.from(data, "base64"): it accepts the standard and URL-safe alphabets, skips every other character (whitespace included), stop。
 // Package nodebase64 reads base64 text as Node's Buffer.from(text, "base64") does.
 package nodebase64
 

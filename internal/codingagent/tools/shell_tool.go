@@ -1,3 +1,4 @@
+// 中文导读：BashSpawnContext：shell 工具运行上下文（Env 为 KEY=VALUE 项）。
 package tools
 
 import (

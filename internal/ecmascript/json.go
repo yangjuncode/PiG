@@ -1,3 +1,4 @@
+// 中文导读：内部包——json。
 // Package ecmascript preserves JavaScript JSON and string semantics at native boundaries.
 package ecmascript
 

@@ -1,3 +1,4 @@
+// 中文导读：内部包——join；对应上游 Node 24 lib/path.js (24.19, with the reserved device name handling of the CVE-2025-27210 fix) normalize, join, basename and dirname for both flavors; Resolve and IsAbsolute are in nodepath.go。
 package nodepath
 
 import (

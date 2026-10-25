@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——writes。
 // Package writes normalizes durable storage writes for the storage backends.
 package writes
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——encodings；职责：MessageEncoding is a message's encoding as a contextMessages element and, when convertToLlm sends it, its llmMessages element。
 package boundarywire
 
 import (

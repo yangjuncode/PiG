@@ -3,6 +3,7 @@
 // Command abigen writes durable/core/abi/id.go (the abi_id constant the core exports) and durable/core/abi/abi.json (the
 // tables and abi_id the JavaScript hosts read) from the tables in package spec. With -check it fails when either file
 // is stale instead of writing.
+// 中文导读：durable ABI——main。
 package main
 
 import (

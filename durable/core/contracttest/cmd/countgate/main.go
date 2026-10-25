@@ -13,6 +13,7 @@
 //	countgate replay-native FILE         replay the recording through the native core, nothing else (the callgrind subject)
 //
 // Every replay compares each step with the step of the recorded run and stops at the first difference.
+// 中文导读：durable 核心——main；职责：It is the deterministic local replay of a trap: a core that traps or panics on the recorded events does it here, under a。
 package main
 
 import (

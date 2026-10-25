@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——storage；对应上游 packages/durable/src/storage/jsonl/storage.ts。
 // Package jsonl is the portable JSONL implementation of the durable Storage contract: one main commit log and
 // per-document and per-task sidecar logs in one directory, accessed through a file system capability.
 package jsonl

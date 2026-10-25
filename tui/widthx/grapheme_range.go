@@ -1,3 +1,4 @@
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——grapheme_range；对应上游 upstream extractAnsiCode: CSI ends at m|G|K|H|J; OSC/APC end at BEL or。
 package widthx
 
 import (

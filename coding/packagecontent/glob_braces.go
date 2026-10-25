@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：glob 花括号展开。
 package packagecontent
 
 import (

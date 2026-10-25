@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：主题初始化。
 package cli
 
 import (

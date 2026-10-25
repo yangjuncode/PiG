@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：status 命令。
 package cli
 
 // pig additive (D41): Pig adds a side-effect-free aggregate status surface.

@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——node；对应上游 packages/durable/src/storage/jsonl/node.ts。
 // Package node opens JSONL durable storage on the local file system, the Go counterpart of Pi's Node JSONL adapter.
 package node
 

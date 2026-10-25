@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——conformance；对应上游 packages/telemetry/src/testing/conformance.ts。
 package telemetrytest
 
 // Ports packages/telemetry/src/testing/conformance.ts.

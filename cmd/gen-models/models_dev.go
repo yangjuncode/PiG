@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——models_dev；对应上游 packages/ai/scripts/generate-models.ts (models.dev Fireworks and Qwen Token Plan stages)。
 package main
 
 // Ports packages/ai/scripts/generate-models.ts (models.dev Fireworks and Qwen Token Plan stages).

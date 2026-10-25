@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——bash；对应上游 packages/durable/src/tools/bash.ts。
 package tools
 
 import (

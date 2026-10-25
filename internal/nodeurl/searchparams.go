@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——searchparams；职责：FormURLEncode is the application/x-www-form-urlencoded byte serializer that `URLSearchParams.toString()` uses: ASCII alphanumerics and "*-._" stay, a space 。
 package nodeurl
 
 // Implements the serializer and ordered updates of `URLSearchParams` that `url.searchParams.set(...)` applies to a parsed URL.

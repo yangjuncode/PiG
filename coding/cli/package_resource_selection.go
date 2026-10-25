@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 资源选择；对应上游 .upstream/v0.99.1/packages/coding-agent/src/core/package-manager.ts:190-198 (resourcePrecedenceRank)。
 package cli
 
 import (

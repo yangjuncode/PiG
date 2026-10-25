@@ -1,5 +1,6 @@
 //go:build !unix
 
+// 中文导读：命令入口——entrypoint_other。
 package main
 
 import (

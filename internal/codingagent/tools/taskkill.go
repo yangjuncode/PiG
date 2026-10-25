@@ -1,3 +1,4 @@
+// 中文导读：Windows taskkill 封装（utils/shell.ts）。
 package tools
 
 import (

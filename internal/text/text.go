@@ -1,3 +1,4 @@
+// 中文导读：内部包——text；对应上游 upstream stripBom。
 // Package text ports upstream packages/coding-agent/src/utils/text.ts: the
 // leading byte order mark helpers every Pi reader applies before parsing
 // user-authored JSON, markdown, and text files.

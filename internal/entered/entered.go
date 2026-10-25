@@ -1,3 +1,4 @@
+// 中文导读：内部包——entered；职责：AwaitUnless is Await, except that a wait id is in while busy reports true is not counted: busy marks a wait that is。
 // Package entered is the shared mechanism that keeps upstream's start and resume order across goroutines.
 //
 // Upstream code runs on one JavaScript event loop. A function it starts runs synchronously up to its first await

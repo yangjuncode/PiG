@@ -1,3 +1,4 @@
+// 中文导读：durable 的 codemode——jval。
 package codemode
 
 import (

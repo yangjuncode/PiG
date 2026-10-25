@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——language；职责：GetLanguageFromPath is Pi's getLanguageFromPath: the highlight language for the text after the last "." of a path, lower-cased as JavaScript's toLowerCase。
 package sdk
 
 import "strings"

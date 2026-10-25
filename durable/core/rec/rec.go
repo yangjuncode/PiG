@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——rec；职责：Entries are immutable bytes and belong to package history (history.AppendEntryRecord, history.EntryRow). The records。
 // Package rec is the record layer for the records the core rewrites: pi-durable's conversation, task, submission and
 // document records (spec §2, §3.2, §5.1, §6), written in pi-durable main da866ada's shapes and read tolerantly from
 // 1.0.4 and newer stores (CONTRACT section 2.3).

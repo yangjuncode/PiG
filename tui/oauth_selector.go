@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——oauth_selector；职责：AuthMethod is an auth method of a provider option: an ai.APIKeyAuth or ai.OAuthAuth。
 package tui
 
 // oauth_selector.go: auth provider picker overlay.

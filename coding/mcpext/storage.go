@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 存储；对应上游 packages/coding-agent/src/core/auth-storage.ts (AuthStorageBackend,。
 package mcpext
 
 import (

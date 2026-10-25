@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——binary_reader；对应上游 packages/durable/src/env/node.ts (NodeBinaryReader, NodeDirReader and NodeExecutionEnv.openBinaryReader,。
 package node
 
 // Ports packages/durable/src/env/node.ts (NodeBinaryReader, NodeDirReader and NodeExecutionEnv.openBinaryReader,

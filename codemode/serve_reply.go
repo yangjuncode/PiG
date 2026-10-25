@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——serve_reply。
 package codemode
 
 import (

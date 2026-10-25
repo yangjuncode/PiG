@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——durabletest；对应上游 packages/durable/src/testing/types.ts。
 // Package durabletest holds runner-independent conformance cases and benchmark workloads for durable.Storage
 // implementations.
 package durabletest

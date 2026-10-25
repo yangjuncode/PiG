@@ -1,3 +1,4 @@
+// 中文导读：RPC 客户端：`pig --mode rpc` 的 Go 客户端。
 // Package rpcclient is a Go client for `pig --mode rpc`: it spawns the agent
 // in RPC mode and provides a typed API for all operations.
 //

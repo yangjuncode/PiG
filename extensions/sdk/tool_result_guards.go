@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——tool_result_guards。
 package sdk
 
 // Type guards for a tool_result event (Pi core/extensions/types.ts:1315-1338: isBashToolResult ... isLsToolResult, each

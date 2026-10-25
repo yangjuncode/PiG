@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——package_manager；职责：ResolvedResource is Pi's ResolvedResource: a resource path a package or setting contributes, with where it came from。
 package sdk
 
 // ResolvedResource is Pi's ResolvedResource: a resource path a package or setting contributes, with where it came from.

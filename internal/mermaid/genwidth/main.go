@@ -9,6 +9,8 @@
 //
 //	node -e '...'  # (path resolved from coding/upstream.go, see below)
 //	go run ./internal/mermaid/genwidth <path-to-grok-mermaid/src/width-data.ts>
+//
+// 中文导读：mermaid 处理——main。
 package main
 
 import (

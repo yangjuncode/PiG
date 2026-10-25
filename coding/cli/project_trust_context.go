@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：项目信任 context；对应上游 packages/coding-agent/src/cli/project-trust.ts createProjectTrustContext。
 package cli
 
 import (

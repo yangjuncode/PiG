@@ -1,3 +1,4 @@
+// 中文导读：JS 事件循环建模——turns；职责：MacrotaskDone is Macrotask for work whose effect is written after fn returns: fn calls done once it is. The call that releases the callback waits for done b。
 package jsloop
 
 import (

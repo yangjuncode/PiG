@@ -1,3 +1,4 @@
+// 中文导读：JS 语义平价设施——jsparity；职责：It is jv.AppendString, which finds runs that need no escape eight bytes at a time and copies them whole。
 // Package jsparity writes JSON exactly as JavaScript's JSON.stringify writes it. Its primitives are those of durable/core/jv, which the TinyGo
 // Durable core builds; this package is their one entry point for the rest of PiG and adds the forms jv does not need (non-finite numbers,
 // 64-bit integers, booleans, three-state members).

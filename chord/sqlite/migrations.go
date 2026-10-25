@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——migrations；对应上游 packages/chord/src/sqlite/migrations.ts。
 package sqlite
 
 // Ports packages/chord/src/sqlite/migrations.ts

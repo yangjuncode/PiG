@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：piglet 解析。
 package pigletbuild
 
 import (

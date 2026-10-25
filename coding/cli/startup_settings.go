@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：启动设置。
 package cli
 
 import (

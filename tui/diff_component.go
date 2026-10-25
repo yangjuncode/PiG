@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——diff_component；对应上游 upstream components/diff.ts (147 LOC) as a Component wrapper。
 package tui
 
 // diff_component.go: diff display component.

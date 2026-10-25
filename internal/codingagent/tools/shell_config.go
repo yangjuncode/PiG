@@ -12,6 +12,7 @@
 // Upstream never consults $SHELL: the tool runs bash syntax, so the user's
 // login shell (zsh, fish) is not a substitute.
 
+// 中文导读：shell 配置解析（bash 工具与用户 bash 共用）。
 package tools
 
 import (

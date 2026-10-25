@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——guard；对应上游 packages/durable/src/session/session.ts GuardedStorage。
 package session
 
 // Ports packages/durable/src/session/session.ts GuardedStorage.

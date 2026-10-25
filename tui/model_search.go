@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——model_search；职责：ModelSearchItem is the provider, bare id, and optional display name a model。
 package tui
 
 // Model search text builders shared by the /model selector, /scoped-models,

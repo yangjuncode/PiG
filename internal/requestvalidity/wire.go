@@ -1,3 +1,4 @@
+// 中文导读：请求有效性检查——wire；职责：Transcript is Pi's own message contract after transformMessages: results follow the assistant message that called them, with nothing between, and no call。
 package requestvalidity
 
 import (

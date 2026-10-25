@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——frontend；职责：Columns is the terminal width in cells。
 // Package frontend is the contract between PiG's interactive mode and a
 // Piglet frontend member that draws it in place of the ANSI renderer (D91).
 //

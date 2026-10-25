@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——diff_string；对应上游 packages/durable/src/tools/edit-diff.ts (generateDiffString)。
 package tools
 
 // Ports packages/durable/src/tools/edit-diff.ts (generateDiffString).

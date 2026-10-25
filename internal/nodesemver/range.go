@@ -1,3 +1,4 @@
+// 中文导读：内部包——range；职责：ValidRange is validRange(r): the normalized range, or false where it returns null。
 package nodesemver
 
 import (

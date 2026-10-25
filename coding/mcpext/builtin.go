@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：内置 MCP。
 package mcpext
 
 import (

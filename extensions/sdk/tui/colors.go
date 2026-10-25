@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——colors；职责：Color is pi-tui's Color: an [IndexedColor], an [RgbColorValue] or an [OklchColorValue]。
 package tui
 
 import "github.com/MichaelKinsy/PiG/extensions/sdk/tui/internal/engine"

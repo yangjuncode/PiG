@@ -1,5 +1,6 @@
 // Code generated from tui/widthx/frame.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的宽度计算——frame。
 package widthx
 
 // FrameAt returns the rows of a pre-rendered component frame for painting at

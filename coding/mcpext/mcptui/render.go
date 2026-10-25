@@ -1,3 +1,4 @@
+// 中文导读：MCP 终端视图：MCP TUI 渲染；对应上游 the renderers of packages/coding-agent/src/extensions/mcp/tools.ts (renderCall, renderResult)。
 package mcptui
 
 // Ports the renderers of packages/coding-agent/src/extensions/mcp/tools.ts (renderCall, renderResult).

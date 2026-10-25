@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 发布。
 package cli
 
 // pig additive (D18): `pig package publish` is optional sugar over `npm publish`

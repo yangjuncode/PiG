@@ -1,3 +1,4 @@
+// 中文导读：评测设施——suite；职责：Case is one eval case. A returned error fails the case (a Vitest assertion failure)。
 package evals
 
 // The eval suite runner. Pi's evals are vitest-evals suites run by Vitest (describeEval, vitest.evals.config.ts,

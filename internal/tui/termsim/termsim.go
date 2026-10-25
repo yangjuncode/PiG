@@ -1,3 +1,4 @@
+// 中文导读：内部包——termsim；对应上游 only the subset of escape sequences the pi-tui renderer actually。
 // Package termsim is a headless ANSI terminal simulator for byte-level parity
 // testing. It accepts an ANSI byte stream (CSI/SGR/OSC/cursor moves) and
 // reconstructs the final terminal state as a 2D cell grid.

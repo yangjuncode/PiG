@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/rpc/rpc-mode.ts
+// 中文导读：CLI 层：RPC 命令派发；对应上游 packages/coding-agent/src/modes/rpc/rpc-mode.ts。
 package cli
 
 import (

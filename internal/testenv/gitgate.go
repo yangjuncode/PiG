@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——gitgate；职责：GitOp is one git process the code under test starts。
 package testenv
 
 import (

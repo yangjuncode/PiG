@@ -2,6 +2,7 @@
 // same turn; context.AfterFunc runs its callback on another goroutine, so a job queued on the Session line behind the
 // commit that cancels the signal can run first and see the derived context still live.
 
+// 中文导读：durable harness：持久化代理运行的宿主层——signal_link。
 package harness
 
 import (

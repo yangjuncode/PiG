@@ -1,3 +1,4 @@
+// 中文导读：包源解析：源信息。
 package source
 
 // SourceInfo mirrors core/source-info.ts SourceInfo: where a resource, tool or command came from.

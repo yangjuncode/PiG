@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——generation；职责：GenerationDef is the pi.generation definition: first checkpoint {phase: "prepare", attempt: 1}。
 package turn
 
 import (

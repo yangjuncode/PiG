@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——remote；对应上游 packages/codemode/src/runtime/remote.ts (RemoteCodemodeSandboxOptions) and types.ts (CodemodeSandboxBaseOptions)。
 package codemode
 
 import (

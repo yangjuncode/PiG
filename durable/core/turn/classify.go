@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——classify；职责：IsRetryableAssistantError is isRetryableAssistantError: a failed message whose error looks like a transient provider or。
 package turn
 
 import (

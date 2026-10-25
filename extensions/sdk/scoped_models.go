@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——scoped_models；职责：ScopedModel is one resolved model and its optional thinking-level override。
 package sdk
 
 import "encoding/json"

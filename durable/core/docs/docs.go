@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——docs；职责：AgentDef is AgentDoc: the conversation's agent state, rewindable so forks start from the agent at their fork entry. Its。
 // Package docs holds the built-in conversation documents of src/harness/agent.ts and provider.ts that no machine owns:
 // pi.agent and pi.provider, and the conversation-creation step for pi.agent.
 package docs

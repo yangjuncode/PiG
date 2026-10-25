@@ -1,3 +1,4 @@
+// 中文导读：评测设施——vitest_report；职责：ReportCaseStatus is a Vitest assertion status。
 package evals
 
 // Reads the subset of a Vitest JSON report that report.ts consumes through @vitest-evals/core 0.15.0

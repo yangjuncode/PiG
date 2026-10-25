@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——errors。
 package node
 
 import (

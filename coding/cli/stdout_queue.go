@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：stdout 队列；对应上游 packages/coding-agent/src/core/output-guard.ts。
 package cli
 
 // Ports packages/coding-agent/src/core/output-guard.ts

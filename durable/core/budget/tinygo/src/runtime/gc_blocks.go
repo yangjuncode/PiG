@@ -1,5 +1,6 @@
 //go:build gc.conservative || gc.precise
 
+// 中文导读：durable 核心——gc_blocks；职责：Metadata is stored in a special area at the end of the heap, in the area。
 package runtime
 
 // This memory manager is a textbook mark/sweep implementation, heavily inspired

@@ -1,5 +1,6 @@
 // Code generated from tui/alt_screen_keybindings.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——alt_screen_keybindings。
 package engine
 
 // Alt-screen viewport actions added in pi-tui v0.87.1 keybindings.ts. The

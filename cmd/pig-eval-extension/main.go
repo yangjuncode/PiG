@@ -2,6 +2,7 @@
 // the system prompt transform and the custom tools the harness declares, and forwards each call to the harness over
 // the bridge socket (internal/evals/bridge). Run as `pig-eval-extension credential`, it prints the run's API key for
 // the "!" command in the agent's auth.json.
+// 中文导读：命令入口——main。
 package main
 
 import (

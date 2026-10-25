@@ -1,3 +1,4 @@
+// 中文导读：跨平台 spawn——crossspawn。
 // Package crossspawn starts a program the way upstream's spawnProcess does
 // (coding-agent utils/child-process.ts): Node's spawn on Unix, and on Windows
 // the cross-spawn package, which checks shebang interpreters before selecting

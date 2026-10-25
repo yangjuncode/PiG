@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——environ；职责：EnvironHelper is the environment variable that makes a test binary whose。
 package testenv
 
 import (

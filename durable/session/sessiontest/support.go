@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——support；对应上游 packages/durable/test/session-support.ts。
 // Package sessiontest holds the shared Session test support: a controlled
 // memory storage and an opened Session kernel with its publications.
 //

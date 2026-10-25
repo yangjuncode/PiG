@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——publish；对应上游 packages/chord/src/publish.ts: one FIFO queue for every observer notification (state events, shape pushes,。
 package host
 
 // Ports packages/chord/src/publish.ts: one FIFO queue for every observer notification (state events, shape pushes,

@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——terminal_windows。
 package tui
 
 import (

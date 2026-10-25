@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——conversation；职责：UserMessage is upstream UserMessageComponent(text, getMarkdownTheme(),。
 package kit
 
 // The conversation kinds are Pi's conversation components, which Pi exports

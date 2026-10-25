@@ -1,3 +1,4 @@
+// 中文导读：内部包——contentdirs；职责：Keep is how many directories of one base survive eviction, the caller's own included. It covers a stock install, a Piglet Binary and an。
 // Package contentdirs keeps content-addressed directories under a shared config root: one directory per build of an embedded bundle, named
 // <base>-<hash>. PiG builds that share a config root (two installed versions, or stock PiG beside a Piglet Binary) each read and write only their
 // own directory, so no build rewrites another's files or strands its extension builds.

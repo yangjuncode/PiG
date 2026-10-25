@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：glob 过滤。
 package packagecontent
 
 import (

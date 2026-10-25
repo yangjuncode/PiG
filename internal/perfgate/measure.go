@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——measure；职责：Work is the heap allocation of one measured call。
 package perfgate
 
 import (

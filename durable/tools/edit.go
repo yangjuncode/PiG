@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——edit；对应上游 packages/durable/src/tools/edit.ts。
 package tools
 
 import (

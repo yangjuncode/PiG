@@ -1,5 +1,6 @@
 // Ports packages/durable/src/harness/compaction.ts.
 
+// 中文导读：durable harness：持久化代理运行的宿主层——compaction；对应上游 packages/durable/src/harness/compaction.ts。
 package harness
 
 import (

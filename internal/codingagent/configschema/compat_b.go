@@ -1,3 +1,4 @@
+// 中文导读：配置 schema 兼容层 B。
 package configschema
 
 // Mirrors packages/ai/src/providers/compat-schema.ts (second part: Anthropic, Bedrock, Mistral and the merged provider schema).

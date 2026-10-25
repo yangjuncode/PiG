@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——mouse；职责：MouseEvent is pi-tui's TuiMouseEvent: one cell-based pointer event, with。
 package sdk
 
 // Mouse event types, pi-tui's TuiMouseEventType.

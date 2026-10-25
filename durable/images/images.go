@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——images；对应上游 packages/durable/src/images/index.ts。
 // Package images is the image processor of pi-durable: it prepares the images read returns so the model can take them.
 //
 // Ports packages/durable/src/images/index.ts.

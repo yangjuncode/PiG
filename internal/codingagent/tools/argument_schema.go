@@ -1,3 +1,4 @@
+// 中文导读：ArgumentSchema：保留 Pi 工具参数 schema 的 TypeBox 元数据与属性顺序，使序列化回 JSON 时键序与上游一致。
 package tools
 
 import (

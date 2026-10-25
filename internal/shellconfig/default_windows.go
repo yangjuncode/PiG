@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：内部包——default_windows；对应上游 packages/coding-agent/src/utils/shell.ts (getShellConfig, win32 branch)。
 package shellconfig
 
 import (

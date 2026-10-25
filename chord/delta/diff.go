@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——diff；对应上游 packages/chord/src/delta/diff.ts。
 package delta
 
 import (

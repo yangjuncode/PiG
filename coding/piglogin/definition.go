@@ -1,3 +1,4 @@
+// 中文导读：pig 登录样式：登录样式定义。
 package piglogin
 
 import (

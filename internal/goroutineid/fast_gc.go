@@ -1,5 +1,6 @@
 //go:build gc && (linux || darwin) && (amd64 || arm64)
 
+// 中文导读：goroutine id 获取——fast_gc。
 package goroutineid
 
 import (

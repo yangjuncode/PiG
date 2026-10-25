@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——package_npm_metadata；对应上游 packages/coding-agent/src/core/package-manager.ts (GetLatestNpmVersion, shouldUpdateNpmSource, npmHasAvailableUpdate)。
 package packagemanager
 
 import (

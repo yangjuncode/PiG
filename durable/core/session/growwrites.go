@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：durable 核心会话——growwrites。
 package session
 
 import "slices"

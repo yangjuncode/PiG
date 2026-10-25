@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——widget；职责：Wired is a widget node: a node whose wire form is a kind, an optional ID,。
 package kit
 
 // Wired is a widget node: a node whose wire form is a kind, an optional ID,

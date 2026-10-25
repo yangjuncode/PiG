@@ -1,3 +1,4 @@
+// 中文导读：Pi 文件锁——eexist_windows。
 package pilock
 
 import (

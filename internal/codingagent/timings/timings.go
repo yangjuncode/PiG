@@ -1,3 +1,4 @@
+// 中文导读：耗时打点。
 // Package timings is the startup timing instrumentation Pi enables with PI_TIMING=1.
 //
 // Ports packages/coding-agent/src/core/timings.ts

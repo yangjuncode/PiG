@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——session；对应上游 packages/durable/src/session/session.ts。
 // Package session ports the pi-durable Session kernel: one mutation line,
 // the loaded document tracker cache, transactions, document forks, and
 // committed publication and observation.

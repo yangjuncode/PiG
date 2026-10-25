@@ -1,3 +1,4 @@
+// 中文导读：ls 工具（LsTool）：列目录内容。
 package tools
 
 import (

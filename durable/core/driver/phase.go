@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——phase；职责：PhaseEffect is a phase effect (ABI effect 8): the core asks the host to run one phase of a custom task, or its abort。
 package driver
 
 import (

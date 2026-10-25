@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2016, International Business Machines Corporation and others.
 // ICU word.txt rule tailoring; see LICENSES/Unicode-3.0.txt.
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——word_rules。
 package wordsegmenter
 
 import (

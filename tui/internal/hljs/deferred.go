@@ -1,3 +1,4 @@
+// 中文导读：TUI 的 highlight.js 语法高亮移植——deferred。
 package hljs
 
 import (

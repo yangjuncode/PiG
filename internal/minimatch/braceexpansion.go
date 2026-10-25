@@ -1,3 +1,4 @@
+// 中文导读：内部包——braceexpansion；对应上游 brace-expansion 5.0.12 and balanced-match (the packages minimatch 10.2.6 expands braces with)。
 package minimatch
 
 // Ports brace-expansion 5.0.12 and balanced-match (the packages minimatch 10.2.6 expands braces with).

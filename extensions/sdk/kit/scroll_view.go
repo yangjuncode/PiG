@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——scroll_view；职责：ScrollView is pi-tui's ScrollView(child, {follow, primary, overscroll,。
 package kit
 
 // ScrollView is pi-tui's ScrollView(child, {follow, primary, overscroll,

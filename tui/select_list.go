@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——select_list；职责：GetSelectListTheme is the list styling taken from the active theme (theme.ts getSelectListTheme): the selection and。
 package tui
 
 import (

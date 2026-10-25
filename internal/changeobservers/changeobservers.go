@@ -1,3 +1,4 @@
+// 中文导读：内部包——changeobservers；职责：Observers is a set of callbacks that run after a change to the state their owner holds. A registration replaces the list and never edits it, so Notify r。
 // Package changeobservers is the list of callbacks an owner of replicated state runs after the state changes, so the extension host can push it to the runtimes that replicate it.
 package changeobservers
 

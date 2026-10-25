@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——show_images_selector。
 package tui
 
 // showImagesSelectListLayout is SHOW_IMAGES_SELECT_LIST_LAYOUT (show-images-selector.ts:5-8).

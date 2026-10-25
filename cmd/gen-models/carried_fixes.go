@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——carried_fixes；职责：Sha is the Pi commit the rule carries。
 package main
 
 import (

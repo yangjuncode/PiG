@@ -1,3 +1,4 @@
+// 中文导读：配置的模型集合 schema。
 package configschema
 
 // Mirrors packages/coding-agent/src/core/model-config.ts.

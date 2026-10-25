@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——submit；职责：BusyError is Pi's ConversationBusy: a submission reached a busy conversation and was not admitted。
 package inbox
 
 import (

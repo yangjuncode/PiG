@@ -1,3 +1,4 @@
+// 中文导读：内部包——resolve；职责：GoToolchain is one Go installation: a go command and the GOROOT it belongs to。
 package toolchain
 
 import (

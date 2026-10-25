@@ -1,3 +1,4 @@
+// 中文导读：内部包——exp；职责：Exp is Math.exp as V8 computes it: fdlibm's __ieee754_exp (V8 src/base/ieee754.cc exp), including V8's exact result for exp(1). Go's math.Exp uses。
 package jsmath
 
 import "math"

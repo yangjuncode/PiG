@@ -1,3 +1,4 @@
+// 中文导读：评测设施——audit；对应上游 packages/evals/evals/documentation-audit.eval.ts。
 package evalsuites
 
 // Ports packages/evals/evals/documentation-audit.eval.ts.

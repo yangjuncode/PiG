@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——jsstr。
 package history
 
 // JavaScript string operations on WTF-8 bytes (see unescape): concatenation, slicing by UTF-16 unit and trim, used

@@ -1,5 +1,6 @@
 //go:build tinygo
 
+// 中文导读：durable 核心会话——growwrites_tinygo。
 package session
 
 // growWrites leaves writes to grow by append on the TinyGo core: TinyGo's slices.Grow allocates a zeroed temporary of the

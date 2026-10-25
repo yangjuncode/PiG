@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：auth 贡献（provider 登录项）。
 package cli
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——handleryield。
 // Package handleryield carries, through an extension event's dispatch context, the call a host makes when a handler
 // stops running synchronously.
 //

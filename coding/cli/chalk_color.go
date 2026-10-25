@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：chalk 色彩级别判定。
 package cli
 
 import (

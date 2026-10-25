@@ -1,3 +1,4 @@
+// 中文导读：扩展集：extensions 命令；对应上游 .upstream/v0.99.1/packages/coding-agent/src/core/resource-loader.ts:1122-1145 (loadExtensionFactories)。
 // Package extensionset holds the in-process half of the extension set DefaultResourceLoader loads: the inline and built-in extension factories
 // (resource-loader.ts loadExtensionFactories, loadExtensionPaths' `builtin:` branch) and omitReplacedExtensions. The CLI's extension set and
 // coding.DefaultResourceLoader both call it.

@@ -1,3 +1,4 @@
+// 中文导读：Node fs 语义——readdir_windows。
 package nodefs
 
 import "os"

@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——stringify；职责：PlainEnd is the index of the first byte at or after i that a JSON string scan。
 package jv
 
 import (

@@ -3,6 +3,7 @@
 // Subprocess loading consumes the canonical extension set resolved by startup
 // and reuses that same resolver for reload.
 
+// 中文导读：CLI 层：extensions 命令；对应上游 packages/coding-agent/src/main.ts:129-130。
 package cli
 
 import (

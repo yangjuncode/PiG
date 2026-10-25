@@ -1,3 +1,4 @@
+// 中文导读：Node fs 语义——exists_windows；职责：Exists is fs.existsSync: whether name names an existing file system entry, following symbolic links. os.Stat allocates about。
 package nodefs
 
 import (

@@ -12,6 +12,7 @@
 // This is how upstream pi achieves a real blinking terminal cursor at the
 // edit position while also rendering a visible reverse-video cursor cell.
 
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——cursor_marker；对应上游 upstream CURSOR_MARKER constant and TUI.extractCursorPosition。
 package widthx
 
 import "strings"

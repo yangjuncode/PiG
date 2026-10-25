@@ -1,3 +1,4 @@
+// 中文导读：llama 扩展集成。
 package llama
 
 import (

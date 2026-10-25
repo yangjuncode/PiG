@@ -1,3 +1,4 @@
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——grapheme_iter。
 package widthx
 
 import (

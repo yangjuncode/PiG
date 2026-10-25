@@ -7,6 +7,7 @@
 //   - sliceWithWidth      utils.ts:1268
 //   - extractSegments     utils.ts:1014
 
+// 中文导读：Go 扩展 SDK 的宽度计算——slice；对应上游 upstream pi-tui column slicing and overlay-segment extraction。
 package widthx
 
 import (

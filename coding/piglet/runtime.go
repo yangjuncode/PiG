@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：MCP 运行时。
 package piglet
 
 import (

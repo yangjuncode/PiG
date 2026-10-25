@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——schema；对应上游 packages/chord/src/sqlite/schema.ts。
 package sqlite
 
 // Ports packages/chord/src/sqlite/schema.ts

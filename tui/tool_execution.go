@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——tool_execution；对应上游 upstream tool-execution.ts imageComponents/imageSpacers。
 package tui
 
 import (

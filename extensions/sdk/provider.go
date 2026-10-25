@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——provider；职责：Provider is Pi's callable provider object. The ModelRegistry resolves credentials and normalizes transcripts separately from these methods。
 package sdk
 
 import (

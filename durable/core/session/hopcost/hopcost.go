@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心会话——hopcost；职责：GateCapsql is SqliteStorage (storage/sqlite/storage.ts) over the contract gate's capsql piDurableDatabase facade。
 // Package hopcost derives, in microtask ticks, how long Pi's Storage adapters take, so the core can park a line job on a
 // hops chain as long as Pi's job (ABI.md section 5.3).
 //

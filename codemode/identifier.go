@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——identifier；对应上游 packages/codemode/src/identifier.ts。
 package codemode
 
 import "strings"

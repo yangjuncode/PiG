@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——memory；对应上游 packages/telemetry/src/memory.ts。
 package telemetry
 
 // Ports packages/telemetry/src/memory.ts.

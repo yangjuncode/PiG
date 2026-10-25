@@ -6,6 +6,7 @@
 //   - breakLongWord             utils.ts:713
 //   - wrapTextWithAnsi          utils.ts:596
 
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——wrap；对应上游 upstream pi-tui line wrapping with ANSI state preservation。
 package widthx
 
 import (

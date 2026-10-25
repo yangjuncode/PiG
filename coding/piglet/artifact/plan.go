@@ -1,3 +1,4 @@
+// 中文导读：Piglet artifact：artifact 计划。
 // Package artifact defines executable Piglet component plans and artifact records.
 // pig additive (D18): Piglet builds record exact component realization and materialization.
 package artifact

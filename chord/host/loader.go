@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——loader；对应上游 packages/chord/src/loader.ts, the Node facet loader `createHost({ loader: nodeLoader })`, and the nodeLoader。
 package host
 
 // Ports packages/chord/src/loader.ts, the Node facet loader `createHost({ loader: nodeLoader })`, and the nodeLoader

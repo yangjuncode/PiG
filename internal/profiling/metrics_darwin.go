@@ -2,6 +2,7 @@
 
 //go:build darwin
 
+// 中文导读：profiling 设施——metrics_darwin；职责：PeakRSSBytes is the process's peak resident set in bytes, or -1. Darwin's maxRSS starts afresh at exec。
 package profiling
 
 import (

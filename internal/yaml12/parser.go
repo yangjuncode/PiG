@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——parser；对应上游 yaml 2.9.0 src/parse/parser.ts and the token helpers of src/parse/cst.ts. Copyright Eemeli Aro, ISC licence (see lexer.go)。
 package yaml12
 
 import "slices"

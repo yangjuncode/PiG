@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：内部包——writable_unix。
 package pigdocs
 
 import "golang.org/x/sys/unix"

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——scaling；职责：Scaling is the heap allocation of one operation at three sizes a decade apart: N, 10N and 100N。
 package perfgate
 
 import (

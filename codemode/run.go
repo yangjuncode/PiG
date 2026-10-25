@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——run；对应上游 packages/codemode/src/types.ts (CodemodeRun)。
 package codemode
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——detach。
 // Package detach deep-copies the durable records that cross a storage or Harness boundary, so the copy shares no
 // mutable memory with what it was read from.
 package detach

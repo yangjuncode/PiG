@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——errors；对应上游 yaml 2.9.0 src/errors.ts, src/parse/line-counter.ts and the Directives class of src/doc/directives.ts. Copyright Eemeli Aro, ISC licence (see lexer.go)。
 package yaml12
 
 // Ports yaml 2.9.0 src/errors.ts, src/parse/line-counter.ts and the Directives class of src/doc/directives.ts. Copyright Eemeli Aro, ISC licence (see lexer.go).

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：env 守护进程——timer。
 package daemon
 
 import "time"

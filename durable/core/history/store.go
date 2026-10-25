@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——store；职责：ConvRecord is a conversation's immutable identity: its fork parent and its task owner (spec section 2)。
 package history
 
 import (

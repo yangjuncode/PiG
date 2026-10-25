@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——event_message。
 package sdk
 
 // Event payloads arrive as decoded JSON rather than typed structs, because the

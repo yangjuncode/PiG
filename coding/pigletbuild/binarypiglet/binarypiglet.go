@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：binary piglet 构建。
 // Package binarypiglet holds the Piglet and resolution record embedded in a
 // Piglet Binary. A Piglet Binary
 // always bakes the piglet fields needed to assemble the agent (extensions,

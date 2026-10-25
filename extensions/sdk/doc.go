@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——doc。
 // Package sdk provides the Go SDK for building pig subprocess extensions.
 //
 // An extension is a standalone binary that communicates with pig over a Unix

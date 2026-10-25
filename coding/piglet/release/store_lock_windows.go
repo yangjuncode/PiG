@@ -1,3 +1,4 @@
+// 中文导读：Piglet release：release store 锁。
 package release
 
 import (

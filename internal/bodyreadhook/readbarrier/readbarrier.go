@@ -1,3 +1,4 @@
+// 中文导读：body 读取钩子——readbarrier。
 // Package readbarrier synchronizes a test fixture server with the owned provider transport's socket reads. Only tests import it.
 package readbarrier
 

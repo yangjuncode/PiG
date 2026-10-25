@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——remote_env；对应上游 packages/env/src/remote-env.ts。
 package env
 
 // Ports packages/env/src/remote-env.ts

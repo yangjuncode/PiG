@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：测试环境设施——script_other；职责：VerbatimArgs is a no-op: a POSIX exec passes argv without a command line。
 package testenv
 
 import (

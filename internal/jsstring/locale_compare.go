@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——locale_compare；职责：LocaleCompare is `a.localeCompare(b)` under the root locale: punctuation and case are weighed as Node weighs them, `a`。
 package jsstring
 
 import (

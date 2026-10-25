@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——procpolicy；职责：Cap is the most Ps the process runs on outside a parallel section。
 // Package procpolicy is PiG's GOMAXPROCS policy. pig additive (D174): a process whose environment does not set GOMAXPROCS runs with at
 // most Cap Ps (RPCCap in rpc mode), so the streaming hand-offs of a turn do not wake and park idle Ps, and each parallel section of a session
 // load runs at the runtime default width while it lasts.

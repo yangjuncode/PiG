@@ -1,3 +1,4 @@
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——pi_width；职责：JSTrimEnd is String.prototype.trimEnd。
 package widthx
 
 // pi_width.go ports upstream pi-tui's per-grapheme width and grapheme

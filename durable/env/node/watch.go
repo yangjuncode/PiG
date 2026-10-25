@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——watch；对应上游 packages/durable/src/env/node-watch.ts。
 package node
 
 // Ports packages/durable/src/env/node-watch.ts

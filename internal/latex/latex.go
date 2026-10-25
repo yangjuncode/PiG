@@ -1,3 +1,4 @@
+// 中文导读：内部包——latex；对应上游 packages/tui/src/latex.ts。
 // Package latex renders a basic subset of LaTeX math as terminal-friendly
 // Unicode text. It is a faithful port of upstream pi's tui/src/latex.ts:
 // renderLatex returns the rendered string and true, or ("", false) when the

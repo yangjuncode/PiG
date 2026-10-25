@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——txdocs；职责：ChangeKind is the kind of a published change。
 package session
 
 import (

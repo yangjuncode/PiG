@@ -2,6 +2,7 @@
 
 // Command buildcheck links the history package into a program so that TinyGo (-target=wasip1 -scheduler=none),
 // Go wasip1 and native Go build the same source. It derives a small context and exits non-zero on a wrong result.
+// 中文导读：durable 历史存储——main；职责：Go wasip1 and native Go build the same source. It derives a small context and exits non-zero on a wrong result。
 package main
 
 import (

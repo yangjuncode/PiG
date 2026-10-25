@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——engine_wazero。
 package codemode
 
 import (

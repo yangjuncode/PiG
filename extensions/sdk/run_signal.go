@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——run_signal；职责：Signal is upstream's ctx.signal: the cancellation of the run in progress, or nil while no run is active. Every read during one run returns the same c。
 package sdk
 
 import (

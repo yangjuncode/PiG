@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// 中文导读：Go 扩展 SDK 的 JSON 设施——fold；职责：This is inlinable to take advantage of "function outlining"。
 package json
 
 import (

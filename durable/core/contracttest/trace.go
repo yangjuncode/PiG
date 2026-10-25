@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——trace；职责：Param is one bound statement parameter: nil, int64, float64, string or []byte。
 package contracttest
 
 import (

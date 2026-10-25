@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——select_filterable；对应上游 upstream SelectListTruncatePrimaryContext。
 package tui
 
 // FilterableList: vertical select list with a fuzzy filter input.

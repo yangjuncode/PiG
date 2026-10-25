@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——zonenames。
 package yaml12
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——configroot；职责：Resolve is the config root: PIG_HOME, else XDG_CONFIG_HOME/pig, else ~/.pig. An empty variable is ignored and a leading ~ in either is expanded. It。
 // Package configroot resolves PiG's config root, the directory PiG keeps its settings, documentation bundle and state under. It is a leaf package so
 // that code the coding agent imports (the system prompt builder) and the coding agent itself name one directory through one implementation.
 //

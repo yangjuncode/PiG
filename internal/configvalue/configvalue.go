@@ -1,3 +1,4 @@
+// 中文导读：配置值桥——configvalue；职责：ResolveUncached is Resolve but skips the !cmd cache。
 // Package configvalue mirrors upstream pi's
 // packages/coding-agent/src/core/resolve-config-value.ts (v0.78.1).
 //

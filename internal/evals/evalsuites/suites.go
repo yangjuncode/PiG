@@ -1,3 +1,4 @@
+// 中文导读：评测设施——suites。
 // Package evalsuites holds the eval suites of Pi's packages/evals/evals directory, written against the PiG Session
 // harness. Each suite names the upstream file it ports; prompts say PiG where Pi's say Pi, and the documentation the
 // agent reads is PiG's.

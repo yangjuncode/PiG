@@ -1,3 +1,4 @@
+// 中文导读：内部包——lock；职责：WaitObserver is told when an acquisition must wait for another holder. It。
 package pigsdklock
 
 import (

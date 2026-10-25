@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——types；对应上游 packages/telemetry/src/testing/types.ts。
 // Package telemetrytest holds runner-independent conformance cases for telemetry.TelemetryContext adapters.
 package telemetrytest
 

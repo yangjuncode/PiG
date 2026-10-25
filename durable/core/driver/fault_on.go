@@ -3,6 +3,7 @@
 
 //go:build pigfault
 
+// 中文导读：durable 核心驱动——fault_on；职责：OpenHarnessFault is OpenHarness with a hook that runs on the owner goroutine before the store applies each commit of a step。
 package driver
 
 import (

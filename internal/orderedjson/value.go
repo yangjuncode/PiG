@@ -1,3 +1,4 @@
+// 中文导读：保序 JSON——value；职责：Marshal is json.Marshal without HTML escaping. A MarshalJSON method returns text the encoder that called it then writes as it is or HTML-escapes as it。
 package orderedjson
 
 import (

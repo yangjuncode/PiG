@@ -1,5 +1,6 @@
 //go:build pig_strip_word_dictionaries
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——dictionaries_off。
 package wordsegmenter
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

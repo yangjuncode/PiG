@@ -1,3 +1,4 @@
+// 中文导读：Node errno 语义——posix_linux。
 package nodeerrno
 
 import "syscall"

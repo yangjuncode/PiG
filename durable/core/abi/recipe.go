@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——recipe；职责：MaxRecipeID is the largest conversation or entry id a range can name; a request whose ids exceed it carries its messages。
 package abi
 
 import (

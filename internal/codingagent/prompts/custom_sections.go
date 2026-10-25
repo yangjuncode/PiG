@@ -1,3 +1,4 @@
+// 中文导读：系统提示词的自定义节。
 package prompts
 
 import (

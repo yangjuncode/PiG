@@ -1,3 +1,4 @@
+// 中文导读：Piglet 签名：验签缓存。
 package signature
 
 import (

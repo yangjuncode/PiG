@@ -1,3 +1,4 @@
+// 中文导读：平台原生操作——clipboard_dib。
 package nativeplatform
 
 import (

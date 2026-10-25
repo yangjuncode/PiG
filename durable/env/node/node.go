@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——node；对应上游 packages/durable/src/env/node.ts。
 // Package node is the local execution environment of pi-durable: NodeExecutionEnv runs on the host file system and
 // shell. It is a separate package, as upstream's env/node subpath, so the portable env package loads no host package.
 package node

@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——globset；对应上游 the glob dialect of globset 0.4.20 (glob.rs: GlobBuilder with literal_separator and backslash_escape on, case。
 package daemon
 
 // Ports the glob dialect of globset 0.4.20 (glob.rs: GlobBuilder with literal_separator and backslash_escape on, case

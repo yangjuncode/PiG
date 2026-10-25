@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——cloudflare；对应上游 packages/codemode/src/cloudflare.ts. Pi's entry imports `cloudflare:workers`, which exists only inside a Worker; here the。
 // Package cloudflare is the Cloudflare entry of codemode: the remote end of a remote sandbox as a Durable Object, and the inline
 // sandbox with the QuickJS module the host bundled.
 //

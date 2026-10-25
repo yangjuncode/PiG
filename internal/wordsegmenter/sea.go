@@ -5,6 +5,7 @@
 // ICU DictionaryBreakEngine, PossibleWord and Thai/Lao/Khmer/BurmeseBreakEngine translation.
 // See LICENSES/Unicode-3.0.txt and LICENSES/LicenseRef-ICU-SEA.txt.
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——sea。
 package wordsegmenter
 
 import (

@@ -1,6 +1,7 @@
 // Command check-model-data validates a hydrated upstream model catalog before generation. With -hydrate, it first
 // hydrates the package's provider data from a published typed catalog.
 // Ports packages/ai/scripts/check-model-data.ts and the command of packages/ai/scripts/hydrate-model-catalog.ts.
+// 中文导读：命令入口——main；对应上游 packages/ai/scripts/check-model-data.ts and the command of packages/ai/scripts/hydrate-model-catalog.ts。
 package main
 
 import (

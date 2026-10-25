@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——markdown_spans；职责：Exactness holds while no close code can be formed across two chunks of text and the theme is the stock one; anything else returns to renderInlineTokensSequ。
 package tui
 
 import (

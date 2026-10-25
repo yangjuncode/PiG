@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——project_trust_store；职责：ProjectTrustStoreEntry is Pi's ProjectTrustStoreEntry: the nearest saved decision for a directory。
 package sdk
 
 // ProjectTrustStoreEntry is Pi's ProjectTrustStoreEntry: the nearest saved decision for a directory.

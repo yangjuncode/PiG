@@ -1,3 +1,4 @@
+// 中文导读：命令入口——hydrate；对应上游 packages/ai/scripts/hydrate-model-catalog.ts and groupProviderModelData of packages/ai/scripts/model-data.ts。
 package main
 
 // Ports packages/ai/scripts/hydrate-model-catalog.ts and groupProviderModelData of packages/ai/scripts/model-data.ts.

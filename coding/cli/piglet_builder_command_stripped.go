@@ -1,5 +1,6 @@
 //go:build pig_strip_piglet_builder
 
+// 中文导读：CLI 层：piglet builder 命令。
 package cli
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

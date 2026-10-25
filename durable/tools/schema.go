@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——schema。
 package tools
 
 import (

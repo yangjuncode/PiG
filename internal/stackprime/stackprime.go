@@ -1,3 +1,4 @@
+// 中文导读：栈底标记——stackprime。
 // Package stackprime grows the calling goroutine's stack in one step.
 package stackprime
 

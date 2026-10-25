@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——signal_restore；职责：This is the subset of raw-mode teardown that is safe to run from a signal。
 package tui
 
 import (

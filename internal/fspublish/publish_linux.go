@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：内部包——publish_linux。
 package fspublish
 
 import (

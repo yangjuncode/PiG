@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——editor_autocomplete_units；对应上游 packages/tui/src/components/editor.ts。
 package tui
 
 // Ports packages/tui/src/components/editor.ts

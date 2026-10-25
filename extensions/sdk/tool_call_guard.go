@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——tool_call_guard；职责：IsToolCallEventType is Pi's isToolCallEventType (types.ts): it reports whether a tool_call event is a call of the named tool, built-in or custom. Pi's guard narro。
 package sdk
 
 // IsToolCallEventType is Pi's isToolCallEventType (types.ts): it reports whether a tool_call event is a call of the named tool, built-in or custom. Pi's guard narrows the

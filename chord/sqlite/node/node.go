@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——node；对应上游 packages/chord/src/sqlite/node.ts。
 // Package node adapts a native SQLite connection to the portable Chord SQLite facade. It is the Go counterpart of
 // Pi's node:sqlite driver and the only Chord SQLite package that links a SQLite driver (modernc.org/sqlite, pure Go,
 // CGO-free).

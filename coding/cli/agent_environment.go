@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：代理环境变量准备。
 package cli
 
 import (

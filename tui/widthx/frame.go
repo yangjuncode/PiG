@@ -1,3 +1,4 @@
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——frame。
 package widthx
 
 // FrameAt returns the rows of a pre-rendered component frame for painting at

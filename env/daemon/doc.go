@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——doc；对应上游 packages/env/daemon/src/main.rs。
 // Package daemon is pi-env's daemon: it gives a Pi Durable host an execution environment on this machine over a
 // framed protocol on stdin and stdout, usually started through ssh as `pi-env serve --token <hex>`.
 //

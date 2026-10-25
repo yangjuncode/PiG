@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——node；对应上游 packages/durable/src/storage/sqlite/node.ts。
 // Package node opens durable storage on a native SQLite connection. The driver is Chord's (chord/sqlite/node, Pi's
 // @earendil-works/chord/sqlite/node); this package re-exports it and adds the durable storage opener, as Pi's
 // packages/durable/src/storage/sqlite/node.ts does.

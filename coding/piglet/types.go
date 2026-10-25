@@ -7,6 +7,7 @@
 //
 // Piglet is the agent-author scoping mechanism. A hosting platform may apply
 // an additional administrative policy ceiling without rewriting the Piglet.
+// 中文导读：Piglet 子系统：Piglet YAML schema 类型与解析。
 package piglet
 
 import (

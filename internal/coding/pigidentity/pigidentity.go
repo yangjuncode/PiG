@@ -1,3 +1,4 @@
+// 中文导读：内部包——pigidentity；职责：AttributionCategory is PI_ATTRIBUTION.categories' one entry, unchanged from Pi。
 // Package pigidentity holds the product identity PiG sends to services in place
 // of Pi's.
 //

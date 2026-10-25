@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——declare；对应上游 packages/chord/src/declare.ts: what a factory declares through self besides state cells, the shapes of。
 package host
 
 // Ports packages/chord/src/declare.ts: what a factory declares through self besides state cells, the shapes of

@@ -5,6 +5,8 @@
 //	go run ./cmd/gen-models \
 //	  -src .upstream/current/packages/ai/src/models.generated.ts \
 //	  -out ai/models_generated.go
+//
+// 中文导读：模型目录生成器——main；职责：Record is the entry's JSON as the catalog data spells it, compacted: Pi's model object, member order included。
 package main
 
 import (

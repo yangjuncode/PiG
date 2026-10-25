@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：组件计划。
 package pigletbuild
 
 import (

@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：跨平台 spawn——crossspawn_other。
 package crossspawn
 
 import (

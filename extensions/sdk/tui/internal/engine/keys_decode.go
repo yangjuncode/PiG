@@ -1,5 +1,6 @@
 // Code generated from tui/keys_decode.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——keys_decode；对应上游 the printable CSI-u / modifyOtherKeys decoding slice from。
 package engine
 
 // keys_decode.go: printable key decoding helpers for TUI components.

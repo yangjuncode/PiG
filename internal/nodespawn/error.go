@@ -1,3 +1,4 @@
+// 中文导读：Node 进程 spawn——error；职责：Error is the error Node's child_process.spawn(file, args) reports for a。
 package nodespawn
 
 import "syscall"

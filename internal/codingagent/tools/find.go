@@ -1,3 +1,4 @@
+// 中文导读：find 工具（FindGlobOptions）：glob 文件查找，镜像上游 find.ts。
 package tools
 
 import (

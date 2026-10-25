@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——handles；职责：Obj is a draft handle of a JSON object. It is usable only while its change。
 package delta
 
 import (

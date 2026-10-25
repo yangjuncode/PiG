@@ -1,5 +1,6 @@
 //go:build !pig_strip_llama_cpp
 
+// 中文导读：CLI 层：llama 命令；对应上游 .upstream/v1.1.0/packages/coding-agent/src/extensions/llama/index.ts (registerProvider, registerCommand "llama")。
 package cli
 
 import (

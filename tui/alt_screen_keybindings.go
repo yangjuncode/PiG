@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——alt_screen_keybindings。
 package tui
 
 // Alt-screen viewport actions added in pi-tui v0.87.1 keybindings.ts. The

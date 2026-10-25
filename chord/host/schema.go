@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——schema；对应上游 packages/chord/src/schema.ts。
 package host
 
 // Ports packages/chord/src/schema.ts.

@@ -1,3 +1,4 @@
+// 中文导读：跨平台 spawn——windows_shell。
 package crossspawn
 
 import (

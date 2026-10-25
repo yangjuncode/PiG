@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——tojs；对应上游 yaml 2.9.0 src/public-api.ts parse, src/doc/Document.ts toJS, src/nodes/{toJS,Alias,addPairToJSMap}.ts and the toJSON methods of the core nodes. Copyright Eemeli Aro, ISC licence (see lexer.go)。
 package yaml12
 
 // Ports yaml 2.9.0 src/public-api.ts parse, src/doc/Document.ts toJS, src/nodes/{toJS,Alias,addPairToJSMap}.ts and the toJSON methods of the core nodes. Copyright Eemeli Aro, ISC licence (see lexer.go).

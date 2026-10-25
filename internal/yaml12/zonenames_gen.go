@@ -2,6 +2,7 @@
 
 // Node v24.22.1, ICU 78.3, tz 2026e.
 
+// 中文导读：YAML 1.2 解析——zonenames_gen。
 package yaml12
 
 var zoneTimelines = []zoneTimeline{

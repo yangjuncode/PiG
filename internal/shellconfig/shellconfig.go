@@ -1,3 +1,4 @@
+// 中文导读：内部包——shellconfig；对应上游 packages/coding-agent/src/utils/shell.ts (isLegacyWslBashPath)。
 // Package shellconfig resolves the bash shell PiG runs commands through,
 // mirroring upstream packages/coding-agent/src/utils/shell.ts getShellConfig
 // and getBashShellConfig. Upstream never consults $SHELL: commands use bash

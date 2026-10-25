@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：渲染溢出处理。
 package cli
 
 import (

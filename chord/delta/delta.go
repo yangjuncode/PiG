@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——delta；职责：JsonValue is a strict JSON value。
 // Package delta ports @earendil-works/chord/delta (packages/chord/src/delta): immutable JSON revisions, exact operation batches for ordered replicas, the operation applier, the path-interning wire codec, revision diffing, and the revision tracker.
 //
 // A JSON value is nil, bool, float64, string, []any, or *chordjson.Object, an object that keeps JavaScript's property order; chordjson.Decode produces that representation. Immutability is an ownership contract: nothing is frozen or copied defensively, so an illegal mutation silently corrupts state.

@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——unified_patch；对应上游 packages/durable/src/tools/edit-diff.ts (generateUnifiedPatch)。
 package tools
 
 // Ports packages/durable/src/tools/edit-diff.ts (generateUnifiedPatch).

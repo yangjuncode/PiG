@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——manager_lock；职责：ProcessLock is manager.ts processLock(name): a process lock owned by the kernel for the holder's lifetime. An。
 package host
 
 import (

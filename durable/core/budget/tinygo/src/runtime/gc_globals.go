@@ -1,5 +1,6 @@
 //go:build (baremetal || tinygo.wasm) && !uefi
 
+// 中文导读：durable 核心——gc_globals。
 package runtime
 
 import "runtime/volatile"

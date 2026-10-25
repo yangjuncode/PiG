@@ -3,6 +3,7 @@
 
 //go:build unix
 
+// 中文导读：durable SQL 宿主——rusage_unix。
 package main
 
 import (

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：profiling 设施——metrics_stats。
 package profiling
 
 import "sync/atomic"

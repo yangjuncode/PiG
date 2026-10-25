@@ -1,3 +1,4 @@
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——widthx；对应上游 packages/tui/src/utils.ts。
 // Package widthx implements Pi's terminal width, grapheme and ANSI operations with JavaScript UTF-16 semantics.
 // Ports packages/tui/src/utils.ts
 package widthx

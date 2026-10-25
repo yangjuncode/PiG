@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——terminal_exit_restore；对应上游 packages/tui/src/terminal.ts (Terminal.restoreOnExit, ProcessTerminal.restoreOnExit),。
 package tui
 
 // Ports packages/tui/src/terminal.ts (Terminal.restoreOnExit, ProcessTerminal.restoreOnExit),

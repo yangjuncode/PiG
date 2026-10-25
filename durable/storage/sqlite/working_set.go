@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——working_set；职责：DefaultWorkingSetBytes is the default bound on the decoded entries a SqliteStorage retains。
 package sqlite
 
 import (

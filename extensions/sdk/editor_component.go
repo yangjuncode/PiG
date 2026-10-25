@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——editor_component；职责：EditorComponent is the editor an extension installs with。
 package sdk
 
 import (

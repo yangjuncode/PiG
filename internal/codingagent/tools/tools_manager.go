@@ -1,3 +1,4 @@
+// 中文导读：fd/rg 安装器：内置工具依赖的外部二进制管理。
 // Package tools: fd/rg installer.
 //
 // This file ports the download/extract pipeline from upstream

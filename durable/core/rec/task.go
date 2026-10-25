@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——task；职责：Task is a task record (spec §5.1 TaskRecord): `{id, conversationId, kind, version, input, owner?, background,。
 package rec
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

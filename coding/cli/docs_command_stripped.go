@@ -1,5 +1,6 @@
 //go:build pig_strip_docs
 
+// 中文导读：CLI 层：docs 命令。
 package cli
 
 import (

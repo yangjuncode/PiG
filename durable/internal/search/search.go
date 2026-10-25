@@ -1,5 +1,6 @@
 // Ports packages/durable/src/search.ts.
 
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——search；对应上游 packages/durable/src/search.ts。
 // Package search ranks tools for code mode's searchTools() and the tool_search tool with BM25.
 package search
 

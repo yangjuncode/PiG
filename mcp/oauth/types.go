@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——types；对应上游 packages/mcp/src/oauth/types.ts。
 package oauth
 
 import (

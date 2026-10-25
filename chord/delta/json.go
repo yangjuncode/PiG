@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——json；职责：JsonObject is a JSON object that keeps JavaScript's property order: array-index keys first in ascending numeric order, then the other keys in insertion o。
 package delta
 
 import (

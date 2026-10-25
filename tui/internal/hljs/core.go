@@ -1,3 +1,4 @@
+// 中文导读：TUI 的 highlight.js 语法高亮移植——core；对应上游 highlight.js 10.7.3 lib/core.js (the compiler, the highlighter and the HTML emitter), the highlighter Pi's packages/coding-agent/src/utils/syntax-highlight.ts drives。
 package hljs
 
 import (

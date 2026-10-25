@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——prompt；职责：Sections is an insertion-ordered string map (a JavaScript Map<string, string>): setting an existing key keeps its。
 package turn
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

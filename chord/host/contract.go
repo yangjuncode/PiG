@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——contract；对应上游 packages/chord/src/contract.ts. The TypeScript static types (ImplementationOf, MembersOf, InputOf, Implementation,。
 package host
 
 // Ports packages/chord/src/contract.ts. The TypeScript static types (ImplementationOf, MembersOf, InputOf, Implementation,

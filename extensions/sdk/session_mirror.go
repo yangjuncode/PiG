@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——session_mirror；职责：Replication is opt-in per extension and starts on the first read: an。
 package sdk
 
 import (

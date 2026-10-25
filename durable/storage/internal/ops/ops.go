@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——ops。
 // Package ops replays stored Chord operation batches for the storage backends.
 package ops
 

@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched；职责：Scheduler is pi-durable's TaskScheduler (harness/scheduler.ts) as a。
 package session
 
 import (

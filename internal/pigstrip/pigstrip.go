@@ -1,3 +1,4 @@
+// 中文导读：pig strip 构建标签——pigstrip；职责：NodeExtensions is the embedded Node runtime that runs TypeScript and。
 // Package pigstrip is the one strip state of a PiG process: the built-ins this
 // process runs without. A Piglet Binary's OFF registration shims record the
 // ones it compiled out from init, and the startup code records every entry of

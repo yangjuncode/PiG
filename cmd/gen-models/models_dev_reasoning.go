@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——models_dev_reasoning。
 package main
 
 import "github.com/MichaelKinsy/PiG/internal/modelgen"

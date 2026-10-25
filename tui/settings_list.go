@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——settings_list；对应上游 upstream pi-tui's SettingsList (settings-list.ts). Layout:。
 package tui
 
 // SettingsList: a two-column settings selector with value cycling.

@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——case；职责：ToLower is String.prototype.toLowerCase: the full Unicode lowercase mapping. Besides the simple per-code-point mapping it maps U+0130 to。
 package jsstring
 
 import (

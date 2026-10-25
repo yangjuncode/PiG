@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Joyent, Inc. and other Node contributors
 // SPDX-License-Identifier: MIT
 
+// 中文导读：跨平台 spawn——win32_resolve。
 package crossspawn
 
 import (

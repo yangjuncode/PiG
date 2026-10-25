@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——child_session；对应上游 packages/coding-agent/src/core/sdk.ts createAgentSession for an extension: a child agent session the host owns for this extension's connection. The extension prompts it, listens to its events, aborts it and disposes it; the host runs the agent loop and calls back into the extension for the tools it serves (customTools). The Node runtime serves Pi's own createAgentSession in the extension process; this is the same call for the native SDKs, with the same observable behavior (`TestChildAgentSessionsAcrossSDKs`)。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：minimatch 移植：glob 匹配引擎。
 package packagecontent
 
 import (

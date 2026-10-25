@@ -1,5 +1,6 @@
 // Code generated from internal/jsstring/case.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 面——case；职责：ToLower is String.prototype.toLowerCase: the full Unicode lowercase mapping. Besides the simple per-code-point mapping it maps U+0130 to。
 package jsstring
 
 import (

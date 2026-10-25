@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：durable Node 环境——watch_fs_linux。
 package node
 
 import "syscall"

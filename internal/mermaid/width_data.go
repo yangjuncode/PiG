@@ -7,6 +7,7 @@
 // Source: grok-mermaid src/width-data.ts (unicode-width crate), the width
 // table pi's bundled grok-mermaid uses. Sorted [lo, hi, width] runs.
 
+// 中文导读：mermaid 处理——width_data。
 package mermaid
 
 var widthRuns = [][3]int32{

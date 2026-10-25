@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——compaction；职责：Policy is the part of the Harness compaction settings that range selection and the thresholds read。
 package history
 
 import (

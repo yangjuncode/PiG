@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——live；职责：LiveDef is LiveDoc. A complete base is stored whenever nothing runs (spec section 8.2): no generation and no running。
 package turn
 
 import (

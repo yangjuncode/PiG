@@ -1,3 +1,4 @@
+// 中文导读：内部包——sdkdir。
 package pigsdklock
 
 import (

@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/describe.ts.
 
+// 中文导读：durable 的 codemode——describe；对应上游 packages/durable/src/codemode/describe.ts。
 package codemode
 
 import (

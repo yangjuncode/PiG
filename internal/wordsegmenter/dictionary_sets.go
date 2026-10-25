@@ -2,6 +2,7 @@
 // Copyright (C) 2006-2016, International Business Machines Corporation and others.
 // ICU CjkBreakEngine and DictionaryBreakEngine character sets; see LICENSES/Unicode-3.0.txt.
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——dictionary_sets。
 // Package wordsegmenter implements word segments used by the terminal editor.
 package wordsegmenter
 

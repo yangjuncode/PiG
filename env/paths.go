@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——paths。
 package env
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——managementhttp；职责：FetchRetryOptions mirrors upstream FetchRetryOptions。
 // Package managementhttp ports upstream coding-agent utils/management-http.ts:
 // a bounded immediate retry for idempotent management requests (tool
 // downloads, release lookups). Agent and model requests must not use it; their

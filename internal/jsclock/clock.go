@@ -1,3 +1,4 @@
+// 中文导读：内部包——clock；职责：DateNow is Date.now(): whole milliseconds since the Unix epoch。
 // Package jsclock is the process clock of JavaScript's Date.now() and performance.now(), with a replaceable source.
 // Upstream tests replace both with vi.spyOn; Go keeps the replacement here so telemetry adapters read the same clock.
 package jsclock

@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——markdown_marked；对应上游 node_modules/marked@18.0.11/src/Lexer.ts:340-531 (inlineTokens), node_modules/marked@18.0.11/src/Tokenizer.ts:14-50,649-1001 (outputLink and the inline tokenizers) and the GFM inline rules of node_modules/marked@18.0.11/src/rules.ts:283-534, the lexer packages/tui/package.json pins for packages/tui/src/components/markdown.ts。
 package tui
 
 // Ports node_modules/marked@18.0.11/src/Lexer.ts:340-531 (inlineTokens), node_modules/marked@18.0.11/src/Tokenizer.ts:14-50,649-1001 (outputLink and the inline tokenizers) and the GFM inline rules of node_modules/marked@18.0.11/src/rules.ts:283-534, the lexer packages/tui/package.json pins for packages/tui/src/components/markdown.ts.

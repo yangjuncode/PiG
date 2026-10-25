@@ -1,5 +1,6 @@
 // Code generated from tui/fuzzy.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——fuzzy；对应上游 packages/tui/src/fuzzy.ts。
 package engine
 
 // Ports packages/tui/src/fuzzy.ts.

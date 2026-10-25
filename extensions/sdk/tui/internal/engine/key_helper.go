@@ -1,5 +1,6 @@
 // Code generated from tui/key_helper.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——key_helper；职责：KeyHelper ports the shape of upstream's Key object (keys.ts:163): named key identifiers for special and symbol keys, and builders。
 package engine
 
 // KeyHelper ports the shape of upstream's Key object (keys.ts:163): named key identifiers for special and symbol keys, and builders

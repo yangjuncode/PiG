@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——wire；职责：Message is a loader's message (a string) or an assistant-message's。
 package kitwire
 
 import "encoding/json"

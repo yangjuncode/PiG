@@ -1,5 +1,6 @@
 // Ports packages/durable/src/tool-search/tool-search.ts and packages/durable/src/tool-search/index.ts.
 
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——toolsearch；对应上游 packages/durable/src/tool-search/tool-search.ts and packages/durable/src/tool-search/index.ts。
 // Package toolsearch is the `tool_search` tool, a copy of the coding agent's: the model searches the deferred tools it is not
 // offered yet, and the matches are loaded with the addTools control, so the next request offers them. Loading writes the
 // conversation's modelTools (its add), so loaded tools stay offered on that branch, also after a compaction.

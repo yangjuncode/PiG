@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——space。
 package jsstring
 
 // IsSpace reports whether r is JavaScript whitespace or a line terminator (the characters String.prototype.trim removes).

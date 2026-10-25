@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——remote_protocol；对应上游 packages/codemode/src/runtime/protocol.ts (VmStartData)。
 package codemode
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——user_bash；职责：BashExecOptions are the options Pi's BashOperations.exec receives (core/tools/bash.ts). OnData receives the command's output as it arrives, one chunk at a time。
 package sdk
 
 import (

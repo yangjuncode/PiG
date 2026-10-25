@@ -1,3 +1,4 @@
+// 中文导读：getTextOutput（render-utils.ts）：工具输出的文本渲染。
 package tools
 
 // Ports packages/coding-agent/src/core/tools/render-utils.ts getTextOutput.

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：扩展升级。
 package cli
 
 import (

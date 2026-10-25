@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/codemode.ts (CodemodeCall).
 
+// 中文导读：durable 的 codemode——call；对应上游 packages/durable/src/codemode/codemode.ts (CodemodeCall)。
 package codemode
 
 import (

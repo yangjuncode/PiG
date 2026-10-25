@@ -3,6 +3,7 @@
 // Inputs: gen/inputs.sha256 sha256 be2031d10dd5be02ea08861f8494a622ce2bc36059514a4b9cb7f1936ff61183.
 // RGI multi-code-point sequences: 2760 (ZWJ file lines 1614, rejected by V8 0).
 
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——unicode_tables。
 package widthx
 
 const unicodeTablesVersion = "unicode 17.0 / get-east-asian-width 1.6.0"

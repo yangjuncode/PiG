@@ -1,3 +1,4 @@
+// 中文导读：unified patch 生成：jsdiff 8.0.4 的逐字节移植。
 package tools
 
 // Byte-exact port of jsdiff 8.0.4's unified-patch generation, matching

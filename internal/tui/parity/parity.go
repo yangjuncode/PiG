@@ -1,3 +1,4 @@
+// 中文导读：内部包——parity。
 // Package parity provides the test harness for TUI byte-level and visible-state
 // parity against upstream pi-tui.
 //

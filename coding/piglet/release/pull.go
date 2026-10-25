@@ -1,3 +1,4 @@
+// 中文导读：Piglet release：release 拉取。
 package release
 
 import (

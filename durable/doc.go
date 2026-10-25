@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——doc；对应上游 packages/durable/src/index.ts。
 // Package durable ports the root module of Pi's @earendil-works/pi-durable: the durable conversation, task, and
 // document runtime types, the ID kinds, the errors, the built-in entry kinds, document and task definitions, and the
 // tool-output truncation helpers.

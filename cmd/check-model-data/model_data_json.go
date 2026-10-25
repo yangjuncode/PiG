@@ -1,3 +1,4 @@
+// 中文导读：命令入口——model_data_json。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——tracker；职责：ErrRevoked is the panic value for any use of a draft handle after its change。
 package delta
 
 import (

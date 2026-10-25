@@ -1,3 +1,4 @@
+// 中文导读：JS JSON.stringify 语义——json；对应上游 packages/ai/src/utils/error-body.ts (safeJsonStringify for JSON input)。
 // Package jsonstringify implements ECMAScript serialization for parsed JSON data.
 package jsonstringify
 

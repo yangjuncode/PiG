@@ -1,3 +1,4 @@
+// 中文导读：Piglet 签名：签名信任。
 package signature
 
 import (

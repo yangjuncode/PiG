@@ -1,3 +1,4 @@
+// 中文导读：TUI 的 highlight.js 语法高亮移植——registry；职责：Registry is one highlight.js instance: its registered languages, aliases and every grammar object they reach. Highlighting compiles and mutates those o。
 package hljs
 
 import (

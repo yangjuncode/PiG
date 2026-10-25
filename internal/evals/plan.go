@@ -1,3 +1,4 @@
+// 中文导读：评测设施——plan；对应上游 packages/evals/src/plan.ts。
 // Package evals ports Pi's documentation eval tooling: the task plan, the comparison command and its Docker runner, the
 // paired comparison report, the harness's prompt and environment helpers, and the fixtures the evals use.
 //

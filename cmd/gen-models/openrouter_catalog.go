@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——openrouter_catalog；对应上游 packages/ai/scripts/openrouter-catalog.ts。
 package main
 
 // Ports packages/ai/scripts/openrouter-catalog.ts.

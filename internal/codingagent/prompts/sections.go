@@ -1,3 +1,4 @@
+// 中文导读：系统提示词的节组装。
 package prompts
 
 import "github.com/MichaelKinsy/PiG/ai"

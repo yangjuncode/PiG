@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：内部包——identity_unix。
 package installchange
 
 import (

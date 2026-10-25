@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：extensions/sdk-rs 的 bundle。
 // Package rssdk carries the Rust extension SDK sources so an installed pig can
 // stage a buildable copy to disk. See extensions/sdk/bundle.go for the rationale;
 // this is the Rust analogue. The Rust SDK is a cargo crate, not a Go package, so

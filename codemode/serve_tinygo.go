@@ -1,5 +1,6 @@
 //go:build tinygo
 
+// 中文导读：codemode：代码模式子系统——serve_tinygo；对应上游 packages/codemode/src/runtime/remote.ts (serveCodemodeRemote) for the host that cannot block on an exchange。
 package codemode
 
 import (

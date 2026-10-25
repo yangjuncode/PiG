@@ -1,3 +1,4 @@
+// 中文导读：主题 schema。
 package configschema
 
 import "github.com/MichaelKinsy/PiG/tui"

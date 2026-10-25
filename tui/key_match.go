@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——key_match；职责：This is the Go port of upstream Pi's matchesKey(data, keyId)。
 package tui
 
 // key_match.go: Dynamic key matching, ported from upstream Pi's keys.ts.

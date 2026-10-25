@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：env 环境子系统——fifo_nonblock_unix。
 package env
 
 import "syscall"

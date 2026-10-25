@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——origin；职责：HoldOrigin is the hold of an event that waits for rows (Session.dispatch)。
 package core
 
 import "github.com/MichaelKinsy/PiG/durable/core/abi"

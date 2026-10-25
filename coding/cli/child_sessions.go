@@ -1,5 +1,6 @@
 // pig-specific: serves createAgentSession (packages/coding-agent/src/core/sdk.ts) to the Go, Python and Rust extension SDKs.
 
+// 中文导读：CLI 层：子会话管理。
 package cli
 
 import (

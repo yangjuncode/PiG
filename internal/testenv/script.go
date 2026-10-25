@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——script；职责：ShebangInterpreter is the program a script's #! line runs, with /usr/bin/env。
 package testenv
 
 import (

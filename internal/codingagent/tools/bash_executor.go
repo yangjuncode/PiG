@@ -9,6 +9,7 @@
 // The LLM bash tool does not use this path: like upstream it feeds raw output
 // to an OutputAccumulator (shell_tool.go). User bash sanitizes each decoded
 // chunk for display and storage.
+// 中文导读：bash 命令执行器（ExecuteBash）：spawn、流式输出、超时与终止处理。
 package tools
 
 import (

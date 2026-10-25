@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——npm_metadata；职责：GetNpmVersionRange is Pi's getNpmVersionRange: the node-semver range a selector denotes, or "" when it is absent or not a valid npm range, such as a dist tag。
 package packagemanager
 
 import (

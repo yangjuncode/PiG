@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——types；对应上游 packages/codemode/src/types.ts (CodemodeTool). Go mechanics, not divergences: the arguments and the result。
 package codemode
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——index；对应上游 packages/durable/src/tools/index.ts。
 // Package tools is the coding tools of pi-durable: read, write, edit and bash
 // over an execution environment. Nothing installs them automatically.
 //

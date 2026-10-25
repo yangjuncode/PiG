@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——install_options。
 package packagemanager
 
 // InstallOption adjusts how one managed install runs its package manager. With no option an install behaves as Pi's does.

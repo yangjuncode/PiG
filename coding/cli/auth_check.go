@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：auth 检查；对应上游 upstream packages/coding-agent/src/cli/auth-check.ts。
 package cli
 
 // Mirrors upstream packages/coding-agent/src/cli/auth-check.ts.

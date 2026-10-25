@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// 中文导读：Go 扩展 SDK 的 JSON 设施——stream；职责：This is the data already consumed from the input [io.Reader],。
 package json
 
 import (

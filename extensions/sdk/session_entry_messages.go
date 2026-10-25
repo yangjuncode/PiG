@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——session_entry_messages；职责：SessionEntryToContextMessages is Pi's sessionEntryToContextMessages (core/session-manager.ts, exported from index.ts): the LLM and runtime messages a session entry。
 package sdk
 
 import (

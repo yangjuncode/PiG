@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：print 模式（非交互一次性输出）。
 package cli
 
 import (

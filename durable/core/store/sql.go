@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 存储——sql。
 package store
 
 import "github.com/MichaelKinsy/PiG/durable/core/history"

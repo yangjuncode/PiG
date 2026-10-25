@@ -1,3 +1,4 @@
+// 中文导读：durable harness：持久化代理运行的宿主层——assistant_calls；职责：AssistantToolCall implements durable.AssistantCallReader: the first read of an assistant entry copies it from storage,。
 package harness
 
 import (

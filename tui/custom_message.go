@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——custom_message；对应上游 upstream packages/coding-agent/src/modes/interactive/components/custom-message.ts。
 package tui
 
 // custom_message.go: renders custom extension messages.

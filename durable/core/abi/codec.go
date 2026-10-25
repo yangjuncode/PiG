@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——codec；职责：Value is a bound parameter or a returned column (ABI section 4.3). Kind comes last, so the value is 32 bytes on wasm32。
 package abi
 
 import (

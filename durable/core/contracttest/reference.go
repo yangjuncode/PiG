@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——reference；职责：ReferenceEncode is a Go model of JSON.stringify(JSON.parse(in)) for the JSON the core writes (CONTRACT 3.1, 5.6). It exists so a。
 package contracttest
 
 import (

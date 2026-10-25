@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——stringify；职责：UnescapeForStringifyInPlace is UnescapeForStringify written over encoded itself: each replacement is shorter than the escape it。
 package jsstring
 
 import (

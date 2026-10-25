@@ -8,6 +8,7 @@
 //   - breakLongWord             utils.ts:713
 //   - wrapTextWithAnsi          utils.ts:596
 
+// 中文导读：Go 扩展 SDK 的宽度计算——wrap；对应上游 upstream pi-tui line wrapping with ANSI state preservation。
 package widthx
 
 import (

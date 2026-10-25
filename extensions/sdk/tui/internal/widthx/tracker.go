@@ -6,6 +6,7 @@
 // preserved across line breaks (wrapTextWithAnsi) and across overlay splices
 // (extractSegments). Pure state machine: no I/O.
 
+// 中文导读：Go 扩展 SDK 的宽度计算——tracker；对应上游 upstream `AnsiCodeTracker` (utils.ts:302)。
 package widthx
 
 import (

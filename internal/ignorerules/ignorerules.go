@@ -1,3 +1,4 @@
+// 中文导读：内部包——ignorerules；职责：Rule is one pattern from a .gitignore, .ignore, or .fdignore file, prefixed with its directory relative to the walk root. Its immutable matcher bel。
 // Package ignorerules applies .gitignore, .ignore, and .fdignore files the way
 // upstream Pi's package manager does when it discovers package resources.
 package ignorerules

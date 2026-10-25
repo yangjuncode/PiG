@@ -1,3 +1,4 @@
+// 中文导读：JS 事件循环建模——loop。
 package jsloop
 
 import "sync"

@@ -1,3 +1,4 @@
+// 中文导读：MCP（Model Context Protocol）客户端——auth_provider；对应上游 packages/mcp/src/auth-provider.ts。
 package mcp
 
 import (

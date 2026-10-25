@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——clone。
 package storage
 
 import (

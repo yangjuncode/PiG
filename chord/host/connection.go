@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——connection；对应上游 packages/chord/src/connection.ts: one end of a link on a host, the relay of holds between links, and the。
 package host
 
 // Ports packages/chord/src/connection.ts: one end of a link on a host, the relay of holds between links, and the

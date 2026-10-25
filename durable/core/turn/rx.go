@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——rx。
 package turn
 
 // A small backtracking matcher for the case-insensitive JavaScript patterns of pi-ai's overflow and retry classifiers

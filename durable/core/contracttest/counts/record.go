@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——record；职责：ItemABI is the abi_id the core spoke: 64 ASCII bytes, first in the file。
 // Package counts is the Durable core's deterministic count gate (Durable plan 2, item 9) and its flight recorder format.
 //
 // A run of the production native stack (sqlhost on SQLite, the driver, the bench workload on a fixture of N turns) is

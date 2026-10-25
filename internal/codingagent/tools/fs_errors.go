@@ -1,3 +1,4 @@
+// 中文导读：NodeErrorCode：把 Go 文件系统/spawn 错误映射为 Node 的 error.code。
 package tools
 
 import (

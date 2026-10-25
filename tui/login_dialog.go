@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——login_dialog；对应上游 packages/coding-agent/src/modes/interactive/components/login-dialog.ts。
 package tui
 
 // Ports packages/coding-agent/src/modes/interactive/components/login-dialog.ts

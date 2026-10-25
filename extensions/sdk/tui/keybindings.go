@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——keybindings；职责：Keybinding is pi-tui's Keybinding: a keybinding id such as "tui.select.confirm" or "app.interrupt"。
 package tui
 
 import "github.com/MichaelKinsy/PiG/extensions/sdk/tui/internal/engine"

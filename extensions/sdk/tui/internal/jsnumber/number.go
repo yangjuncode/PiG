@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——number；职责：Round is Math.round: the integral value nearest value, with halves toward +Infinity. A value in [-0.5, 0) rounds to -0, one in。
 // Package jsnumber holds the two JavaScript Number operations the pi-tui ports need.
 package jsnumber
 

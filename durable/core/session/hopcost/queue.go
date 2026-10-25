@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心会话——queue；职责：Time is the handler's virtual tick (core.handler.vnow): a hops chain that began at tick t ends at t+n, and a chain's。
 package hopcost
 
 // The capsql facade's serial queue (durable/contract/lib/capsql.mjs piDurableDatabase :141-166). The reference's Storage runs

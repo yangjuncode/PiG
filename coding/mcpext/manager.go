@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 扩展管理器（extensions/mcp/index.ts）；对应上游 the manager of packages/coding-agent/src/extensions/mcp/index.ts; the terminal view of ui.ts is package mcptui。
 package mcpext
 
 // Ports the manager of packages/coding-agent/src/extensions/mcp/index.ts; the terminal view of ui.ts is package mcptui.

@@ -1,3 +1,4 @@
+// 中文导读：内部包——upstreammirror；职责：Fix is the command that points .upstream/current at the pinned build。
 // Package upstreammirror checks that a checkout's Pi source mirror, .upstream/current, is the Pi build a ledger version names.
 // Parity tests and the ledger generators read Pi's source from that mirror and trust it: a missing or stale mirror silently
 // validates PiG against the wrong Pi (a 0.79.4 mirror hid that session_info_changed graduated in 0.80.3; an interface ledger

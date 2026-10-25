@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——builder；职责：EffectBare is Effect for an effect the host starts in no context: a hops chain runs no host code, and the core keeps the origin of。
 package abi
 
 // Builder accumulates the step of one event. Every core package that commits, reads, publishes or starts an effect

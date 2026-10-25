@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——config_selector；对应上游 upstream config-selector.ts (592 LOC)。
 package tui
 
 // config_selector.go: resource configuration picker.

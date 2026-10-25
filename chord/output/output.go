@@ -1,5 +1,6 @@
 // Ports packages/chord/src/output.ts.
 
+// 中文导读：chord 子系统——output；对应上游 packages/chord/src/output.ts。
 package output
 
 import (

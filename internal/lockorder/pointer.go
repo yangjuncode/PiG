@@ -1,3 +1,4 @@
+// 中文导读：内部包——pointer。
 package lockorder
 
 import "unsafe"

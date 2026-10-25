@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：--diagnose 诊断输出。
 package cli
 
 import (

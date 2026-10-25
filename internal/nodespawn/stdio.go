@@ -1,3 +1,4 @@
+// 中文导读：Node 进程 spawn——stdio；职责：Stdio is one entry of the stdio option of Node's spawn, as libuv's uv_spawn。
 package nodespawn
 
 // Stdio is one entry of the stdio option of Node's spawn, as libuv's uv_spawn

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：strip 特性报告。
 package cli
 
 import (

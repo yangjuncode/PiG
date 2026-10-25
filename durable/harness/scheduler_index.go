@@ -1,3 +1,4 @@
+// 中文导读：durable harness：持久化代理运行的宿主层——scheduler_index；对应上游 packages/durable/src/harness/scheduler.ts (the in-memory indexes of upstream cb437549): the ownership tree。
 package harness
 
 // Ports packages/durable/src/harness/scheduler.ts (the in-memory indexes of upstream cb437549): the ownership tree

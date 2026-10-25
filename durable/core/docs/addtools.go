@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——addtools；职责：AddTools is agent.ts addTools, the effect of a tool round's `addTools` controls, applied to `tools` and `modelTools`: an。
 package docs
 
 import (

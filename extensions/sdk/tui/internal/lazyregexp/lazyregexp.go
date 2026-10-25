@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——lazyregexp；职责：Regexp is a lazily compiled *regexp.Regexp。
 // Package lazyregexp compiles a package-level regular expression when it is first used.
 package lazyregexp
 

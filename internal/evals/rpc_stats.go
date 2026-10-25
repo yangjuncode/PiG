@@ -1,3 +1,4 @@
+// 中文导读：评测设施——rpc_stats；职责：AgentDirEnvironment is the environment variable that selects the agent directory (D2)。
 package evals
 
 import (

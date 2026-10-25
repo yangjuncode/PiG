@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 子命令集；对应上游 upstream `source === "self" || source === "<app-name>"`。
 package cli
 
 import (

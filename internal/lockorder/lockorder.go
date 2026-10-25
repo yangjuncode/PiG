@@ -1,3 +1,4 @@
+// 中文导读：内部包——lockorder；职责：TryLockAs is TryLock with an explicit class site。
 // Package lockorder is a lock-acquisition-order checker for instrumented test builds.
 //
 // The end-to-end journey harness (test/journeys) rewrites every sync.Mutex and sync.RWMutex of the PiG module into this package's types with a build overlay, so a binary built for a journey records which locks a goroutine holds when it takes another. A cycle in that order graph (lock A taken while holding B on one path, B while holding A on another) is a potential deadlock even when no run hit it. Go's race detector does not report lock-order cycles.

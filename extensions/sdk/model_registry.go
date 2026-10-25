@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——model_registry；职责：TypedModels are the image and classifier models; Models holds the chat models only。
 package sdk
 
 import (

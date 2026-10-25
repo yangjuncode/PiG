@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——boundarywire；职责：Revision is the log's revision, which every append and leaf move advances。
 // Package boundarywire lets the subprocess handlers of one turn_end or agent_before_settle dispatch share the encoding of the context preview.
 //
 // Pi rebuilds the preview after every handler (runner.ts emitBoundary) and hands each handler the object. A subprocess handler receives it as JSON, so without sharing every handler encodes the whole projected history again. The Session records each preview it builds with the inputs it was projected from; a preview built from the same inputs as the one a subprocess handler already encoded has the same encoding, because each build is a fresh projection of the same session state.

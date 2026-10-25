@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——declarations；对应上游 packages/codemode/src/declarations.ts (DEFAULT_INPUT_SCHEMA_MAX_CHARS)。
 package codemode
 
 import (

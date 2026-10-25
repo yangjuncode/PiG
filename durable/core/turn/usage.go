@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——usage；职责：UsageInitial is the initial value of the pi.usage document: {models: {}, tools: {}}。
 package turn
 
 import (

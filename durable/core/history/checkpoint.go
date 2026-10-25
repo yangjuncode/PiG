@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——checkpoint；职责：SummaryRequest is the pinned summarization request of the summarize and retry phases。
 package history
 
 // The pi.compaction task checkpoint (src/harness/compaction.ts CompactionCheckpoint, spec section 8.7):

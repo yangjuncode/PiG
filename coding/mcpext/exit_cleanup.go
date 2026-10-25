@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 退出清理。
 package mcpext
 
 import (

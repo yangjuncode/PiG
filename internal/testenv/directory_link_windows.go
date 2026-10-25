@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：测试环境设施——directory_link_windows。
 package testenv
 
 import (

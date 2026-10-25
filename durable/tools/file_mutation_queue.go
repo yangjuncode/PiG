@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——file_mutation_queue；对应上游 packages/durable/src/tools/file-mutation-queue.ts。
 package tools
 
 import (

@@ -1,5 +1,6 @@
 //go:build !pig_strip_extension_sdk_go
 
+// 中文导读：CLI 层：扩展升级分析。
 package cli
 
 import (

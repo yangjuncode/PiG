@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——settle_gate；职责：SettleSlot is one waiter's place in a SettleGate。
 package jsloop
 
 import "sync"

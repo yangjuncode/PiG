@@ -19,6 +19,7 @@
 //
 // This is the official profiling mechanism. Do NOT add ad-hoc
 // fmt.Fprintf timing to main.go or interactive.go: use this.
+// 中文导读：CLI 层：启动跟踪。
 package cli
 
 import (

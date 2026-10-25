@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——workerlauncher；对应上游 packages/codemode/src/runtime/host.ts (workerLauncher) and packages/codemode/src/runtime/worker.ts。
 package codemode
 
 import (

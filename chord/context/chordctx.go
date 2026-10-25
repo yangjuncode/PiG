@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——chordctx；职责：Background is Pi's BACKGROUND_CONTEXT: the root context of work that has no caller。
 // Package chordctx ports packages/chord/src/context/index.ts (`@earendil-works/chord/context`) onto context.Context. A chord Context is a Go context: an abort signal is cancellation, with the abort reason carried as the cancellation cause, and `toString` is the context's String method, which prints Pi's text.
 // Background and the placeholder root are Pi's BACKGROUND_CONTEXT and TODO_CONTEXT roots; contexts derived from them by this package print as Pi's contexts do. A context derived from another root, such as context.Background, prints that root's own text first.
 package chordctx

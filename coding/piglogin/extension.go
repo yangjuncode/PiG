@@ -1,3 +1,4 @@
+// 中文导读：pig 登录样式：MCP 扩展入口。
 package piglogin
 
 import (

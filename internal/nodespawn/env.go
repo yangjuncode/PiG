@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright Node.js contributors
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Node 进程 spawn——env；职责：EnvProperty is one property of the object that Node's spawn takes as its env。
 package nodespawn
 
 import (

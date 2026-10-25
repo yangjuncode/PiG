@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——fileurl；职责：Error is an error Node's url.fileURLToPath throws, with its code. URIError。
 package nodeurl
 
 import (

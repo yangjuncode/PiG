@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——json；对应上游 packages/chord/src/json.ts (JsonValue, copyJson, isJsonValue). JsonRepresentation<T> is a compile-time mapped。
 package chord
 
 import (

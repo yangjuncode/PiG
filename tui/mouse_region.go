@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——mouse_region；对应上游 upstream MouseRegionHandler; nil means unhandled。
 package tui
 
 // MouseRegionHandler handles a mouse event that no nested child handled.

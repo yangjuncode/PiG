@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——reasoning；对应上游 packages/ai/scripts/generate-models.ts。
 package main
 
 import (

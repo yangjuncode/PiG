@@ -1,5 +1,6 @@
 // Code generated from tui/key_parse.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——key_parse。
 package engine
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——keybinding_hints；职责：KeyTextFormatOptions is pi-coding-agent's KeyTextFormatOptions。
 package sdk
 
 import (

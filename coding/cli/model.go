@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：model 命令；对应上游 upstream buildFallbackModel's base selection. Returns false when。
 package cli
 
 import (

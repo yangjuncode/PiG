@@ -1,5 +1,6 @@
 // Ports packages/durable/src/harness/task-graph.ts.
 
+// 中文导读：durable harness：持久化代理运行的宿主层——task_graph；对应上游 packages/durable/src/harness/task-graph.ts。
 package harness
 
 import (

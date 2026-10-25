@@ -1,3 +1,4 @@
+// 中文导读：read 工具（ReadTool）：文件内容读取与截断。
 package tools
 
 import (

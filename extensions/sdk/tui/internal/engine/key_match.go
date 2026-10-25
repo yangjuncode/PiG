@@ -1,5 +1,6 @@
 // Code generated from tui/key_match.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——key_match；职责：This is the Go port of upstream Pi's matchesKey(data, keyId)。
 package engine
 
 // key_match.go: Dynamic key matching, ported from upstream Pi's keys.ts.

@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——own_keys。
 package jsstring
 
 import "slices"

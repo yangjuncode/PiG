@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心会话——host；职责：HostDoc is Doc for a host that keeps its own draft (ABI section 8, `doc`): it acquires the document and returns the。
 package session
 
 import "github.com/MichaelKinsy/PiG/durable/core/internal/delta"

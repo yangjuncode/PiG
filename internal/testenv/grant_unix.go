@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：测试环境设施——grant_unix；职责：InheritOthersRead is a no-op on POSIX: a new file's mode is set when it is。
 package testenv
 
 import (

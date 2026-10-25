@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——link；对应上游 packages/chord/src/link.ts。
 package host
 
 // Ports packages/chord/src/link.ts.

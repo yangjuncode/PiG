@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_wake；职责：Wake is when the Session next needs a running process (scheduler.ts wake, Harness.wake): Active while some task can run。
 package session
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

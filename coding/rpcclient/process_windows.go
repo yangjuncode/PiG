@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：RPC 客户端：RPC 子进程管理。
 package rpcclient
 
 import (

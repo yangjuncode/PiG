@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——tui_surface_screen；职责：Clickable is a component that takes a click on part of the lines it draws,。
 package tui
 
 import (

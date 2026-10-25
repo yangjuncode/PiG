@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——oracle；职责：Reporter is what the vector functions need of a test: *testing.T or testing.TB, or a recorder when a test proves a check fails。
 package contracttest
 
 import (

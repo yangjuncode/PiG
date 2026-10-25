@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——loop；职责：Promise is a value or error settled once, on a loop. Callbacks registered with then run on the loop, in。
 package host
 
 // The host's serialized executor. Upstream Chord runs on one JavaScript event loop: a synchronous section is atomic,

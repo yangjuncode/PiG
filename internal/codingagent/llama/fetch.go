@@ -1,3 +1,4 @@
+// 中文导读：llama 模型下载。
 package llama
 
 import (

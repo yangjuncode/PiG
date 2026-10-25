@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 会话工厂；对应上游 packages/coding-agent/src/main.ts createRuntime and createAgentSessionRuntime as every mode uses them。
 package cli
 
 // Ports packages/coding-agent/src/main.ts createRuntime and createAgentSessionRuntime as every mode uses them.

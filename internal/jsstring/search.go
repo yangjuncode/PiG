@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——search；职责：IndexOf implements String.indexOf with UTF-16 positions, including searches for a surrogate half inside a pair。
 package jsstring
 
 import "slices"

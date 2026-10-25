@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——session；职责：Publication is what one applied commit changed。
 package session
 
 import (

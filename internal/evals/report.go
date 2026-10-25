@@ -1,3 +1,4 @@
+// 中文导读：评测设施——report；对应上游 packages/evals/src/report.ts。
 package evals
 
 // Ports packages/evals/src/report.ts.

@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——reload；对应上游 packages/chord/src/reload.ts。
 package host
 
 // Ports packages/chord/src/reload.ts.

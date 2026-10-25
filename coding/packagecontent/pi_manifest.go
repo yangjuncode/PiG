@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：Pi package manifest 解析。
 package packagecontent
 
 import (

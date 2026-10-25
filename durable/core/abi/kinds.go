@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——kinds；职责：EventKind is the kind of an event a host sends with step (ABI section 5)。
 // Package abi is the Durable core host ABI 1 (docs/plan/durable-core/ABI.md): the event, step and value types, their
 // wire codecs, the step builder every core package emits into, and ID, the abi_id every build exports.
 //

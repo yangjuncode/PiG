@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK 的升级面——diff。
 package upgrade
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——compaction_usage；职责：CompactionSettings is Pi's CompactionSettings。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：FileMutationQueue：同一文件的并发修改串行化，按到达顺序执行。
 package tools
 
 import (

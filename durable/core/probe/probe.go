@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——probe；职责：SQL is the probe's sql_table. The durable_metadata statements have the shape the host guard recognises。
 // Package probe is a small ABI 1 core that exists to test hosts. It implements no Pi semantics. It exercises every
 // host loop invariant of ABI.md section 3 (reads before anything else, commits before effects, the single-writer
 // guard, rejected and fatal steps, effect cancellation) and every step field, with deterministic output, so one

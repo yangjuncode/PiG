@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：auth 命令运行；对应上游 runAuthCommand in upstream packages/coding-agent/src/main.ts: the。
 package cli
 
 // Mirrors runAuthCommand in upstream packages/coding-agent/src/main.ts: the

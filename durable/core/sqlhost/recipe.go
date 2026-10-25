@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable SQL 宿主——recipe；职责：MessageRange is the committed context a model_context effect names, as the host derived it: the model messages as JSON, in。
 package sqlhost
 
 import (

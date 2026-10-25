@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——select_submenu；职责：SelectItem mirrors upstream pi-tui's SelectItem shape for submenu-style。
 package tui
 
 import "strings"

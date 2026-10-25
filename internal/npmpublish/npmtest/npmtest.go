@@ -1,3 +1,4 @@
+// 中文导读：内部包——npmtest；职责：Fake is one test's registry and call log。
 // Package npmtest is a stand-in npm and registry for tests of npm publication.
 //
 // Install builds a small `npm` program, puts it first on PATH, and gives it a private registry directory. The program implements the part of npm that publication and `pig piglet add npm:` use: `view`, `publish` (with `--dry-run`), and `install --prefix`. Publishing stores the files npm would pack, and installing unpacks them with a package-lock.json, so a package published in one step can be installed in the next without a network.

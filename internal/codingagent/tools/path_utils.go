@@ -5,6 +5,7 @@
 // quotes, AM/PM screenshot paths).
 //
 // upstream: coding-agent/src/core/tools/path-utils.ts (94 LOC)
+// 中文导读：各文件工具共用的路径解析（~展开、相对解析、越界检查等）。
 package tools
 
 import (

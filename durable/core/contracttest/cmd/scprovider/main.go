@@ -11,6 +11,7 @@
 //	{"id":4,"op":"close"}                             checkpoints the WAL and exits
 //
 // A failure answers {"id":n,"error":{"name":"Error","message":...}}, with the message SqliteStorage would throw.
+// 中文导读：durable 核心——main。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：凭证打印；对应上游 upstream packages/coding-agent/src/cli/credential-print.ts。
 package cli
 
 // Mirrors upstream packages/coding-agent/src/cli/credential-print.ts.

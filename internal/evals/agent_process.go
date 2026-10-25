@@ -1,3 +1,4 @@
+// 中文导读：评测设施——agent_process。
 package evals
 
 // The PiG Session under test runs as a pig process in RPC mode. Pi's harness drives an in-process AgentSession

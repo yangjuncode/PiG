@@ -1,3 +1,4 @@
+// 中文导读：body 读取钩子——bodyreadhook。
 // Package bodyreadhook lets a test fixture synchronize with a provider's HTTP connection reads. Production code never installs hooks; with none installed a socket read costs one atomic load.
 package bodyreadhook
 

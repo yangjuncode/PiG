@@ -1,3 +1,4 @@
+// 中文导读：JS 事件循环建模——settle_gate；职责：SettleSlot is one waiter's place in a SettleGate。
 package jsloop
 
 import "sync"

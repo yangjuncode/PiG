@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：verify 命令。
 package cli
 
 import (

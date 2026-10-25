@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——bash_execution；职责：ContextOutput is Pi's truncateTail(getOutput(), { maxLines: DEFAULT_MAX_LINES, maxBytes: DEFAULT_MAX_BYTES }).content: the output the block draws。
 package tui
 
 // BashExecutionComponent renders `!cmd` and `!!cmd` output between dynamic borders. Output uses the shared width-aware text layout. Collapsed blocks retain the final previewLines visual rows; expanded blocks retain every available row. The excludeFromContext flag changes only context inclusion and header presentation.

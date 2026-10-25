@@ -1,3 +1,4 @@
+// 中文导读：包源解析：npm 包名解析。
 package source
 
 import (

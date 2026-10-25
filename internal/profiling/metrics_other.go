@@ -2,6 +2,7 @@
 
 //go:build !linux && !darwin
 
+// 中文导读：profiling 设施——metrics_other；职责：PeakRSSBytes is the process's peak resident set in bytes; this platform reports -1。
 package profiling
 
 // PeakRSSBytes is the process's peak resident set in bytes; this platform reports -1.

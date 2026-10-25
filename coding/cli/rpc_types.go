@@ -5,6 +5,7 @@
 // Upstream reference:
 //   .upstream/current/packages/coding-agent/src/modes/rpc/rpc-types.ts
 
+// 中文导读：CLI 层：RPC 类型；对应上游 coding.BashResult。
 package cli
 
 import (

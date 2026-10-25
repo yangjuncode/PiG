@@ -1,3 +1,4 @@
+// 中文导读：内部包——filelock；职责：Lock is the part of gofrs/flock the callers use. A lock is shared (the RLock forms) or exclusive, and is released by process death。
 // Package filelock is the advisory file lock the extension cache and the SDK staging take.
 //
 // pig additive (D20): the shared cell cache and its locks have no upstream equivalent. A lock is held through flock(2) (LockFileEx on

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：命令行参数解析（cli/args.ts Args 接口）；对应上游 upstream cli/args.ts:parseArgs。
 package cli
 
 import (

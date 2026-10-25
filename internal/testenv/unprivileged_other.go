@@ -1,5 +1,6 @@
 //go:build !unix && !windows
 
+// 中文导读：测试环境设施——unprivileged_other。
 package testenv
 
 import "testing"

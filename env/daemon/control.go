@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——control。
 package daemon
 
 import (

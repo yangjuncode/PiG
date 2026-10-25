@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——countdown_timer；对应上游 upstream countdown-timer.ts (38 LOC)。
 package tui
 
 // countdown_timer.go: reusable countdown timer.

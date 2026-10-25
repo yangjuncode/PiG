@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——bordered_loader；职责：BorderedLoader is coding-agent's BorderedLoader(tui, theme, message,。
 package kit
 
 // BorderedLoader is coding-agent's BorderedLoader(tui, theme, message,

@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——metrics；对应上游 packages/telemetry/src/metrics.ts。
 package telemetry
 
 // Ports packages/telemetry/src/metrics.ts.

@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——deterministic；对应上游 packages/codemode/src/runtime/vm.ts (deterministic mode)。
 package codemode
 
 import (

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——fork；职责：ForkPolicy is a document definition's fork rule。
 package history
 
 import "bytes"

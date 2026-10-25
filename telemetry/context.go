@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——context；对应上游 packages/telemetry/src/index.ts and packages/telemetry/src/noop.ts。
 // Package telemetry provides backend-neutral span carriers, propagation, links, metrics and in-memory recording.
 // Ports packages/telemetry/src/index.ts and packages/telemetry/src/noop.ts.
 //

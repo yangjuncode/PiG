@@ -1,3 +1,4 @@
+// 中文导读：edit 工具（EditTool/EditOperations）：文件编辑，回调经 mutation queue 串行化——每个回调完成后队列才前进。
 package tools
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：chord 增量同步——pieces。
 package delta
 
 import "slices"

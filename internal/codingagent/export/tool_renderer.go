@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/export-html/tool-renderer.ts
+// 中文导读：导出用的工具渲染器。
 package export
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：会话扩展动作。
 package cli
 
 import (

@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Node errno 语义——code_other。
 package nodeerrno
 
 import (

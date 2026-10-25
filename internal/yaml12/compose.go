@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——compose；对应上游 yaml 2.9.0 src/compose/{composer,compose-doc,compose-node,compose-scalar,compose-collection,resolve-block-map,resolve-block-seq,resolve-flow-collection}.ts with the core schema of src/schema/core. Copyright Eemeli Aro, ISC licence (see lexer.go). Comment text and node spacing, which never reach a parsed value or an error, are not kept。
 package yaml12
 
 // Ports yaml 2.9.0 src/compose/{composer,compose-doc,compose-node,compose-scalar,compose-collection,resolve-block-map,resolve-block-seq,resolve-flow-collection}.ts with the core schema of src/schema/core. Copyright Eemeli Aro, ISC licence (see lexer.go). Comment text and node spacing, which never reach a parsed value or an error, are not kept.

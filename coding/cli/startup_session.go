@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：启动会话选择；对应上游 packages/coding-agent/src/main.ts。
 package cli
 
 // Ports packages/coding-agent/src/main.ts.

@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——package_updates；对应上游 upstream PackageUpdate (package-manager.ts)。
 package packagemanager
 
 import (

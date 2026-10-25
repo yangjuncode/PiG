@@ -1,3 +1,4 @@
+// 中文导读：测试环境设施——testenv。
 // Package testenv checks host capabilities a test needs, so a test runs
 // wherever the host provides them and says why it skipped where the host
 // does not. Only test code imports this package.

@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——resolve；职责：ResolvedPaths are the resources a resolution found, one list per resource type, in precedence order, each with the PathMetadata of its source (package-manage。
 package packagemanager
 
 import (

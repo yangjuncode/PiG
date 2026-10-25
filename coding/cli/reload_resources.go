@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：资源重载。
 package cli
 
 import (

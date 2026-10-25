@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——known。
 package yaml12
 
 // The tags the core schema recognises only when a document names them (yaml 2.9.0 coreKnownTags: binary, merge, omap, pairs, set, timestamp), and the JavaScript values they build.

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——cancellable_loader；职责：CancellableLoader is pi-tui's CancellableLoader(ui, spinnerColorFn,。
 package kit
 
 // CancellableLoader is pi-tui's CancellableLoader(ui, spinnerColorFn,

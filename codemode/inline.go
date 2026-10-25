@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——inline；对应上游 packages/codemode/src/runtime/inline.ts (InlineCodemodeSandboxOptions). Wasm is optional here: nil means the embedded module。
 package codemode
 
 // InlineSandboxOptions configures NewInlineSandbox.

@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——object；对应上游 packages/chord/src/object.ts: services, the factory's self, resources, contexts, references and objects。
 package host
 
 // Ports packages/chord/src/object.ts: services, the factory's self, resources, contexts, references and objects.

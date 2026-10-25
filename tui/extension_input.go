@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——extension_input；对应上游 packages/coding-agent/src/modes/interactive/components/extension-input.ts。
 package tui
 
 // Ports packages/coding-agent/src/modes/interactive/components/extension-input.ts

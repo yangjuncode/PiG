@@ -1,3 +1,4 @@
+// 中文导读：图像处理——bmp_bitfields。
 package imageprocessing
 
 import (

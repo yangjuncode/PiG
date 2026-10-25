@@ -1,5 +1,6 @@
 // Piglet Binary build implementation. The public entry point is only
 // `pig piglet build`; no standalone build namespace is exposed.
+// 中文导读：CLI 入口：参数解析、模式分发。
 package pigletbuild
 
 import (

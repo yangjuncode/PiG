@@ -4,6 +4,7 @@
 // Ports packages/env/daemon/src/main.rs
 //
 // pig divergence (D96): the daemon is this Go program, with Pi's command line and wire protocol, not Pi's Rust binary.
+// 中文导读：env 环境子系统——main；对应上游 packages/env/daemon/src/main.rs。
 package main
 
 import (

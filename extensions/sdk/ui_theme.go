@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——ui_theme；职责：UITheme is the host's active theme as extensions see it (upstream。
 package sdk
 
 import (

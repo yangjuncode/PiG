@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——progress。
 package packagemanager
 
 // ProgressEvent describes one package operation. Completion omits Message.

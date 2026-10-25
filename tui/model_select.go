@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——model_select；职责：ModelSelectorComponent implements the upstream scoped/all model picker state machine:。
 package tui
 
 // ModelSelectorComponent implements the upstream scoped/all model picker state machine:

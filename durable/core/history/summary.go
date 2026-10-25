@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——summary；职责：SummaryPrompt is the summarizer's user text: the serialized conversation, the prompt, and any instructions。
 package history
 
 import "math"

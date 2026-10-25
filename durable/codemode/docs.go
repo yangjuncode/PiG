@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/codemode.ts (the documents and the stored shapes).
 
+// 中文导读：durable 的 codemode——docs；对应上游 packages/durable/src/codemode/codemode.ts (the documents and the stored shapes)。
 package codemode
 
 import (

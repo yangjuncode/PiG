@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：shell 进程组管理（utils/shell.ts，unix）：进程组杀与孤儿清理。
 package tools
 
 import (

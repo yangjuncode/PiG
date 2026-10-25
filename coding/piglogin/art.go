@@ -1,3 +1,4 @@
+// 中文导读：pig 登录样式：登录 ASCII 图。
 package piglogin
 
 import "image/color"

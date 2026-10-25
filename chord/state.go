@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——state；对应上游 packages/chord/src/state.ts (StateSubscriber, ReplicatedStatePublisher, MutableReplicatedStateImpl,。
 // Package chord ports Pi's @earendil-works/chord root export base: strict JSON copies, the shared Context (a
 // context.Context, see chord/context), and replicated state, either authoritative and mutable (NewReplicatedState) or a
 // publication-only view of an external revision source (AttachReplicatedStateSource).

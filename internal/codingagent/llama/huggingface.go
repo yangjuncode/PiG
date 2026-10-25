@@ -1,3 +1,4 @@
+// 中文导读：HuggingFace 模型源接入。
 package llama
 
 import (

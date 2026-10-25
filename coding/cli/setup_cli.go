@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：setup CLI。
 package cli
 
 import (

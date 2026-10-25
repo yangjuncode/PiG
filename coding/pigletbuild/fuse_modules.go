@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：fuse 模块。
 package pigletbuild
 
 import (

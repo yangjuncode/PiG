@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——database；对应上游 packages/chord/src/sqlite/database.ts。
 // Package sqlite ports Pi's @earendil-works/chord/sqlite: the portable SQLite database facade, the atomic migration runner
 // and schema-prefix validation that durable storage and other Chord hosts share. It imports no SQLite driver;
 // chord/sqlite/node and chord/sqlite/cloudflare adapt a concrete connection.

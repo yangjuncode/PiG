@@ -1,3 +1,4 @@
+// 中文导读：JSON 解析——syntax。
 // Package jsonparse reports ECMAScript JSON.parse syntax errors for rejected JSON text.
 package jsonparse
 

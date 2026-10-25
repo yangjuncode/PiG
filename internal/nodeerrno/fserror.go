@@ -1,3 +1,4 @@
+// 中文导读：Node errno 语义——fserror；职责：FSError is the error Node's fs module reports for a failed call. Its message。
 package nodeerrno
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——types；对应上游 packages/chord/src/types.ts (Pi 1.2.0): the caller identity, the call context of one root, the readable state。
 package host
 
 // Ports packages/chord/src/types.ts (Pi 1.2.0): the caller identity, the call context of one root, the readable state

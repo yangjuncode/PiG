@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——vmlauncher；对应上游 packages/codemode/src/runtime/execution.ts (VmEvents)。
 package codemode
 
 import (

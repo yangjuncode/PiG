@@ -1,3 +1,4 @@
+// 中文导读：computeEditsDiff（edit-diff.ts）：edit 预览 diff 计算。
 package tools
 
 // Ports computeEditsDiff of packages/coding-agent/src/core/tools/edit-diff.ts.

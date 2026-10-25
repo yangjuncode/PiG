@@ -1,3 +1,4 @@
+// 中文导读：powershell 工具（POWERSHELL_ARGS，utils/shell.ts）。
 package tools
 
 import (

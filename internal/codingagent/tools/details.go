@@ -1,3 +1,4 @@
+// 中文导读：EditToolDetails：edit 工具结果携带的上游 details 结构。
 package tools
 
 // EditToolDetails is attached to an EditTool result. It is the upstream

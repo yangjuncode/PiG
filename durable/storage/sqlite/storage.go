@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——storage；对应上游 packages/durable/src/storage/sqlite/storage.ts。
 package sqlite
 
 // Ports packages/durable/src/storage/sqlite/storage.ts

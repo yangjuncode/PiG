@@ -1,5 +1,6 @@
 //go:build !pig_strip_docs
 
+// 中文导读：提示词的文档节。
 package prompts
 
 // docs_section.go holds the system prompt's docs section. It is the boundary a

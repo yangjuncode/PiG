@@ -1,3 +1,4 @@
+// 中文导读：CLI 入口：参数解析、模式分发。
 // Package piglet provides piglet-based capability scoping for pig sessions.
 //
 // D18: Stock Pig's generic `pig piglet` command and in-session capability

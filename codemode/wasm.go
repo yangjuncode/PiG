@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——wasm；对应上游 packages/codemode/src/wasm.ts loadQuickJSWasm(path?)。
 package codemode
 
 import "fmt"

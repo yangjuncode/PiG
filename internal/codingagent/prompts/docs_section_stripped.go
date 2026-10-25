@@ -1,5 +1,6 @@
 //go:build pig_strip_docs
 
+// 中文导读：文档节 strip 占位。
 package prompts
 
 import "github.com/MichaelKinsy/PiG/internal/pigstrip"

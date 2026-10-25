@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——utf16。
 package jv
 
 // A string of the value model is a sequence of UTF-16 code units held as

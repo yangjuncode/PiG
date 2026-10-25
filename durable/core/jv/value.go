@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——value；职责：Object is a JSON object with ECMAScript key order。
 // Package jv is the ordered JSON value model of the Durable core's session
 // layer.
 //

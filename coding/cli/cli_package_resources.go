@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 包资源；对应上游 packages/coding-agent/src/core/resource-loader.ts (reload) and package-manager.ts (resolveExtensionSources)。
 package cli
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：RPC JS 字段语义；对应上游 packages/coding-agent/src/modes/rpc/rpc-mode.ts handleCommand: Pi reads each command's fields without checking their types, so a。
 package cli
 
 // Ports packages/coding-agent/src/modes/rpc/rpc-mode.ts handleCommand: Pi reads each command's fields without checking their types, so a

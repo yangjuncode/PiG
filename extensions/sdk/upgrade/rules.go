@@ -2,6 +2,7 @@
 
 // pig additive (D109): Pi has no SDK to drift from; see docs/additive-features.md.
 
+// 中文导读：Go 扩展 SDK 的升级面——rules；职责：SDKModulePath is the import path of the SDK, and LegacySDKModulePath the。
 // Package upgrade rewrites Go extensions written for an older SDK so they build
 // against this one. Each rule is one breaking SDK change: the rules sit beside
 // the SDK so a breaking change and its rewrite land together, and the

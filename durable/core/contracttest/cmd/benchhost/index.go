@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——index。
 package main
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：MCP（Model Context Protocol）客户端——doc。
 // Package mcp is a small, standalone Model Context Protocol client. It does
 // not depend on an MCP SDK or on other PiG packages.
 //

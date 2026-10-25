@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——package_update_operations；对应上游 packages/coding-agent/src/core/package-manager.ts (updateConfiguredSources, updateNpmBatch, installNpmBatch)。
 package packagemanager
 
 import (

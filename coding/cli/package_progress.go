@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 进度展示；对应上游 packages/coding-agent/src/core/package-manager.ts (ProgressEvent, ProgressCallback, withProgress)。
 package cli
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：平台原生操作——nativeplatform；职责：IsModifierPressed mirrors the helper's isModifierPressed(name): it reports。
 // Package nativeplatform provides operating-system queries and native clipboard transfers. Pig builds with CGO_ENABLED=0; Go callers use platform APIs or the X11 wire protocol directly.
 package nativeplatform
 

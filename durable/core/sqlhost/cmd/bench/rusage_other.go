@@ -3,6 +3,7 @@
 
 //go:build !unix
 
+// 中文导读：durable SQL 宿主——rusage_other。
 package main
 
 // haveRusage reports whether processCPU and peakResidentMB measure this process. Without getrusage the seed and sample

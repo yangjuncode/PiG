@@ -1,3 +1,4 @@
+// 中文导读：内部包——number；职责：ParseInt is Number.parseInt(text, 10): after JavaScript whitespace and an optional sign it reads the longest run of ASCII digits, and is NaN when none 。
 // Package jsnumber implements ECMAScript numeric conversion and serialization for values that arrive as JSON.
 package jsnumber
 

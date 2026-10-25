@@ -1,3 +1,4 @@
+// 中文导读：grep 输出的头部行累积器。
 package tools
 
 import (

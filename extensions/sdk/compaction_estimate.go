@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——compaction_estimate；职责：EstimateTokens is Pi's estimateTokens (core/compaction/compaction.ts): a chars/4 heuristic over one agent message as the wire carries it (a decoded JSON。
 package sdk
 
 import (

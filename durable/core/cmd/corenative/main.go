@@ -16,6 +16,7 @@
 // the 36 ASCII bytes); type 2 asks the host to run one read statement (the payload is the pig.read request of ABI section
 // 4.2; the host answers with a request of op 8 whose payload is the read's answer). The response to the original op
 // follows them.
+// 中文导读：durable 核心——main。
 package main
 
 import (

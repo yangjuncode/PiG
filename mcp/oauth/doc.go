@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——doc。
 // Package oauth is the MCP OAuth client subset: protected-resource and
 // authorization-server discovery, the PKCE authorization code flow, dynamic
 // client registration, token refresh (one refresh shared by concurrent 401s),

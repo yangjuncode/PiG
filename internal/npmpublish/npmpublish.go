@@ -1,3 +1,4 @@
+// 中文导读：内部包——npmpublish；职责：TrustedPublishingEnv is set by GitHub Actions when the workflow may request an OIDC token. npm then publishes with provenance and no stored credential。
 // Package npmpublish runs `npm publish` for Packages and Piglet source on the author's behalf.
 //
 // The author's own npm does the authentication, including a one-time password, a passkey, and npm trusted publishing from CI. PiG never reads, stores, or forwards an npm token: it passes its environment to npm unchanged and adds `--otp` only when the author gives a code.

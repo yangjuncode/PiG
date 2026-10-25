@@ -1,5 +1,6 @@
 //go:build tinygo
 
+// 中文导读：codemode：代码模式子系统——halt_grace_tinygo。
 package codemode
 
 // haltGuard on the Worker host: a stop has nothing to escalate to, because a synchronous QuickJS call cannot be preempted and the

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——watch；职责：WatchTaskGraph is a serialized exact-frame watch of the task graph。
 package driver
 
 import (

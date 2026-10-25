@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——autocomplete；职责：AutocompleteSuggestions is the complete provider answer. Cursor columns in this API count UTF-16 code units, as in Pi。
 package sdk
 
 import (

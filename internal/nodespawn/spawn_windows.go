@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：Node 进程 spawn——spawn_windows；职责：Stderr is the NUL device, which it opens for the start as cmd.Start does。
 package nodespawn
 
 import (

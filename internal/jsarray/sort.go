@@ -1,3 +1,4 @@
+// 中文导读：内部包——sort。
 // Package jsarray implements JavaScript Array semantics that ported code observes.
 package jsarray
 

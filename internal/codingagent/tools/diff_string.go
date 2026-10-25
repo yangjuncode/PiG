@@ -1,3 +1,4 @@
+// 中文导读：generateDiffString 的逐字节移植（edit-diff.ts）。
 package tools
 
 // Byte-exact port of upstream generateDiffString (edit-diff.ts): a

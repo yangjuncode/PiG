@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：源码抓取。
 package pigletbuild
 
 import (

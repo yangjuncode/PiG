@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——jsstring；职责：SpaceClass is the body of an RE2 character class that matches what JavaScript's \s matches: the characters IsSpace reports. RE2's own \s is。
 package jsstring
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：评测设施——bridge；职责：EnvSocket is the Unix socket the harness serves。
 // Package bridge connects the eval harness to the extension that runs inside the agent process under test.
 //
 // Pi's harness registers an inline extension and custom tools inside its own process (harness.ts:287-301, 345-355,

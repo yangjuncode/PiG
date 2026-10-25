@@ -1,3 +1,4 @@
+// 中文导读：durable Node 环境——paths。
 package node
 
 import (

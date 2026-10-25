@@ -1,3 +1,4 @@
+// 中文导读：评测设施——extensions；对应上游 packages/evals/evals/extensions.docs.eval.ts。
 package evalsuites
 
 // Ports packages/evals/evals/extensions.docs.eval.ts.

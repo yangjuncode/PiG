@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：piglet extends 继承。
 package piglet
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 模型目录；对应上游 packages/coding-agent/src/package-manager-cli.ts:583-615。
 package cli
 
 // Ports packages/coding-agent/src/package-manager-cli.ts:583-615.

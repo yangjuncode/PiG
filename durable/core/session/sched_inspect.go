@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_inspect；职责：TaskInspection is one live task with the state the scheduler derives for it (types.ts TaskInspection)。
 package session
 
 import "github.com/MichaelKinsy/PiG/durable/core/jv"

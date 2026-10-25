@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Node fs 语义——readdir_other。
 package nodefs
 
 import "os"

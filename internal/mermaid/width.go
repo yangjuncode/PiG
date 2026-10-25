@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Alexey Zaytsev
 // SPDX-License-Identifier: Apache-2.0 AND MIT
 
+// 中文导读：mermaid 处理——width。
 package mermaid
 
 import "github.com/MichaelKinsy/PiG/tui/widthx"

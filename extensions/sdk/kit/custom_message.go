@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——custom_message；职责：CustomMessage is coding-agent's CustomMessageComponent(message, undefined,。
 package kit
 
 // CustomMessage is coding-agent's CustomMessageComponent(message, undefined,

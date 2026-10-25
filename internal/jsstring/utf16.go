@@ -1,3 +1,4 @@
+// 中文导读：JS 字符串语义（UTF-16、code unit 操作）——utf16；职责：StreamText is the text process.stdout.write, console.error and a "utf8" file write send for a JavaScript string: valid UTF-8 is unchanged and a lone surr。
 // Package jsstring preserves JavaScript UTF-16 units at Go string boundaries. Lone surrogate units use WTF-8; ordinary Unicode strings retain their normal UTF-8 encoding.
 package jsstring
 

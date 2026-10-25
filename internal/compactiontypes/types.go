@@ -1,3 +1,4 @@
+// 中文导读：内部包——types；对应上游 upstream CompactionSettings (compaction.ts:115)。
 // Package compactiontypes holds the compaction types that both the extension API and the compaction pipeline name:
 // Pi's CompactionPreparation, CompactionSettings and FileOperations (core/compaction). It imports no coding package, so
 // coding/extension can use them without an import cycle.

@@ -1,3 +1,4 @@
+// 中文导读：提示词中的工具定义段。
 package prompts
 
 import (

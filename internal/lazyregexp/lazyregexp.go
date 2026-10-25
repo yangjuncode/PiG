@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：惰性正则——lazyregexp；职责：Regexp is a lazily compiled *regexp.Regexp。
 // Package lazyregexp compiles a package-level regular expression when it is first used instead of when its package initializes.
 //
 // Process start pays for every package-level regexp.MustCompile in every linked package, whether or not the run reaches the code that uses it. A Regexp from New exposes the *regexp.Regexp methods its callers use, each returning what the wrapped *regexp.Regexp returns, and Regexp returns the wrapped value for any other use. It compiles the same pattern with regexp.MustCompile, panics with the same message for an invalid pattern, and is safe for concurrent use. Only the moment of compilation and of that panic moves to the first method call. CompileAll compiles every pattern so a test can prove each one is valid.

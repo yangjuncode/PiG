@@ -1,3 +1,4 @@
+// 中文导读：MCP OAuth——provider；对应上游 packages/mcp/src/oauth/provider.ts。
 package oauth
 
 import (

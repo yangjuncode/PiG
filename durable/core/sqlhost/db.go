@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable SQL 宿主——db；职责：DB is one dedicated SQLite connection. Only the owner goroutine of a Host uses it, so it takes no lock. Statements。
 package sqlhost
 
 import (

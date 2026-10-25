@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——apply。
 package delta
 
 import (

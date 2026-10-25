@@ -1,3 +1,4 @@
+// 中文导读：env 环境子系统——list_files；对应上游 packages/env/src/list-files.ts。
 package env
 
 // Ports packages/env/src/list-files.ts

@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/resource-loader.ts
+// 中文导读：CLI 层：资源提示词；对应上游 packages/coding-agent/src/core/resource-loader.ts。
 package cli
 
 import (

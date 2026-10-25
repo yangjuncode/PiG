@@ -1,5 +1,6 @@
 //go:build !tinygo
 
+// 中文导读：codemode：代码模式子系统——sandbox；对应上游 packages/codemode/src/runtime/host.ts (DEFAULT_TIMEOUT_MS)。
 package codemode
 
 import (

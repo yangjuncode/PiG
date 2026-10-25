@@ -1,5 +1,6 @@
 //go:build tinygo.wasm
 
+// 中文导读：durable 核心——arch_tinygowasm。
 package runtime
 
 import (

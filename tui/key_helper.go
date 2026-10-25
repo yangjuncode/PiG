@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——key_helper；职责：KeyHelper ports the shape of upstream's Key object (keys.ts:163): named key identifiers for special and symbol keys, and builders。
 package tui
 
 // KeyHelper ports the shape of upstream's Key object (keys.ts:163): named key identifiers for special and symbol keys, and builders

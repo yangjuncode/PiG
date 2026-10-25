@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——manager_fork。
 package host
 
 import (

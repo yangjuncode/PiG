@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——serial；职责：ErrTransactionInactive is returned by a transaction handle used after its callback returned。
 // Package serial is the one operation queue of the SQLite database adapters: operations run in call order and a
 // transaction holds the queue until it settles (Pi's SerialQueue and the promise chain of NodeSqliteDatabase).
 package serial

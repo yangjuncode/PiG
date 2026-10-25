@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——chunks；职责：ChunkSize is the size of the blocks Chunks starts once a payload outgrows its first block。
 package abi
 
 import "encoding/binary"

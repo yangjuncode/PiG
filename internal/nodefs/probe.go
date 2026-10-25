@@ -1,3 +1,4 @@
+// 中文导读：Node fs 语义——probe；职责：Exists is fs.existsSync of the probe's path。
 package nodefs
 
 import (

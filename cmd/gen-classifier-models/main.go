@@ -1,5 +1,6 @@
 // Command gen-classifier-models imports the CLASSIFIER_MODELS export of a published Pi models.generated.js and emits
 // ai/classifier_models_generated.go.
+// 中文导读：命令入口——main；职责：GeneratedClassifierModels is the static classifier model catalog (%d entries).\n", len(models))。
 package main
 
 import (

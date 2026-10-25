@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——doc。
 // Package tui is the pi-tui helper surface of the Go extension SDK: the pure functions and values a Pi extension imports from
 // @earendil-works/pi-tui to draw its own components. A custom Render(width) measures, wraps, truncates and slices ANSI text with
 // these, matches raw terminal input against key identifiers, and styles text with the same color helpers as Pi.

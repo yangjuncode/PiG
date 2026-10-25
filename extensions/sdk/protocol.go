@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——protocol；职责：MaxFrameSize is the maximum allowed message size (128 MB). Bounds a single。
 package sdk
 
 import (

@@ -9,6 +9,7 @@
 //
 // This binding is the only place with package-level state: the handle table and the shared input and output buffers
 // one instance serves all its sessions with (ADR D10).
+// 中文导读：durable 核心——main。
 package main
 
 import (

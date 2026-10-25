@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：shell 进程组管理（utils/shell.ts，windows）。
 package tools
 
 import (

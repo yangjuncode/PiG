@@ -1,3 +1,4 @@
+// 中文导读：hook 配置：命令 hook 文件解析校验。
 // Package hookconfig parses and validates command hook files shared by Package
 // validation and the runtime hook bridge.
 package hookconfig

@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——store；职责：NeedRead is the error a Store returns when the loaded state cannot answer a。
 package session
 
 import (

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——turnhost；职责：ThrownError is what host code (a tool, a hook, a section) threw: its text is the error's message, as errorText in。
 package core
 
 import (

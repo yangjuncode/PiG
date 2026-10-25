@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——op；职责：Seg is one path segment: an object key or an array index。
 // Package delta ports Chord's immutable JSON deltas (@earendil-works/chord
 // 1.0.4 `delta`: operations, the immutable applier and the overlay draft
 // tracker) onto the ordered value model of package jv.

@@ -1,3 +1,4 @@
+// 中文导读：会话条目模型——jsvalue；职责：ValueJSON is what JSON.stringify writes for the value id stands for; ok is false for undefined, whose member JSON.stringify omits。
 package sessionentry
 
 import (

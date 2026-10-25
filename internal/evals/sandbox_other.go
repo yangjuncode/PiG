@@ -1,5 +1,6 @@
 //go:build !unix
 
+// 中文导读：评测设施——sandbox_other。
 package evals
 
 import (

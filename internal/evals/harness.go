@@ -1,3 +1,4 @@
+// 中文导读：评测设施——harness；对应上游 packages/evals/src/harness.ts: model selection, process isolation, the documentation variant and the system。
 package evals
 
 // Ports packages/evals/src/harness.ts: model selection, process isolation, the documentation variant and the system

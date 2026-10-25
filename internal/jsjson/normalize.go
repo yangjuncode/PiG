@@ -1,3 +1,4 @@
+// 中文导读：JS JSON 语义——normalize。
 // Package jsjson reads JSON the way JSON.parse and property access do where encoding/json differs.
 package jsjson
 

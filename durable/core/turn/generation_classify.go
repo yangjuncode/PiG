@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——generation_classify；职责：Runs implements inbox.Runs: the conversation's pi.live document and the start of a run for placed inputs。
 package turn
 
 import (

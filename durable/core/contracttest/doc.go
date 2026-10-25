@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——doc。
 // Package contracttest is the Go side of the Durable core conformance gate (docs/plan/durable-core/CONTRACT.md sections 5-7).
 //
 // The Node tooling in durable/contract captures pi-durable and compares implementations at the store, commit, context and

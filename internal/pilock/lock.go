@@ -1,3 +1,4 @@
+// 中文导读：Pi 文件锁——lock；对应上游 packages/coding-agent/src/core/auth-storage.ts。
 // Package pilock implements Pi's proper-lockfile directory-lock protocol for shared stores.
 // Ports packages/coding-agent/src/core/auth-storage.ts
 package pilock

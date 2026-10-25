@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：容器构建器。
 package pigletbuild
 
 import (

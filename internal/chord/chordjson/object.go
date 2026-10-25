@@ -1,3 +1,4 @@
+// 中文导读：内部包——object；职责：Object is a JSON object that keeps JavaScript's property order. Keys iterate in own-key order (Reflect.ownKeys, Object.keys): array-index keys first 。
 package chordjson
 
 import (

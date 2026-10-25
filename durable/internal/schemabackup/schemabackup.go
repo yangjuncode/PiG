@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——schemabackup。
 // Package schemabackup copies a file-backed durable SQLite store before PiG upgrades its schema (D188).
 package schemabackup
 

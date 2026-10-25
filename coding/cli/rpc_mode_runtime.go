@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：RPC 模式运行时；对应上游 packages/coding-agent/src/modes/rpc/rpc-mode.ts rebindSession and the runtime host wiring。
 package cli
 
 // Ports packages/coding-agent/src/modes/rpc/rpc-mode.ts rebindSession and the runtime host wiring.

@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——node；对应上游 packages/durable/src/images/node.ts and node-worker.ts。
 // Package node is the image processor for hosts that load Photon's WebAssembly from an installed package.
 //
 // Ports packages/durable/src/images/node.ts and node-worker.ts.

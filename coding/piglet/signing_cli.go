@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：piglet 签名命令。
 package piglet
 
 // pig additive (D18): Piglet Binary signing keys, the user's signer trust

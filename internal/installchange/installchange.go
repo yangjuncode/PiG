@@ -1,3 +1,4 @@
+// 中文导读：内部包——installchange；对应上游 packages/coding-agent/src/config.ts (detectInstallChange)。
 // Package installchange tells a running pig that the files it runs from changed on disk.
 //
 // Pi (packages/coding-agent/src/config.ts detectInstallChange, #10439) warns when an update or removal replaced the

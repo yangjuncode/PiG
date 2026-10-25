@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——cancellable_loader；对应上游 upstream packages/tui/src/components/cancellable-loader.ts。
 package tui
 
 // cancellable_loader.go: escape-cancellable loader.

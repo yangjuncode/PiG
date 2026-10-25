@@ -1,3 +1,4 @@
+// 中文导读：内部包——util。
 package latex
 
 import (

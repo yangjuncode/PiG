@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：MCP（Model Context Protocol）客户端——stdio_unix。
 package mcp
 
 import (

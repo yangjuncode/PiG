@@ -1,3 +1,4 @@
+// 中文导读：会话条目模型——lazy；职责：ID is the entry's id, empty when the error is about no one record。
 package sessionentry
 
 import (

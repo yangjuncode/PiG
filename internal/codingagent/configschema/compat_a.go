@@ -1,3 +1,4 @@
+// 中文导读：配置 schema 兼容层 A。
 package configschema
 
 // Mirrors packages/ai/src/providers/compat-schema.ts (first part: shared fields, routing and the OpenAI schemas).

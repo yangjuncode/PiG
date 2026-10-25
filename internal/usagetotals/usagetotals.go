@@ -1,3 +1,4 @@
+// 中文导读：内部包——usagetotals；对应上游 packages/coding-agent/src/core/usage-totals.ts (combineUsage)。
 // Package usagetotals sums model usage records.
 //
 // Ports packages/coding-agent/src/core/usage-totals.ts (combineUsage).

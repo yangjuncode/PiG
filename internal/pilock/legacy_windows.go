@@ -1,3 +1,4 @@
+// 中文导读：Pi 文件锁——legacy_windows。
 package pilock
 
 import (

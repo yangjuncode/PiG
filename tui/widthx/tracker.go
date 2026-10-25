@@ -4,6 +4,7 @@
 // preserved across line breaks (wrapTextWithAnsi) and across overlay splices
 // (extractSegments). Pure state machine: no I/O.
 
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——tracker；对应上游 upstream `AnsiCodeTracker` (utils.ts:302)。
 package widthx
 
 import (

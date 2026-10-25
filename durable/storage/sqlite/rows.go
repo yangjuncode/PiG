@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——rows。
 package sqlite
 
 import (

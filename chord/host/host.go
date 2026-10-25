@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——host；对应上游 packages/chord/src/host.ts. Pi's Host interface and HostImpl class are one Go type, HostImpl: CreateHost。
 package host
 
 // Ports packages/chord/src/host.ts. Pi's Host interface and HostImpl class are one Go type, HostImpl: CreateHost

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——payload；职责：ToolDefinition is a registry tool: name, JSON schema and replay policy。
 // Package payload holds the JSON shapes of ABI 1 event and effect payloads as hosts send and read them
 // (ABI sections 5-7). It is host tooling: it uses encoding/json, and core packages never import it; the core reads and
 // writes the same shapes with its own scanner and encoder. Field names follow the ABI document and Pi's own names.

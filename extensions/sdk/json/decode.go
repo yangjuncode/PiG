@@ -5,6 +5,7 @@
 // Represents JSON data structure using native Go types: booleans, floats,
 // strings, arrays, and maps.
 
+// 中文导读：Go 扩展 SDK 的 JSON 设施——decode；职责：UnmarshalTrusted is [Unmarshal] for data this process encoded itself, which is known to hold one valid JSON value: it skips the validity。
 package json
 
 import (

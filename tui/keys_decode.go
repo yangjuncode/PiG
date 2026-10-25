@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——keys_decode；对应上游 the printable CSI-u / modifyOtherKeys decoding slice from。
 package tui
 
 // keys_decode.go: printable key decoding helpers for TUI components.

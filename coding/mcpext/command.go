@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 命令；对应上游 the `/mcp` command of packages/coding-agent/src/extensions/mcp/index.ts (registerCommand "mcp", pickServer,。
 package mcpext
 
 // Ports the `/mcp` command of packages/coding-agent/src/extensions/mcp/index.ts (registerCommand "mcp", pickServer,

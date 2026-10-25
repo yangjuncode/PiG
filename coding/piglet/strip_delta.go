@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：piglet strip 差量。
 package piglet
 
 import (

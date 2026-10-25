@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——event；职责：Editor holds after a key。
 package kit
 
 // Event types: the upstream callbacks of SelectList (onSelect, onCancel,

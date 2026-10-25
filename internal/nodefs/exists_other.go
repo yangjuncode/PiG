@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Node fs 语义——exists_other；职责：Exists is fs.existsSync: Node asks access(2) for F_OK, which follows symbolic links and reads no metadata. Unlike os.Stat it。
 package nodefs
 
 import "golang.org/x/sys/unix"

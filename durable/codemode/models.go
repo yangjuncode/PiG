@@ -1,5 +1,6 @@
 // Ports packages/durable/src/codemode/models.ts.
 
+// 中文导读：durable 的 codemode——models；对应上游 packages/durable/src/codemode/models.ts。
 package codemode
 
 import (

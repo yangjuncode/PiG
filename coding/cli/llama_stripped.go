@@ -1,5 +1,6 @@
 //go:build pig_strip_llama_cpp
 
+// 中文导读：CLI 层：llama strip 占位。
 package cli
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

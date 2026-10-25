@@ -1,5 +1,6 @@
 //go:build pig_strip_mcp
 
+// 中文导读：CLI 层：mcp 命令。
 package cli
 
 import (

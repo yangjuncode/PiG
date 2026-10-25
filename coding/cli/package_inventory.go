@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 清单。
 package cli
 
 // pig additive (D41): Pig adds namespaced, side-effect-free Package inventory

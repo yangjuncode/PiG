@@ -1,3 +1,4 @@
+// 中文导读：pig strip 构建标签——leakgate；职责：CommandPhrases are the /hotkeys rows and startup hints of the key actions a command owns. A stripped command's keys。
 // Package leakgate holds the tables of the strip leak gates: the user-visible names of every strip ID, which the
 // interactive gate (internal/codingagent TestStripLeakGate) and the CLI gate (cmd/pig TestStripLeakGate) look for on
 // the surfaces a stripped built-in must leave. Only tests import it.

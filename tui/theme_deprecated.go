@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——theme_deprecated；职责：ColorMode is the terminal color mode a theme resolves its colors for。
 package tui
 
 import (

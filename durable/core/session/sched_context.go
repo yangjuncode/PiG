@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_context；职责：EndedError is the error of an operation of an ended invocation。
 package session
 
 import "slices"

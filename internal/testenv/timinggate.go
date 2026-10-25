@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：测试环境设施——timinggate；职责：TimingGate is the one mechanism for a test that fails on a measured duration, a CPU time, an ns/op or a ratio of two timings compared to a bar. Pass the 。
 package testenv
 
 import (

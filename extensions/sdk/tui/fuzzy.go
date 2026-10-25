@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——fuzzy；职责：FuzzyMatchResult is pi-tui's FuzzyMatch: whether every query character appears in order, and the score, lower being better。
 package tui
 
 import "github.com/MichaelKinsy/PiG/extensions/sdk/tui/internal/engine"

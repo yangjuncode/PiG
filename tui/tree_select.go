@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——tree_select；对应上游 upstream `GutterInfo` at tree-selector.ts:33-36。
 package tui
 
 // TreeSelectorComponent: single-pane navigable tree selector.

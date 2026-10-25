@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——index；对应上游 packages/chord/src/telemetry-sqlite/index.ts。
 // Package telemetrysqlite ports Pi's @earendil-works/chord/telemetry-sqlite: a portable, buffered SQLite telemetry
 // recorder and the TelemetryStore queries over its committed rows. It runs on any chord/sqlite.SqliteDatabase and owns
 // no connection.

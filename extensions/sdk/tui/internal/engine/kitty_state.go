@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——kitty_state；职责：SetKittyProtocolActive mirrors upstream keys.ts global Kitty state。
 package engine
 
 import "sync/atomic"

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：extensions/sdk-py 的 bundle。
 // Package pysdk carries the Python extension SDK sources so an installed pig can
 // stage a buildable copy to disk. See extensions/sdk/bundle.go for the rationale;
 // this is the Python analogue. The Python SDK is not a Go package, so this small

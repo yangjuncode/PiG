@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心会话——index_sizes；对应上游 packages/durable/src/harness/scheduler.ts indexSizes。
 package session
 
 // Ports packages/durable/src/harness/scheduler.ts indexSizes.

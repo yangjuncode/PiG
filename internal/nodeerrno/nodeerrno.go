@@ -1,3 +1,4 @@
+// 中文导读：Node errno 语义——nodeerrno。
 // Package nodeerrno maps operating-system errors to the error codes,
 // descriptions and errnos Node reports for them. Node takes them from libuv:
 // uv_translate_sys_error converts a Windows system error to a libuv errno

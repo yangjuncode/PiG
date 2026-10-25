@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——overlay_command；对应上游 packages/tui/src/tui.ts (handleTerminalInput)。
 package tui
 
 type overlayCommandKind uint8

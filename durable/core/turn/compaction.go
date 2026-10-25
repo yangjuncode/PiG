@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——compaction；职责：CompactionTask implements the pi.compaction task over a Host。
 package turn
 
 import (

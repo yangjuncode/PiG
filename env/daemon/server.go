@@ -1,3 +1,4 @@
+// 中文导读：env 守护进程——server；对应上游 packages/env/daemon/src/main.rs。
 package daemon
 
 // Ports packages/env/daemon/src/main.rs

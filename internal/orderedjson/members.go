@@ -1,3 +1,4 @@
+// 中文导读：保序 JSON——members。
 package orderedjson
 
 import (

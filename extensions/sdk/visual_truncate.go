@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——visual_truncate；职责：VisualTruncateResult is pi-coding-agent's VisualTruncateResult: the visual lines kept and how many were dropped。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内部包——bin；职责：StampFile is the build stamp automation/pin/oracle.py writes beside an oracle's node_modules。
 package pioracle
 
 import (

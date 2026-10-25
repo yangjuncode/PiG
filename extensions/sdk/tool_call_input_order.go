@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——tool_call_input_order。
 package sdk
 
 import (

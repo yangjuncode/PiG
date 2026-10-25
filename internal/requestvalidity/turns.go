@@ -1,3 +1,4 @@
+// 中文导读：请求有效性检查——turns；职责：Turn is one entry of a request's message list, reduced to what a provider's tool contract constrains。
 package requestvalidity
 
 import (

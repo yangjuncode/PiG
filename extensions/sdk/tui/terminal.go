@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——terminal；职责：ImageProtocol is pi-tui's ImageProtocol: "kitty", "iterm2", or "" for upstream's null。
 package tui
 
 import (

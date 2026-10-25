@@ -1,5 +1,6 @@
 //go:build linux
 
+// 中文导读：平台原生操作——clipboard_x11_connect_linux；对应上游 packages/tui/src/native-platform.ts。
 package nativeplatform
 
 // Ports packages/tui/src/native-platform.ts.

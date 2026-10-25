@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——command_options；职责：AutocompleteItem mirrors @earendil-works/pi-tui AutocompleteItem: Value is。
 package sdk
 
 import (

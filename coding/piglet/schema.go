@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：piglet schema。
 package piglet
 
 import (

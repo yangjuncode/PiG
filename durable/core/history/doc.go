@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——doc；职责：It ports pi-durable's src/harness/context.ts, the range selection of src/harness/compaction.ts, the fork and entry。
 // Package history is the transcript half of the Durable core: entries, forks, head markers, context edits,
 // compaction ranges and reset, and the context derivation that turns them into the model's messages.
 //

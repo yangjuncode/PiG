@@ -1,3 +1,4 @@
+// 中文导读：Pi 文件锁——legacy。
 package pilock
 
 import (

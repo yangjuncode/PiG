@@ -1,3 +1,4 @@
+// 中文导读：评测设施——harness_run；对应上游 packages/evals/src/harness.ts runPiCodingAgent and createPiCodingAgentHarness (harness.ts:272-482)。
 package evals
 
 // Ports packages/evals/src/harness.ts runPiCodingAgent and createPiCodingAgentHarness (harness.ts:272-482).

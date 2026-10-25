@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：glob 匹配；对应上游 packages/coding-agent/src/core/package-manager.ts。
 package packagecontent
 
 // Ports packages/coding-agent/src/core/package-manager.ts

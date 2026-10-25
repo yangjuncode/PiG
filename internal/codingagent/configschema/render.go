@@ -1,3 +1,4 @@
+// 中文导读：配置 schema 渲染。
 package configschema
 
 import (

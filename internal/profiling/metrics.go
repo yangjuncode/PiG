@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：profiling 设施——metrics；职责：ProcessMetrics is the PIG_PROFILE=metrics record: whole-process resource counts taken when pig exits, after it has stopped its extensions and model services。
 package profiling
 
 import (

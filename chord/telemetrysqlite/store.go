@@ -1,3 +1,4 @@
+// 中文导读：chord 子系统——store；对应上游 packages/chord/src/telemetry-sqlite/store.ts。
 package telemetrysqlite
 
 // Ports packages/chord/src/telemetry-sqlite/store.ts.

@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——cell；对应上游 packages/chord/src/cell.ts: object-owned state sources (cells and derivations). A write recomputes every。
 package host
 
 // Ports packages/chord/src/cell.ts: object-owned state sources (cells and derivations). A write recomputes every

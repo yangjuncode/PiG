@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：artifact 记录。
 package pigletbuild
 
 import (

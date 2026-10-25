@@ -1,4 +1,5 @@
 // pig divergence (D2): refuse the `pi` name to protect Pi's command identity.
+// 中文导读：CLI 层：输出接管 guard。
 package cli
 
 import (

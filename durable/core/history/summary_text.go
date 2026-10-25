@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——summary_text。
 package history
 
 // The compaction texts of src/harness/compaction.ts, copied verbatim (summary_text_test.go checks them against

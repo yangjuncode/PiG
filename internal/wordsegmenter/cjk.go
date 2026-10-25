@@ -4,6 +4,7 @@
 // Copyright (C) 2006-2016, International Business Machines Corporation and others.
 // ICU CjkBreakEngine translation; see LICENSES/Unicode-3.0.txt and LICENSES/LicenseRef-ICU-CJK.txt.
 
+// 中文导读：词分割器（JS Intl.Segmenter 语义）——cjk。
 package wordsegmenter
 
 import (

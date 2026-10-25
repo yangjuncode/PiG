@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——editor；职责：Editor is pi-tui's Editor(tui, theme, {paddingX, autocompleteMaxVisible})。
 package kit
 
 // Editor is pi-tui's Editor(tui, theme, {paddingX, autocompleteMaxVisible})

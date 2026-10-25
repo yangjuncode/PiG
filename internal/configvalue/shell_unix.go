@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：配置值桥——shell_unix。
 package configvalue
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——builtin；对应上游 .upstream/v0.99.1/packages/coding-agent/src/core/package-manager.ts:970-986 (DefaultPackageManager.resolve)。
 package packagemanager
 
 import (

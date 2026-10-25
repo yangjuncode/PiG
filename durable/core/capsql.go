@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——capsql。
 package core
 
 import "github.com/MichaelKinsy/PiG/durable/core/session/hopcost"

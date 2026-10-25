@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——image；对应上游 upstream image.ts:66-98。
 package tui
 
 import (

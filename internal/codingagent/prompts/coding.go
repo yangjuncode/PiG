@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/system-prompt.ts.
 
+// 中文导读：编码代理的系统提示词。
 // Package prompts builds the default coding-agent system prompt.
 //
 // It mirrors upstream core/system-prompt.js as of Pi 0.87.1: an untagged

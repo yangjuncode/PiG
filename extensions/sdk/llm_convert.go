@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——llm_convert；职责：ConvertToLlm is Pi's convertToLlm (core/messages.ts:148, exported from index.ts): it turns the coding agent's custom message roles (bashExecution,。
 package sdk
 
 import (

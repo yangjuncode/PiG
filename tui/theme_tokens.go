@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——theme_tokens；职责：ThemeColor is a foreground theme token: upstream `ThemeColor` (modes/interactive/theme/theme.ts:57)。
 package tui
 
 // ThemeColor is a foreground theme token: upstream `ThemeColor` (modes/interactive/theme/theme.ts:57).

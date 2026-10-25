@@ -1,3 +1,4 @@
+// 中文导读：内部包——ast；对应上游 minimatch 10.2.6 ast.js: the parse of one path portion into literal text, character classes, wildcards and extglobs, and its。
 package minimatch
 
 // Ports minimatch 10.2.6 ast.js: the parse of one path portion into literal text, character classes, wildcards and extglobs, and its

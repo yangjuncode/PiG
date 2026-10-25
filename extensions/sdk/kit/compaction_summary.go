@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——compaction_summary；职责：CompactionSummary is coding-agent's CompactionSummaryMessageComponent(message,。
 package kit
 
 // CompactionSummary is coding-agent's CompactionSummaryMessageComponent(message,

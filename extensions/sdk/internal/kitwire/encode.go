@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——encode；职责：Image is image bytes a view references。
 // Package kitwire encodes a kit.View as the host's ViewPayload JSON
 // (coding/extension/host/subprocess/protocol.go). Field names and omission
 // rules match the host's ViewPayload and ViewNode; constructor arguments

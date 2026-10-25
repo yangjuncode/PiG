@@ -1,3 +1,4 @@
+// 中文导读：llama.cpp 服务器客户端。
 // Package llama ports Pi's built-in llama.cpp extension
 // (packages/coding-agent/src/extensions/llama/): the router HTTP/SSE client,
 // Hugging Face search and download, the dynamic provider, the manager UI, and

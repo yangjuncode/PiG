@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK 的升级面——load；职责：File is one source file of an extension package。
 package upgrade
 
 import (

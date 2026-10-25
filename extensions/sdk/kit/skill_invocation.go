@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——skill_invocation；职责：SkillInvocation is coding-agent's SkillInvocationMessageComponent(skillBlock,。
 package kit
 
 // SkillInvocation is coding-agent's SkillInvocationMessageComponent(skillBlock,

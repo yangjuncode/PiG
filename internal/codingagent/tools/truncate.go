@@ -18,6 +18,7 @@
 // LastLinePartial = true so the renderer can show
 // "[Showing last <bytes> of line N (line is <bytes>). ...]"
 
+// 中文导读：工具输出的 head/tail 截断助手。
 package tools
 
 import (

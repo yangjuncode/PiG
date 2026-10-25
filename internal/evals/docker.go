@@ -1,3 +1,4 @@
+// 中文导读：评测设施——docker；对应上游 packages/evals/src/docker.ts。
 package evals
 
 // Ports packages/evals/src/docker.ts.

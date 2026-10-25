@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——wheel_scroll；对应上游 packages/tui/src/wheel-scroll.ts。
 package tui
 
 // Ports packages/tui/src/wheel-scroll.ts

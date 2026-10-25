@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：bash 会话环境变量管理。
 package tools
 
 import (

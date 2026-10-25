@@ -1,3 +1,4 @@
+// 中文导读：MCP（Model Context Protocol）客户端——jsonrpc_notification；职责：IsJSONRPCRequest is upstream isJsonRpcRequest (protocol/jsonrpc.ts): a JSON-RPC 2.0 object with a string or finite-number id and a string method. message is a 。
 package mcp
 
 import "math"

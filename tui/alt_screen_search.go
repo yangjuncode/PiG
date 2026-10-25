@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——alt_screen_search；对应上游 pi-tui's alt-screen-search.ts: transcript search over rendered lines。
 package tui
 
 import (

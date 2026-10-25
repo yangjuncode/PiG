@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——script；职责：Stepper is the native binding of a core (ABI section 11)。
 // Package abitest reads ABI event scripts and runs them through a native core. It is test tooling and may use
 // encoding/json; core packages never import it outside tests.
 package abitest

@@ -1,3 +1,4 @@
+// 中文导读：图像处理——image_convert。
 package imageprocessing
 
 // ConvertImageBytesToPng applies EXIF orientation before encoding PNG, as

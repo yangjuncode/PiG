@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：CLI 资源加载器。
 package cli
 
 import (

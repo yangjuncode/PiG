@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——session_skill_helpers；职责：CurrentSessionVersion is Pi's CURRENT_SESSION_VERSION: the version a session file's header carries。
 package sdk
 
 import (

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——progress；职责：ProgressBytesPerSecond is the pace each progress commit buys: a pause proportional to what it wrote。
 package turn
 
 // ProgressBytesPerSecond is the pace each progress commit buys: a pause proportional to what it wrote.

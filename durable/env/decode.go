@@ -1,3 +1,4 @@
+// 中文导读：durable 环境——decode；对应上游 packages/durable/src/env/decode.ts。
 package env
 
 // Ports packages/durable/src/env/decode.ts

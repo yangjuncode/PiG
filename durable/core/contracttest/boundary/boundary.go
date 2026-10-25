@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——boundary；职责：ForbiddenPackages are the packages the core must not link: each is reflection or reflection-driven (TinyGo supports them。
 // Package boundary checks that the production core links none of the reflection-driven standard-library packages TinyGo cannot
 // build faithfully (go list -deps over the core packages, the Go and the Wasm configuration).
 package boundary

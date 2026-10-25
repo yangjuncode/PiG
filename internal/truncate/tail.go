@@ -1,3 +1,4 @@
+// 中文导读：内部包——tail；职责：TailWindow is TruncateTail of a stream of chunks without keeping the stream: Append folds a chunk in and Result equals TruncateTail of everything。
 package truncate
 
 import "strings"

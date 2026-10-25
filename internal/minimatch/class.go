@@ -1,3 +1,4 @@
+// 中文导读：内部包——class；对应上游 minimatch 10.2.6 brace-expressions.js, escape.js and unescape.js。
 package minimatch
 
 // Ports minimatch 10.2.6 brace-expressions.js, escape.js and unescape.js.

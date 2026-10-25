@@ -1,3 +1,4 @@
+// 中文导读：包管理器内部实现——resources；职责：IsWithin is resource-loader.ts isUnderPath on the resolved path: the root itself, or a path under it, where a root that already ends in a separator (a 。
 package packagemanager
 
 import (

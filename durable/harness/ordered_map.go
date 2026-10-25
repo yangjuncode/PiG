@@ -1,3 +1,4 @@
+// 中文导读：durable harness：持久化代理运行的宿主层——ordered_map；职责：OrderedMap is a JavaScript Map with string keys: Set keeps an existing key's position, Delete removes it, and a re-added key appends。
 package harness
 
 import "slices"

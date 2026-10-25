@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：workspace 校验和。
 package pigletbuild
 
 import (

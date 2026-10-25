@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：JS 空白语义。
 package mcpext
 
 import "unicode"

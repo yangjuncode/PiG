@@ -1,3 +1,4 @@
+// 中文导读：内部包——decode；职责：DecodeUnquoting is Decode with escaped string text decoded by unquote instead of encoding/json, for a caller whose。
 package chordjson
 
 import (

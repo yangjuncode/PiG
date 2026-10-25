@@ -1,3 +1,4 @@
+// 中文导读：Piglet 签名：签名实现。
 // Package signature signs and verifies Piglet Binaries.
 //
 // pig additive (D18): a signed Piglet Binary carries one signature block

@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 Mario Zechner
 // SPDX-License-Identifier: MIT
 
+// 中文导读：工具定义基础设施。
 package tools
 
 // Ports packages/coding-agent/src/core/tools/tool-definition-wrapper.ts (createToolDefinitionFromAgentTool) and

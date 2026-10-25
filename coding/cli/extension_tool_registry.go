@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：扩展工具注册表。
 package cli
 
 import (

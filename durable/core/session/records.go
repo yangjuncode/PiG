@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——records；职责：It ports pi-durable's session/session.ts, session/transaction.ts,。
 // Package session is the Durable core's Session layer: the Session line, the
 // transaction that stages one atomic commit (conversations, entries, tasks,
 // submissions and documents), the document cache, and the task scheduler.

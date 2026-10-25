@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 存储——tx；职责：Tx is one Pi commit under construction: the StorageWrite batch of spec §10, in call order。
 package store
 
 import (

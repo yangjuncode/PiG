@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——errors；对应上游 packages/chord/src/errors.ts。
 // Package host ports the Chord host runtime of Pi's @earendil-works/chord root export (packages/chord/src): contracts,
 // hosts, objects, cells, roots, plugins, hot reload and links. The shared base (Context, JSON, replicated state) is
 // the parent package chord, which the durable core links without the runtime.

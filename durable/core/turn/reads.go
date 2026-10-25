@@ -1,3 +1,4 @@
+// 中文导读：durable 核心轮次——reads。
 package turn
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——setup_session；职责：SetupSessionManager is the SessionManager that Pi hands the setup callback of newSession (types.ts:411, agent-session-runtime.ts:254-257): the replacement Session。
 package sdk
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：工具参数 schema 定义（Parameters 为源字面量，panic 安全）。
 package tools
 
 import (

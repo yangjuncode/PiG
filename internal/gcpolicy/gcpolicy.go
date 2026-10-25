@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——gcpolicy；职责：TargetPercent is the GC percent of a print, json or rpc run。
 // Package gcpolicy is PiG's GC target for print, json and rpc runs. pig additive (D175): a print, json or rpc run whose environment does not set GOGC
 // collects at a GC percent of TargetPercent, so a short run's allocations finish before most of the collections the default target would
 // start, and goes back to DefaultPercent once a collection finds more than FallbackLiveBytes live, so a run over a large session keeps the

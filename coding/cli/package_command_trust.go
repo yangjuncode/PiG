@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：package 命令的信任处理；对应上游 packages/coding-agent/src/package-manager-cli.ts:746-748。
 package cli
 
 import (

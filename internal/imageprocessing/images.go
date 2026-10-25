@@ -9,6 +9,8 @@
 //  3. Try PNG first, then JPEG quality steps until the base64 payload fits
 //     under 4.5 MB.
 //  4. If still too large, shrink dimensions by 25% and retry.
+//
+// 中文导读：图像处理——images；对应上游 upstream packages/coding-agent/src/utils/image-resize.ts using the。
 package imageprocessing
 
 import (

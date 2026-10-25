@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——perfgate；职责：RatchetPath is the ceiling file, relative to the module root。
 // Package perfgate checks count metrics against the ratchet ceilings in automation/perf/ratchet.toml.
 //
 // A gate test measures a count that does not depend on machine speed (allocations, bytes, GC cycles, goroutines, descriptors, child processes, crossings, file sizes) and calls [Check] with the metric's ID. Check fails when the count exceeds the ceiling or the ID has no ceiling, and logs one `perfgate: <id>=<value> ceiling=<ceiling>` line that `make perf-scoreboard-measure` collects. Ceilings only move down: automation/perf/scoreboard.py --ratchet-base rejects a raised ceiling. Only test code imports this package.

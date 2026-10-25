@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——model_stream_callbacks；职责：ModelFetchFunc is a model request transport。
 package sdk
 
 import (

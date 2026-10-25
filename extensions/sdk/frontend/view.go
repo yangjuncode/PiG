@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——view；职责：View is the component structure of an extension surface's lines (D107):。
 package frontend
 
 import "time"

@@ -1,3 +1,4 @@
+// 中文导读：内置 LLM 工具包：read/write/edit/bash/grep/find/ls/powershell 等工具的实现，镜像上游 core/tools/*.ts 的行为与输出形状。
 // Package tools implements the built-in LLM-callable tools.
 // Mirrors pi-coding-agent's tools: bash, read, write, edit, grep, find, ls.
 //

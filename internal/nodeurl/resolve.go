@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——resolve；对应上游 packages/ai/src/api/mistral-conversations.ts (WHATWG URL serialization at the fetch boundary)。
 package nodeurl
 
 // Ports packages/ai/src/api/mistral-conversations.ts (WHATWG URL serialization at the fetch boundary).

@@ -1,3 +1,4 @@
+// 中文导读：TUI 的 highlight.js 语法高亮移植——first。
 package hljs
 
 // firstSet over-approximates the code units a pattern can consume first: ascii has a bit per unit below 128, nonASCII stands for every other unit, and nullable is set when the pattern can match without consuming. A pattern can match at position p only if it is nullable or its set holds the unit at p, so a joined alternation tries at p only the branches whose set holds the unit there.

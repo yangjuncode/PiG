@@ -1,3 +1,4 @@
+// 中文导读：MCP 扩展：MCP 日志；对应上游 packages/coding-agent/src/extensions/mcp/log.ts。
 package mcpext
 
 import (

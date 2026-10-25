@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——scan；对应上游 packages/durable/src/storage/scan.ts。
 // Package scan resolves the order and position of a built-in storage scan.
 package scan
 

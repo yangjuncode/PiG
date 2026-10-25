@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 // SPDX-License-Identifier: MIT
 
+// 中文导读：内部包——strip_ansi；职责：StripANSI mirrors upstream utils/ansi.ts stripAnsi: it removes every ansiRegex match. Text without an introducer is returned as it is。
 package text
 
 import (

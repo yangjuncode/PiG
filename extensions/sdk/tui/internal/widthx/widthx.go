@@ -1,5 +1,6 @@
 // Code generated from tui/widthx/widthx.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的宽度计算——widthx；对应上游 packages/tui/src/utils.ts。
 // Package widthx implements Pi's terminal width, grapheme and ANSI operations with JavaScript UTF-16 semantics.
 // Ports packages/tui/src/utils.ts
 package widthx

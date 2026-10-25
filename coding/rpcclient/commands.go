@@ -1,3 +1,4 @@
+// 中文导读：RPC 客户端：MCP 命令。
 package rpcclient
 
 import (

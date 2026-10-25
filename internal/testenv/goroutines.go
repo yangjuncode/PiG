@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：测试环境设施——goroutines；职责：GoroutineBaseline is the set of goroutines alive when it was taken. A test takes one, runs an owner (a host, a daemon, a client, a harness) through its work and。
 package testenv
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的工具包——input；职责：Input is pi-tui's Input({prompt, placeholder, placeholderStyle}): a。
 package kit
 
 // Input is pi-tui's Input({prompt, placeholder, placeholderStyle}): a

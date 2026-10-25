@@ -1,3 +1,4 @@
+// 中文导读：grep 工具（GrepTool）：驱动 ripgrep，镜像上游 grep.ts。
 package tools
 
 import (

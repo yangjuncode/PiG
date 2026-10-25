@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——editor_component；职责：EditorComponent is what a custom editor (an extension's vim or emacs mode, custom keybindings) provides so the application can host it in place of the built-i。
 package tui
 
 // EditorComponent is what a custom editor (an extension's vim or emacs mode, custom keybindings) provides so the application can host it in place of the built-in [Editor].

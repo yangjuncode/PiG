@@ -1,3 +1,4 @@
+// 中文导读：评测设施——cli；对应上游 packages/evals/src/cli.ts。
 package evals
 
 // Ports packages/evals/src/cli.ts.

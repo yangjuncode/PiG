@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——scoped_models_list；对应上游 upstream scoped-models-selector.ts. Lets users enable/disable。
 package tui
 
 // ScopedModelsList: multi-select model toggle list for /scoped-models.

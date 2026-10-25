@@ -1,3 +1,4 @@
+// 中文导读：内部包——toolchain；职责：GoDownloadBase is the official Go distribution site. Its JSON index。
 // Package toolchain locates the build tools PiG uses for compiled extension
 // cells and Piglet Binaries, and installs a PiG-managed Go toolchain for users
 // who installed only the pig binary.

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——rows；职责：EntryRow is the column values of an entries insert。
 package history
 
 // The row writes of conversations and entries, as pi-durable's SqliteStorage makes them (src/storage/sqlite/

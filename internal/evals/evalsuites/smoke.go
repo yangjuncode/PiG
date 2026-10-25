@@ -1,3 +1,4 @@
+// 中文导读：评测设施——smoke；对应上游 packages/evals/evals/smoke.eval.ts。
 package evalsuites
 
 // Ports packages/evals/evals/smoke.eval.ts.

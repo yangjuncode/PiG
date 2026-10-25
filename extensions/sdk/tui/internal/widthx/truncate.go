@@ -8,6 +8,7 @@
 //   - finalizeTruncatedResult  utils.ts:130
 //   - truncateToWidth          utils.ts:812
 
+// 中文导读：Go 扩展 SDK 的宽度计算——truncate；对应上游 upstream pi-tui width-bounded truncation with ellipsis + ANSI/tab。
 package widthx
 
 import (

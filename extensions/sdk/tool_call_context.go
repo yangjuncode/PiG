@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——tool_call_context；职责：ToolCallIndex is the position of the running tool call among the tool calls of the assistant message that issued it, the batch agent-loop.ts executes (the t。
 package sdk
 
 import (

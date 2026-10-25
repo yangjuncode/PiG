@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——scroll_view；对应上游 pi-tui's scroll-view.ts: a single-child vertical scroll viewport with an。
 package tui
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：Node URL 语义——reference；职责：Origin is the URL's ASCII serialized origin, as Node's `url.origin` gives it for an http or https URL。
 package nodeurl
 
 // Implements the WHATWG URL parser's relative resolution against an http or https base (`new URL(input, base)`) and the application/x-www-form-urlencoded parser behind `URLSearchParams`.

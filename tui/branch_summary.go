@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——branch_summary；职责：BranchSummaryMessage is the part of Pi's BranchSummaryMessage (coding-agent core/messages.ts:55) that。
 package tui
 
 // BranchSummaryMessageComponent renders a branch-summary boundary marker in the chat transcript. Like upstream's

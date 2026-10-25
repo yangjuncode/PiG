@@ -1,3 +1,4 @@
+// 中文导读：chord 宿主——cluster；对应上游 packages/chord/src/cluster.ts. Cross-host reload, coordinated by the server (the host without a parent):。
 package host
 
 // Ports packages/chord/src/cluster.ts. Cross-host reload, coordinated by the server (the host without a parent):

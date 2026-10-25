@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——tool；职责：ToolBackend is the part of durable.ToolExecutionApi that reads or writes core state: the operations a tool call runs。
 package driver
 
 import (

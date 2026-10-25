@@ -1,3 +1,4 @@
+// 中文导读：shell 输出更新推送：单 emitter goroutine 保证慢消费者不阻塞执行。
 package tools
 
 import (

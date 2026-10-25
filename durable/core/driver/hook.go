@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——hook；职责：PrepareArguments is a tool's argument repair (durable.ToolRegistration.PrepareArguments)。
 package driver
 
 import (

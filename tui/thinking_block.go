@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——thinking_block；职责：DefaultHiddenThinkingLabel is the label that stands in for a hidden thinking run (interactive-mode.ts defaultHiddenThinkingLabel)。
 package tui
 
 import (

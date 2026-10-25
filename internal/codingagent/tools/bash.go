@@ -1,3 +1,4 @@
+// 中文导读：bash 工具（BashTool）：执行 shell 命令，支持本地或调用方提供的操作后端。
 package tools
 
 import (

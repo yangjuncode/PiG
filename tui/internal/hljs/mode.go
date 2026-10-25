@@ -1,3 +1,4 @@
+// 中文导读：TUI 的 highlight.js 语法高亮移植——mode；职责：Mode is a highlight.js mode or language object. JavaScript reads absent, undefined, null and false properties alike in every place the compiler and。
 package hljs
 
 // Mode is a highlight.js mode or language object. JavaScript reads absent, undefined, null and false properties alike in every place the compiler and highlighter consult them, so each property keeps its value here and present records which own properties the object has: inherit and Object.assign copy exactly those.

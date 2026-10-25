@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——tool；职责：ToolDef is the pi.tool task definition (tool.ts ToolTask, version 2): input {kind: "model", assistant, callId}, first。
 package turn
 
 import (

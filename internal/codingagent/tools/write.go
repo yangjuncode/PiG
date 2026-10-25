@@ -1,3 +1,4 @@
+// 中文导读：write 工具（WriteTool/WriteOperations）：文件创建，经 mutation queue 串行。
 package tools
 
 import (

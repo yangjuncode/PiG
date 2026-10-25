@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：启动模型解析。
 package cli
 
 // Startup model selection. Mirrors upstream main.ts buildSessionOptions (CLI

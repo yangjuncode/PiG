@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable ABI——event；职责：Event is one input of a session (ABI sections 5 and 11). Payload and Rows alias the host's input buffer and are valid。
 package abi
 
 import (

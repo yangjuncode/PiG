@@ -1,3 +1,4 @@
+// 中文导读：MCP（Model Context Protocol）客户端——transport；对应上游 packages/mcp/src/transports/transport.ts。
 package mcp
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：codemode：代码模式子系统——remote_serve；对应上游 packages/codemode/src/runtime/remote.ts (CodemodeServeOptions)。
 package codemode
 
 import (

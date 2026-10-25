@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——lossless_json；职责：PrepareBranchEntriesJSON is [PrepareBranchEntries] over the raw JSON of the entries ([Context.GetEntries] gives it) that answers with JSON,。
 package sdk
 
 import (

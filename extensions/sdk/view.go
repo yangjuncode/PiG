@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——view；职责：ViewComponent is a focused component that describes itself as a。
 package sdk
 
 import (

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心——core；职责：ABIID is abi_id (ABI section 1)。
 // Package core is PiG's synchronous Durable core (docs/plan/durable-core, ADR-0001): one deterministic state machine
 // per Session that takes an ABI 1 event and returns a step of commits, reads, notices and effects. The same source
 // builds natively, as a Go wasip1 reactor and as a TinyGo wasip1 reactor (-scheduler=none); cmd/corewasm is the Wasm

@@ -1,3 +1,4 @@
+// 中文导读：评测设施——models；对应上游 packages/evals/evals/models.docs.eval.ts。
 package evalsuites
 
 // Ports packages/evals/evals/models.docs.eval.ts.

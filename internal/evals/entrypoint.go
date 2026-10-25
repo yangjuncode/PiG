@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：评测设施——entrypoint；对应上游 packages/evals/docker/entrypoint.ts。
 package evals
 
 // Ports packages/evals/docker/entrypoint.ts.

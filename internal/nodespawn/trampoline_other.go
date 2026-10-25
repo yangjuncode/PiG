@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：Node 进程 spawn——trampoline_other。
 package nodespawn
 
 import (

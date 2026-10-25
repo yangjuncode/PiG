@@ -1,5 +1,6 @@
 //go:build !darwin && !linux && !windows
 
+// 中文导读：Node errno 语义——posix_other。
 package nodeerrno
 
 import "syscall"

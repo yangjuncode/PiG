@@ -1,3 +1,4 @@
+// 中文导读：内部包——relative；职责：Relative is path.relative(from, to) for the host platform。
 package nodepath
 
 import (

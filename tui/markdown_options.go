@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——markdown_options；对应上游 packages/tui/src/components/markdown.ts (constructor options and text replacement)。
 package tui
 
 // Ports packages/tui/src/components/markdown.ts (constructor options and text replacement).

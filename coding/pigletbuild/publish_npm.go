@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：npm 发布。
 package pigletbuild
 
 import (

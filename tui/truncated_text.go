@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——truncated_text；对应上游 upstream packages/tui/src/components/truncated-text.ts。
 package tui
 
 // truncated_text.go: width-truncated text component.

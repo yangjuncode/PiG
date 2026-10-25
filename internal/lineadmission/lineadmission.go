@@ -1,3 +1,4 @@
+// 中文导读：内部包——lineadmission。
 // Package lineadmission reports the moment an ordered queue fixes an operation's position.
 //
 // A TypeScript caller that extends a Promise chain synchronously fixes its order before it awaits, so the next caller may start

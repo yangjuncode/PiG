@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——request_context；职责：RequestContext is the committed context a model request is prepared from: what generation.ts reads of runtime.context。
 package turn
 
 import (

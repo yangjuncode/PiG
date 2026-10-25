@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：测试环境设施——startup_windows；职责：StartupHelper is the environment variable that makes a test binary whose。
 package testenv
 
 import (

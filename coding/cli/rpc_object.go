@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：RPC 对象。
 package cli
 
 import (

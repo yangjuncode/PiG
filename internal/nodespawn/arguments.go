@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright Node.js contributors
 // SPDX-License-Identifier: MIT
 
+// 中文导读：Node 进程 spawn——arguments；职责：CheckArguments is the validation Node's spawn(file, args) makes before it。
 package nodespawn
 
 import (

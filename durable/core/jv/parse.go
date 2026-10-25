@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——parse；职责：ParseString is Parse for a string。
 package jv
 
 import (

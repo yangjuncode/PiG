@@ -1,3 +1,4 @@
+// 中文导读：内部包——quote_utf16；对应上游 packages/coding-agent/src/modes/rpc/jsonl.ts (JSON.stringify string encoding)。
 package text
 
 import (

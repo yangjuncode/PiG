@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：RPC 后台门控。
 package cli
 
 import (

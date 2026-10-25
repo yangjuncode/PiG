@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——draft。
 package history
 
 // AppendEntryRecord appends the stored record of an entry written from draft (src/session/transaction.ts

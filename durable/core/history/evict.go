@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——evict；职责：Err is the first failed read of an evicted chunk. The bytes of a record that could not be read are zero; the caller。
 package history
 
 // A conversation that lives for many turns must not keep every record's text in memory: Pi's Session keeps no per-record

@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——footer_data；职责：FooterData is Pi's ReadonlyFooterDataProvider (footer-data-provider.ts:103-163,387): the footer data Pi hands to a ui.setFooter factory as its third argu。
 package sdk
 
 import (

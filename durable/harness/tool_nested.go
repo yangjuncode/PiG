@@ -1,3 +1,4 @@
+// 中文导读：durable harness：持久化代理运行的宿主层——tool_nested；对应上游 the nested-call half of packages/durable/src/harness/tool.ts (executeTool, startNestedCall, settle's nested。
 package harness
 
 import (

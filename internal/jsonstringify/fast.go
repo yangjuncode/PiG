@@ -1,3 +1,4 @@
+// 中文导读：JS JSON.stringify 语义——fast。
 package jsonstringify
 
 import (

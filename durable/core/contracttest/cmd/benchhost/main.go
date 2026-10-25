@@ -7,6 +7,7 @@
 // The core packages are event-driven and perform no I/O; this program is the host that gives them SQLite (modernc), applies
 // each commit of a step in its own transaction, and writes a trace of every commit's statements for the gate to replay.
 // CONTRACT_CRASH_AFTER=<seq> kills the process after the commit that consumed that sequence number.
+// 中文导读：durable 核心——main。
 package main
 
 import (

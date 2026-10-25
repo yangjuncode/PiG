@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——user_message_selector；职责：UserMessageItem is one selectable user message (user-message-selector.ts UserMessageItem)。
 package tui
 
 import (

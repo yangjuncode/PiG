@@ -1,3 +1,4 @@
+// 中文导读：内部包——testscaling；职责：Order is the exponent of a cost bound in the growing size: 0 is constant,。
 // Package testscaling measures how the cost of a hot path grows with the size
 // of the input that grows in a session (history length, message size, transcript
 // lines, keys) and fails a test when the growth exceeds the declared bound.

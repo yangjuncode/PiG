@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——sched_types；职责：Cancel is a cancellation signal: the AbortSignal of an invocation or of a。
 package session
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：Pi package 资源发现。
 // Package packagecontent discovers resources exposed by Pi packages and
 // cross-harness plugin manifests.
 package packagecontent

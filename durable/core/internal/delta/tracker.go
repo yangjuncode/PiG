@@ -1,3 +1,4 @@
+// 中文导读：durable 核心——tracker；职责：ErrRevoked is the panic value for any use of a draft handle after its change settled, was aborted, or became stale。
 package delta
 
 import (

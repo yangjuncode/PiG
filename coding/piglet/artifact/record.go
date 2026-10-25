@@ -1,3 +1,4 @@
+// 中文导读：Piglet artifact：artifact 记录。
 package artifact
 
 // pig additive (D18): Piglet builds emit closed, content-addressed records

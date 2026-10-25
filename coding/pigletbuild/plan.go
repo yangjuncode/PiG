@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：artifact 计划。
 // Package pigletbuild hosts Piglet Binary planning while orchestration is
 // moved to the final Piglet artifact package. The planner is factual: compatible
 // Go factories fuse; every other extension is an exact subprocess component.

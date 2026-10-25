@@ -1,3 +1,4 @@
+// 中文导读：内部包——frontendpack。
 // Package frontendpack holds the frontend member fused into a Piglet Binary
 // (D91). The build generates registry_generated.go, which registers the
 // member's Frontend factory. Stock PiG compiles this package with no member,

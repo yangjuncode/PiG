@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：资源来源信息；对应上游 packages/coding-agent/src/core/resource-loader.ts (mapSkillPath and resource source metadata)。
 package cli
 
 // Ports packages/coding-agent/src/core/resource-loader.ts (mapSkillPath and resource source metadata).

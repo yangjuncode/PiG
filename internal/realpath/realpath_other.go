@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：内部包——realpath_other；职责：EvalSymlinks is filepath.EvalSymlinks. An absolute path, the case of a working directory, takes walk, which lstats the。
 package realpath
 
 import (

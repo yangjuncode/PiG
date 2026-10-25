@@ -1,3 +1,4 @@
+// 中文导读：Piglet 子系统：npm 源。
 package piglet
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：package 内容与 glob：glob AST。
 package packagecontent
 
 import (

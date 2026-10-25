@@ -1,6 +1,7 @@
 // Streaming output accumulator for the shell tools.
 //
 // Mirrors upstream packages/coding-agent/src/core/tools/output-accumulator.ts.
+// 中文导读：shell 工具的流式输出累积器。
 package tools
 
 import (

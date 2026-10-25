@@ -1,3 +1,4 @@
+// 中文导读：配置值桥——configured_shell；对应上游 packages/coding-agent/src/core/resolve-config-value.ts。
 package configvalue
 
 import (

@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：env 守护进程——sys_unix；对应上游 packages/env/daemon/src/sys/unix.rs。
 package daemon
 
 // Ports packages/env/daemon/src/sys/unix.rs

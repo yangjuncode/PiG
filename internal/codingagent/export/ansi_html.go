@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 // Ports packages/coding-agent/src/core/export-html/ansi-to-html.ts
+// 中文导读：会话导出：ANSI 转 HTML。
 package export
 
 import (

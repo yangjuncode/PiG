@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——kitty_metadata；对应上游 pi-tui's terminal-image.ts Kitty metadata registry and the two layout。
 package tui
 
 import (

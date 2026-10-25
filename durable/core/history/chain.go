@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 历史存储——chain；职责：Chain is one conversation's own entries: the stored record bytes in an append-only arena beside the fixed-width。
 package history
 
 import (

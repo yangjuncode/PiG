@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——memstore；职责：MemStore is an in-memory session.Store。
 // Package sessiontest provides an in-memory session.Store that keeps all
 // committed state, as pi-durable's MemoryStorage does. It is the reference
 // store of the Session layer's tests: every read is answered, none returns

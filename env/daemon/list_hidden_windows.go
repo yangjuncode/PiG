@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：env 守护进程——list_hidden_windows。
 package daemon
 
 import "syscall"

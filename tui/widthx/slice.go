@@ -5,6 +5,7 @@
 //   - sliceWithWidth      utils.ts:1268
 //   - extractSegments     utils.ts:1014
 
+// 中文导读：TUI 的终端宽度计算（宽字符/emoji 单元格）——slice；对应上游 upstream pi-tui column slicing and overlay-segment extraction。
 package widthx
 
 import (

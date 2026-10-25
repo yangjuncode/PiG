@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK 的 TUI 面——text；职责：CursorMarker is pi-tui's CURSOR_MARKER: a zero-width APC sequence a focused component emits at its cursor position, which the。
 package tui
 
 import "github.com/MichaelKinsy/PiG/extensions/sdk/tui/internal/widthx"

@@ -2,6 +2,7 @@
 
 // Ports packages/ai/src/utils/overflow.ts (OVERFLOW_PATTERNS, NON_OVERFLOW_PATTERNS)
 // Ports packages/ai/src/utils/retry.ts (RETRYABLE_PROVIDER_ERROR_PATTERN, NON_RETRYABLE_PROVIDER_LIMIT_ERROR_PATTERN)
+// 中文导读：durable 核心轮次——patterns；对应上游 packages/ai/src/utils/overflow.ts (OVERFLOW_PATTERNS, NON_OVERFLOW_PATTERNS)。
 package turn
 
 // Read-only: assigned once at initialization.

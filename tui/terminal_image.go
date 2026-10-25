@@ -1,3 +1,4 @@
+// 中文导读：终端 UI 库（tui 包：渲染器、组件、输入解析）——terminal_image；对应上游 packages/tui/src/terminal-image.ts detectCapabilitiesFromEnvironment (396ecd7b)。
 package tui
 
 import (

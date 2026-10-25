@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Alexey Zaytsev
 // SPDX-License-Identifier: Apache-2.0 AND MIT
 
+// 中文导读：mermaid 处理——types；对应上游 grok-mermaid types.ts Cls。
 // Package mermaid renders Mermaid diagrams as Unicode box-drawing art for
 // terminals. It is a faithful port of pi's bundled grok-mermaid@0.2.2
 // (TypeScript, Apache-2.0, © 2023-2026 SpaceXAI, © 2026 Alexey Zaytsev), so its

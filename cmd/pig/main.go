@@ -1,3 +1,4 @@
+// 中文导读：命令入口——main；对应上游 packages/coding-agent/src/cli.ts。
 package main
 
 import (

@@ -1,5 +1,6 @@
 // Code generated from tui/widthx/pi_width.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的宽度计算——pi_width；职责：JSTrimEnd is String.prototype.trimEnd。
 package widthx
 
 // pi_width.go ports upstream pi-tui's per-grapheme width and grapheme

@@ -1,3 +1,4 @@
+// 中文导读：durable 核心驱动——remote_errors。
 package driver
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：config 命令。
 package cli
 
 import (

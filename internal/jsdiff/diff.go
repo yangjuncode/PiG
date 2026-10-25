@@ -1,3 +1,4 @@
+// 中文导读：内部包——diff；职责：Change is one jsdiff change object: a run of text kept, added or removed。
 // Package jsdiff ports the parts of the npm `diff` package (jsdiff 8.0.4) that Pi calls: diffWords, which Pi's renderDiff uses for
 // intra-line highlighting, and diffLines, behind the edit tool's display diff and patch. Both are Myers' algorithm over tokens; the word
 // diff attaches whitespace to its tokens and runs a whitespace tidy pass.

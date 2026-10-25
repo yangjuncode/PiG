@@ -1,3 +1,4 @@
+// 中文导读：内部包——valid。
 // Package jsonvalid reports whether a byte slice is one valid JSON text, with the verdict of the encoding/json scanner that session files were first checked with: the RFC 8259 grammar, no control character in a string, any \u escape (a lone surrogate included), bytes of any encoding inside a string, and nesting of at most 10,000 levels. It checks in a single pass without the scanner's per-byte state machine.
 package jsonvalid
 

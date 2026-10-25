@@ -1,3 +1,4 @@
+// 中文导读：Piglet 构建：默认容器。
 package pigletbuild
 
 import (

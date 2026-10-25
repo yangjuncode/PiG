@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心驱动——callback；职责：Callback is host code Pi runs inside an open commit callback: the core holds a transaction (tx) open and waits for the。
 package driver
 
 import (

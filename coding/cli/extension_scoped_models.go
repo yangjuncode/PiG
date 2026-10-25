@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：扩展 scoped 模型。
 package cli
 
 import (

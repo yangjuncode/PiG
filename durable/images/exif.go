@@ -1,3 +1,4 @@
+// 中文导读：durable 子系统：可持久化/可恢复的代理运行——exif；对应上游 packages/durable/src/images/exif.ts: the EXIF orientation of JPEG and WebP files, read from the bytes without。
 package images
 
 import "bytes"

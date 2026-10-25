@@ -1,5 +1,6 @@
 // Code generated from tui/keybindings.go by tui/sdk_tui_copy_test.go; DO NOT EDIT.
 
+// 中文导读：Go 扩展 SDK 的 TUI 引擎——keybindings；对应上游 upstream packages/tui/src/keybindings.ts。
 package engine
 
 // Mirrors upstream packages/tui/src/keybindings.ts.

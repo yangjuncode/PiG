@@ -9,6 +9,7 @@
 //	pig-evals host [-t PATTERN] [FILE...]
 //
 // runs the host evals on this machine (`vitest run --project host`) and writes vitest.json to the current directory.
+// 中文导读：命令入口——main。
 package main
 
 import (

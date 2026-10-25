@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：chord 宿主——manager_pipe_windows；对应上游 packages/chord/src/manager.ts: the Windows half of forkDriver and the process IPC channel (Node IPC framing over a named pipe)。
 package host
 
 // Ports packages/chord/src/manager.ts: the Windows half of forkDriver and the process IPC channel (Node IPC framing over a named pipe).

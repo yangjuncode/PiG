@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：chord 宿主——manager_windows。
 package host
 
 import (

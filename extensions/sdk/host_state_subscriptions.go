@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——host_state_subscriptions；职责：ExtensionSourceInfo is the provenance the loader stamped on this extension: upstream's extension.sourceInfo (types.ts SourceInfo), where ExtensionRunner.getExtens。
 package sdk
 
 import (

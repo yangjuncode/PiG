@@ -1,3 +1,4 @@
+// 中文导读：Go 扩展 SDK：扩展进程内使用的 API 实现——virtual_models；对应上游 packages/coding-agent/src/core/virtual-models.ts (the routing types)。
 package sdk
 
 import (

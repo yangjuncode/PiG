@@ -1,3 +1,4 @@
+// 中文导读：模型目录生成器——ai_gateway_models；对应上游 packages/ai/scripts/generate-models.ts fetchAiGatewayModels (the Vercel AI Gateway catalog stage)。
 package main
 
 // Ports packages/ai/scripts/generate-models.ts fetchAiGatewayModels (the Vercel AI Gateway catalog stage).

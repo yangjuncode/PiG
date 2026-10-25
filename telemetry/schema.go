@@ -1,3 +1,4 @@
+// 中文导读：遥测设施——schema；对应上游 packages/telemetry/src/index.ts。
 package telemetry
 
 // Ports packages/telemetry/src/index.ts.

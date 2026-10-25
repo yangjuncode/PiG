@@ -1,3 +1,4 @@
+// 中文导读：durable 核心会话——runtime；职责：Runtime is the facade a task phase handler uses, bound to one invocation。
 package session
 
 import (

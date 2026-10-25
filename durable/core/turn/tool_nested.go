@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable 核心轮次——tool_nested；职责：NestedCallDef is the pi.tool.nested-call family of a calling task, keyed by the nested call's key: so a rerun finds the calls。
 package turn
 
 import (

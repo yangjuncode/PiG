@@ -1,3 +1,4 @@
+// 中文导读：Piglet release：release 索引。
 // Package release verifies and installs signed Piglet Binary releases.
 //
 // pig additive (D18): Piglet releases are product-neutral signed indexes whose

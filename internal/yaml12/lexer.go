@@ -1,3 +1,4 @@
+// 中文导读：YAML 1.2 解析——lexer；对应上游 yaml 2.9.0 src/parse/lexer.ts. Copyright Eemeli Aro, ISC licence: permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies。
 // Package yaml12 ports the parts of eemeli/yaml 2.9.0 that Pi's frontmatter parser runs (lexer, parser, composer, core schema, error text), so frontmatter reads and fails as it does in Pi.
 //
 // Ports yaml 2.9.0 src/parse/lexer.ts. Copyright Eemeli Aro, ISC licence: permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.

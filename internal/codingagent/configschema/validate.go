@@ -1,3 +1,4 @@
+// 中文导读：配置校验。
 package configschema
 
 // Ports the runtime side of packages/coding-agent/src/core/model-config.ts: the document check that ModelConfig.load runs against the schema

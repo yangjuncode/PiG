@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：MCP（Model Context Protocol）客户端——stdio_windows。
 package mcp
 
 import (

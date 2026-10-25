@@ -1,3 +1,4 @@
+// 中文导读：durable 工具——read；对应上游 packages/durable/src/tools/read.ts。
 package tools
 
 import (

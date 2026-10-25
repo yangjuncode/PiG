@@ -1,3 +1,4 @@
+// 中文导读：durable 存储后端——cloudflare；对应上游 packages/durable/src/storage/sqlite/cloudflare.ts。
 // Package cloudflare opens durable storage on the SQLite storage of a Cloudflare Durable Object. The driver is Chord's
 // (chord/sqlite/cloudflare, Pi's @earendil-works/chord/sqlite/cloudflare); this package re-exports it and adds the durable
 // storage opener, as Pi's packages/durable/src/storage/sqlite/cloudflare.ts does.

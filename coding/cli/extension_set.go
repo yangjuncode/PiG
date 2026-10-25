@@ -4,6 +4,7 @@
 // the loader's inline list. The reload sequencing (the pre-trust pass, the trust callback and the final pass) runs in cli_runtime_build.go
 // and package_command_trust.go.
 
+// 中文导读：CLI 层：扩展集合；对应上游 the extension pieces of packages/coding-agent/src/core/resource-loader.ts that cmd/pig's build sequences (loadExtensionPaths'。
 package cli
 
 import (

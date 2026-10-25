@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：内部包——transient_other。
 package fsretry
 
 // TransientRename reports whether a rename failure is a transient lock worth

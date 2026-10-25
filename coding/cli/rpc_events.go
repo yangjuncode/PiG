@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/json-event.ts.
+// 中文导读：CLI 层：RPC 事件；对应上游 packages/coding-agent/src/modes/json-event.ts。
 package cli
 
 import (

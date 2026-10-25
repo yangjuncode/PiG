@@ -1,3 +1,4 @@
+// 中文导读：shell 进程跟踪：PiG 退出/崩溃时清理 detached shell（收不到终端 hangup）。
 package tools
 
 import (

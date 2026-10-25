@@ -1,5 +1,6 @@
 //go:build darwin
 
+// 中文导读：env 守护进程——sigmask_darwin。
 package daemon
 
 import (

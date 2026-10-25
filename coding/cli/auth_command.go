@@ -1,3 +1,4 @@
+// 中文导读：CLI 层：auth 命令；对应上游 upstream packages/coding-agent/src/cli/auth-command.ts: parsing,。
 package cli
 
 // Mirrors upstream packages/coding-agent/src/cli/auth-command.ts: parsing,

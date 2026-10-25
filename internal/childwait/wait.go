@@ -1,6 +1,7 @@
 // Waiting for a child's output pipes after it exits.
 //
 // Ports packages/coding-agent/src/utils/child-process.ts waitForChildProcess.
+// 中文导读：内部包——wait；对应上游 packages/coding-agent/src/utils/child-process.ts waitForChildProcess。
 package childwait
 
 import (

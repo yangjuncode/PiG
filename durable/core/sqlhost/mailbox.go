@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：durable SQL 宿主——mailbox。
 package sqlhost
 
 import "sync"
