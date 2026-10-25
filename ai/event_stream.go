@@ -190,6 +190,11 @@ func (s *AssistantMessageEventStream) Events(ctx context.Context) iter.Seq[Assis
 }
 
 // events is Events with optional delivery-time materialization. A forwarder passes false so a hop between streams neither copies nor observes the partial.
+// 双消费模型：ctx 带 continuationTurn → 走协程迭代器，等下一
+// 个事件就是 awaitContinuation（挂起协程让出执行权，事件到
+// 时由 push 投递方唤醒）；普通 ctx → observeEvents 走条件变量
+// 阻塞。materialize=false 供转发器用：跨流传一跳既不复制也不
+// 观察 partial（保持共享引用，节省内存）。
 func (s *AssistantMessageEventStream) events(ctx context.Context, materialize bool) iter.Seq[AssistantMessageEvent] {
 	if ctx == nil {
 		panic("assistant message event stream: nil iterator context")
@@ -260,6 +265,10 @@ func (s *AssistantMessageEventStream) ResultContext(ctx context.Context) (*Assis
 	s.mu.Lock()
 	executor := s.executor
 	s.mu.Unlock()
+	// 执行器内部调用方的特殊处理：await stream.result() 在 JS
+	// 里是把当前回调让出、让微任务队列继续跑——Go 侧对应
+	// observation.suspend()/Yield()，把执行权交回调度器而不是
+	// 干等，否则持有 turn 的 goroutine 阻塞会死锁。
 	if executor != nil {
 		executor.mu.Lock()
 		observation := executor.observation
@@ -269,6 +278,9 @@ func (s *AssistantMessageEventStream) ResultContext(ctx context.Context) (*Assis
 			case <-s.done:
 				if ctx.Err() == nil {
 					// An already settled result is an await of a resolved promise: its resume reaction is queued before execution is released, so it does not depend on when this goroutine is next scheduled.
+					// 已结算的 result 走 Yield 路径：反应按 FIFO 排进
+					// 队列再释放执行权——等价于"await 已 resolve 的
+					// promise"，语义是排队而非就地返回。
 					observation.Yield()
 					s.mu.Lock()
 					defer s.mu.Unlock()
@@ -280,6 +292,8 @@ func (s *AssistantMessageEventStream) ResultContext(ctx context.Context) (*Assis
 			defer func() { resume(ctx.Err() == nil) }()
 		}
 	}
+	// 非执行器 goroutine 或已完成 suspend 的路径：普通 select
+	// 等待 done 或调用方取消。
 	select {
 	case <-s.done:
 	case <-ctx.Done():
