@@ -762,6 +762,16 @@ func combineFailures(runError error, cleanupErrors []error) error {
 
 // settledResponse is promptAgent's checks over the messages the prompt added: the last assistant message must have
 // stopped or called a tool, and the run must have produced text.
+// 结算响应三步：1) 在本轮新增消息里找最后
+// 一条 assistant（取"最后"因为 run 可能含
+// 多轮 assistant+toolUse 往返）；2) 停因
+// 分流——非 stop/toolUse 是异常终止，有
+// errorMessage 用它否则报 stopReason（上
+// 游 ?? 语义：空字符串留着，null/缺席才
+// 回退）；3) stop 停因还要 RPC 取最后的
+// assistant 文本，stop 没文本算产出失败，
+// toolUse 停因文本可空（工具调用本身就是
+// 答复）。
 func settledResponse(ctx context.Context, process *agentProcess, messages []map[string]any, previousMessageCount int) (string, error) {
 	var assistant map[string]any
 	if previousMessageCount <= len(messages) {
@@ -830,6 +840,11 @@ func hasSystemMessage(messages []json.RawMessage) bool {
 
 // currentSystemPrompt replays every system message of the Session's RPC messages into the current prompt
 // (getCurrentSystemPrompt): later content is appended and sections are patched by name.
+// 重放求当前系统提示：把会话里全部 system
+// 消息按序提取喂给 GetCurrentSystemPrompt
+// 做"追加+按名补丁"归并——不是简单取最后
+// 一条，因为运行时可能在多轮里分段补写
+// prompt。
 func currentSystemPrompt(messages []json.RawMessage) (string, error) {
 	var system []ai.Message
 	for _, raw := range messages {
