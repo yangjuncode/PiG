@@ -381,6 +381,9 @@ func fitImage(in []byte, mimeType string, options *ai.ModelImageResizeOptions) (
 	if currentWidth < 1 || currentHeight < 1 {
 		return ResizedImage{}, nil, ErrImageTooLarge
 	}
+	// 质量阶梯：先试配置质量，再按
+	// 85→70→55→40 降档——尺寸已够但字节
+	// 超限时先压编码质量而不是缩像素。
 	qualitySteps := []int{limits.JPEGQuality}
 	for _, quality := range []int{85, 70, 55, 40} {
 		if quality != limits.JPEGQuality {
@@ -388,6 +391,13 @@ func fitImage(in []byte, mimeType string, options *ai.ModelImageResizeOptions) (
 		}
 	}
 
+	// 尺寸-质量双重收缩：每轮先把图缩到
+	// 当前边长，再按质量阶梯找第一个编码
+	// 后 ≤MaxBytes 的候选；全阶梯都塞不
+	// 下就把边长乘 0.75 再来——比二分粗
+	// 但和上游逐行为一致，且 0.75 保证
+	// 收敛（1x1 仍超就放弃）。nextWidth
+	// ==currentWidth 的早退防死循环。
 	for {
 		resized := resizeImage(src, currentWidth, currentHeight)
 		candidate, fits, err := firstFittingCandidate(resized, qualitySteps, limits.MaxBytes)

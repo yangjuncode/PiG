@@ -312,6 +312,11 @@ func positiveSafeInt(value float64, limit int) (int, bool) {
 }
 
 // contextWindowOf is the context window of a model: the loaded size, the configured size, the cached size, the training size, then 128000 (provider.ts contextWindowOf).
+// 上下文窗口五级回退：Meta.NCtx（加载时
+// 实际窗口，最权威）→ 启动参数 --ctx-size
+// → 上次缓存值 → Meta.NCtxTrain（训练上
+// 限，可能大于实际分配）→ 128000 兜底。
+// 优先级按"越接近运行实况越先"排。
 func contextWindowOf(model LlamaModelInfo, cachedContextWindow int) int {
 	if model.Meta != nil && model.Meta.NCtx != nil && *model.Meta.NCtx > 0 {
 		return int(*model.Meta.NCtx)
