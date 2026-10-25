@@ -26,6 +26,10 @@ func (m *InteractiveMode) dispatchSlash(ctx context.Context, line string) {
 	// Mirror any extension-registered commands into the registry just
 	// before dispatch so a freshly loaded command resolves.
 	m.syncExtensionSlashCommands()
+	// /model 特例：模型名解析是异步查找（可能在 autocomplete
+	// 条目里做模糊匹配），而命令分发本身是同步的——先把参数
+	// 解析好并钉进 sc.ResolveModel，再走普通分发，使命令回调
+	// 里看到的解析是确定的单值而非再做一次查找。
 	if match, ok := m.slashRegistry.Match(line); ok && match.Builtin != nil && match.Builtin.Name == "model" && match.Args != "" {
 		m.findExactModelMatch(ctx, match.Args, func(spec string, found bool) {
 			sc.ResolveModel = func(string) (string, bool) { return spec, found }
