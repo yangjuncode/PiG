@@ -3667,6 +3667,10 @@ func (s *Session) assistantRecoveryState(assistantMsg *agent.AssistantMessage, p
 			break
 		}
 	}
+	// 扫 assistant 之后的条目判断三个影响恢复裁决的事实：
+	// 有 compaction → 溢出已被压缩处理过；有 context_edit →
+	// usage 不再对应投影；最后一条指向本消息的 edit 是
+	// omission（Replacement==nil）→ 该错误已被显式恢复。
 	postAssistantEdit, compactedAfter, latestEditOmits := false, false, false
 	for _, entry := range after {
 		switch entry.Base().Type {
@@ -3730,6 +3734,10 @@ func (s *Session) runAutoCompaction(ctx context.Context, reason string, willRetr
 		return false, nil
 	}
 
+	// 压缩的取消管线：给本次压缩建独立 compactCtx 并把 cancel
+	// 存到 s.compactCancel——Esc/abort 路径通过它取消压缩。
+	// 若在登记前就已有 abort 请求（abortRequested），立即取消
+	// 防漏掉一次跨边界的 abort。
 	compactCtx, cancel := context.WithCancel(ctx)
 	s.compactMu.Lock()
 	s.compactCancel = cancel
@@ -3754,6 +3762,9 @@ func (s *Session) runAutoCompaction(ctx context.Context, reason string, willRetr
 
 	var result *sessionCompactionData
 	fromExtension := false
+	// 摘要来源两级仲裁：先让扩展（session_compact 钩子）产出，
+	// 它返回 nil 而非错误 = "我不接管" → 才走默认摘要。扩展返回
+	// 错误或数据都直接采用。
 	result, fromExtension, err = s.extensionCompaction(compactCtx, prep, entries, "", reason, willRetry)
 	cancelledByExtension := isCompactionCancelled(err)
 	if err == nil && result == nil {
@@ -3764,6 +3775,8 @@ func (s *Session) runAutoCompaction(ctx context.Context, reason string, willRetr
 			result = generatedCompactionData(generated)
 		}
 	}
+	// 生成成功后统一再查一次取消：摘要期间被取消按取消处理
+	// （丢弃结果），哪怕扩展/默认路径本身没报取消错误。
 	if err == nil && compactCtx.Err() != nil {
 		err = errCompactionCancelled
 	}
