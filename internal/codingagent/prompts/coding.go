@@ -102,9 +102,14 @@ func BuildSystemPromptSections(o Options) ai.OrderedSections {
 		}
 	}
 	var sections []section
+	// replace 模式：自定义提示整体顶替 preamble，上游约定
+	// 此时 tools/rules/docs 三节也随之省略——作者对自己的
+	// 装备描述负全责。
 	if o.AppendMode == "replace" && o.CustomPrompt != "" {
 		head = o.CustomPrompt
 	} else {
+		// 只列有 snippet 的工具——上游同样不给无提示的
+		// 工具留位（模型从工具声明得知其余）。
 		var tools []string
 		for _, name := range declared {
 			if hint := o.ToolHints[name]; hint != "" {
@@ -180,6 +185,10 @@ func guidelinesFor(tools []string, toolGuidelines map[string][]string, promptGui
 			out = append(out, rule)
 		}
 	}
+	// 文件操作指引的兜底：只有装了 shell 类工具且没有
+	// 任何专用检索工具（grep/find/ls 全无）时才提示模型
+	// 用 shell 做文件操作——有专用工具时上游靠各工具
+	// 自己的 guideline 指路，不重复说。
 	bash, powershell := has("bash"), has("powershell")
 	if (bash || powershell) && !has("grep") && !has("find") && !has("ls") {
 		switch {
