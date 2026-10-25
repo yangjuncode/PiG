@@ -154,6 +154,10 @@ func getAssistantUsage(message agent.AgentMessage) *ai.Usage {
 // when no usage exists (compaction.ts estimateContextTokens). LastUsageIndex
 // is -1 for Pi's null.
 func EstimateContextTokens(messages []agent.AgentMessage) agent.ContextUsageEstimate {
+	// 从尾到头找最近一条"可信 usage"的 assistant 消息：
+	// usage 是 provider 自报的准确值（比字符估算准），之后
+	// 的消息只有尾部一小段，用字符估算补上即可——比逐条估
+	// 全历史又准又快。
 	for i, message := range slices.Backward(messages) {
 		usage := getAssistantUsage(message)
 		if usage == nil {
@@ -168,6 +172,7 @@ func EstimateContextTokens(messages []agent.AgentMessage) agent.ContextUsageEsti
 			LastUsageIndex: i,
 		}
 	}
+	// 整条历史都没有可信 usage（如新会话首轮前）：全字符估算。
 	estimated := estimateMessagesTokens(messages)
 	return agent.ContextUsageEstimate{Tokens: estimated, TrailingTokens: estimated, LastUsageIndex: -1}
 }
@@ -185,6 +190,8 @@ func EstimateContextTokens(messages []agent.AgentMessage) agent.ContextUsageEsti
 func EstimateProjectedContextTokens(projection codingagent.SessionProjection, branchEntries []codingagent.SessionEntry) agent.ContextUsageEstimate {
 	estimate := EstimateContextTokens(projection.Messages)
 	if estimate.LastUsageIndex >= 0 {
+		// 定位"最后可信 usage"对应的分支条目：投影消息序号
+		// → 条目 ID → 分支下标（两段映射）。
 		usageEntryID := ""
 		projectedIndex := 0
 		for _, entry := range projection.Entries {
@@ -201,6 +208,10 @@ func EstimateProjectedContextTokens(projection codingagent.SessionProjection, br
 				return entry.Base().ID == usageEntryID
 			})
 		}
+		// 从尾部找最近一次"使 usage 失真"的条目：compaction
+		// 必失真（它替换了 usage 之前的内容）；context_edit
+		// 只在目标条目位于 usage 锚点之前时才失真——D136：
+		// 编辑锚点之后的条目（如抠掉失败重试）不影响锚点。
 		latestInvalidating := -1
 		for i, entry := range slices.Backward(branchEntries) {
 			if entry.Base().Type == "compaction" {
@@ -221,6 +232,8 @@ func EstimateProjectedContextTokens(projection codingagent.SessionProjection, br
 			return estimate
 		}
 	}
+	// 无可用 usage 或已失真：逐条估算——当前系统态算一次，
+	// 每条非系统消息 chars/4。
 	tokens := 0
 	if current := codingagent.CurrentSystemMessage(projection.Messages); current != nil {
 		tokens = estimateSystemTokens(*current)
