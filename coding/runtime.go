@@ -184,6 +184,9 @@ func (rt *Runtime) NewExtensionRunner() *inproc.Runner {
 
 // Diagnostics returns the diagnostics of the current construction; a replacement's own replace them.
 // upstream: agent-session-runtime.ts get diagnostics, apply
+//
+// 当前构造的启动诊断：Runtime 经历过会话替换后读"当前那一次构造"
+// 的诊断——旧的被替换而非累加。
 func (rt *Runtime) Diagnostics() []AgentSessionRuntimeDiagnostic {
 	if current := rt.replacement.current.Load(); current != nil {
 		return current.Diagnostics
@@ -193,6 +196,9 @@ func (rt *Runtime) Diagnostics() []AgentSessionRuntimeDiagnostic {
 
 // ModelFallbackMessage returns the model fallback message of the current construction; a replacement's own replaces it.
 // upstream: agent-session-runtime.ts get modelFallbackMessage, apply
+//
+// 当前构造的模型回退提示（所选模型不可用时降级到哪了）；替换会话
+// 后读新构造自己的消息。
 func (rt *Runtime) ModelFallbackMessage() string {
 	if current := rt.replacement.current.Load(); current != nil {
 		return current.ModelFallbackMessage

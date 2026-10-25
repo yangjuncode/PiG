@@ -20,6 +20,10 @@ func toolDeclarations(current []AgentTool) []ai.ToolSchema {
 
 // toolSchemas are the loadout's schemas as the tools return them. Comparing them needs no declaration copy, because
 // ai.DeclarationsEqual ignores prompt guidelines and ai.GetToolStateChanges copies only the declarations it adds.
+//
+// 当前工具表的 schema 快照（差分计算的输入）：无需先拷 declaration——
+// DeclarationsEqual 比较时忽略 prompt guidelines，GetToolStateChanges
+// 也只拷它新增的那部分。
 func toolSchemas(current []AgentTool) []ai.ToolSchema {
 	schemas := make([]ai.ToolSchema, len(current))
 	for i, t := range current {
@@ -96,6 +100,10 @@ func declareToolChanges(tools []AgentTool, context, pending []AgentMessage) []Ag
 }
 
 // systemOnly is messages without the ones that are not system messages. The replay of tool declarations reads only system messages, so a replay of the result equals a replay of messages; it walks a history of any length with a pointer test per message, and the replay itself walks the few system messages.
+//
+// 只保留 system 消息的过滤：工具声明重放只读 system 消息，所以先过滤
+// 再重放与直接重放等价——每条消息一次指针判断的 O(n) 预过滤，换来
+// 重放只走少数几条 system 消息。
 func systemOnly(messages []AgentMessage) []AgentMessage {
 	count := 0
 	for i := range messages {
@@ -123,6 +131,9 @@ func withToolChanges(message AgentMessage, changes ai.ToolStateChanges) AgentMes
 }
 
 // systemMessageWire is the object a system message decodes from.
+//
+// system 消息的线上形态（会话文件 JSONL 里那条 system 记录的字段）：
+// content 保留 raw JSON 以便区分"字符串内容"与"块数组内容"。
 type systemMessageWire struct {
 	Content      json.RawMessage    `json:"content"`
 	Sections     ai.OrderedSections `json:"sections"`
@@ -144,6 +155,10 @@ func decodeSystemMessage(data []byte) (*ai.SystemMessage, error) {
 }
 
 // decodeSystemContent decodes a system message's content: a string or text blocks, and nil when it is null or missing (Pi parses a session line without validation; the context projects { ...message, content: "" }, session-manager.ts sessionEntryToContextMessages).
+//
+// system 消息 content 的两形态解码：字符串→SystemText，块数组→
+// SystemTextBlocks，null/缺省→nil。上游解析会话行不做校验，上下文
+// 投影时再补空串（sessionEntryToContextMessages）。
 func decodeSystemContent(raw []byte) (ai.SystemContent, error) {
 	if len(raw) == 0 || string(raw) == "null" {
 		return nil, nil

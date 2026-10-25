@@ -296,6 +296,10 @@ func (h *loopHost) runPreparedToolCall(ctx context.Context, prepared preparedToo
 // call's hooks wait for the hooks of the calls that settled before it to start; the first extension handler a hook invokes reports its start
 // (ToolHookStartedFromContext), and the batch reports it once the hooks returned, so a call whose hooks started no handler cannot hold the later
 // calls back.
+// finalizeCalledTool 是"工具结算顺序"的闸门：同一批次里各调用的
+// after-tool-call 钩子按工具"落地"（settle）顺序启动，一个钩子的
+// 首个 await 之前下一个钩子不开跑。ToolSettleFromContext 给的槽位
+// 记录该调用的落地位次；没槽位（非并行批次）直接走常规定稿。
 func (h *loopHost) finalizeCalledTool(ctx context.Context, prepared preparedToolCall, executed finalizedToolCall) finalizedToolCall {
 	slot := ToolSettleFromContext(ctx, prepared.call.id)
 	if slot == nil {
@@ -714,12 +718,17 @@ func (h *loopHost) emitToolExecutionEnd(finalized finalizedToolCall) {
 	h.emit(toolExecutionEndEvent(finalized))
 }
 
+// toolExecutionEndEvent 把定稿结果打包成 tool_execution_end 事件：
+// 含调用 ID、工具名、最终结果、isError 与执行耗时。
 func toolExecutionEndEvent(finalized finalizedToolCall) ToolExecutionEndEvent {
 	return ToolExecutionEndEvent{ToolCallID: finalized.call.id, ToolName: finalized.call.name, Result: finalized.result, IsError: finalized.isError, DurationMs: finalized.durationMs()}
 }
 
 // durationMs is upstream's durationMs on a finalized outcome: the milliseconds execute() took, rounded like Math.round, and
 // absent when the tool did not run. upstream: agent-loop.ts:826-852,908
+//
+// 定稿结果上的 durationMs：Execute 实际跑过才有值（按 Math.round 取整
+// 毫秒），prepare 阶段就失败/被拦的调用为 nil——与上游一致。
 func (f finalizedToolCall) durationMs() *int64 {
 	if !f.executed {
 		return nil
@@ -755,6 +764,10 @@ func createToolResultMessage(finalized finalizedToolCall, timestamp int64) ToolR
 }
 
 // toolUpdateGate is what ToolUpdatesObserved knows about the update callback executePreparedToolCall hands a tool.
+//
+// 进度更新"可见性闸门"：记录循环 sink 回调的函数指针（callback），
+// ToolUpdatesObserved 靠比较指针区分"循环自己的 sink"和"工具转发给
+// 别的工具的回调"——后者（扩展包一层调 bash）不受闸门约束。
 type toolUpdateGate struct {
 	observed func() bool
 	// callback is the code pointer of executePreparedToolCall's sink. A callback of any other code is not this gate's:
@@ -769,6 +782,12 @@ type toolUpdateGateKey struct{}
 // extension tool_execution_update handler is there to see one. Every other callback is observed. A tool that skips its
 // update work while this is false asks again as it runs, so an observer that appears during the execution gets the
 // updates from then on, as a Pi listener added mid-execution sees the updates emitted after it subscribed.
+//
+// 工具进度回调的可见性查询：onUpdate 为 nil 直接 false；是循环的
+// sink 时查闸门（无任何监听方时为 false，工具可省掉构造进度的工作）；
+// 是工具自管的别的回调时恒 true。工具在 false 期间可以跳过更新工作
+// 但应持续重查——执行中途出现的观察者从下次更新开始能看到（与上游
+// "订阅后只收到之后的事件"一致）。
 func ToolUpdatesObserved(ctx context.Context, onUpdate ToolUpdateCallback) bool {
 	if onUpdate == nil {
 		return false

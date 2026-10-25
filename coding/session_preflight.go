@@ -63,6 +63,11 @@ func (s *Session) PreparePrompt(ctx context.Context, content []ai.UserContentBlo
 
 // prepareRun awaits before_agent_start for the message that starts a run (agent-session.ts:1885-1936 _prepareRun) without holding the
 // Session lock, so a handler's own Session calls and queue operations proceed while it is suspended.
+// prepareRun 完成"起跑前的扩展裁决"（_prepareRun）：克隆系统提示
+// sections（防 handler 改到基线）、有 before_agent_start 处理器的
+// runner 发事件、ResolveBeforeAgentStartRun 合并出 run 决议；转录
+// 工具重放的 TypeError 先于 loadout 错误报告。全程不持 Session 锁，
+// handler 自己的 Session 调用/队列操作能继续。
 func (s *Session) prepareRun(ctx context.Context, trigger extension.BeforeAgentStartTrigger) (*PreparedPrompt, error) {
 	p := &PreparedPrompt{session: s, sessionID: s.ID()}
 	select {
@@ -107,11 +112,16 @@ func (p *PreparedPrompt) NormalizeImages() {
 }
 
 // takeNextTurn takes the pending nextTurn messages for the run whose preparation ends (agent-session.ts:1924-1925).
+// takeNextTurn 在准备收尾时取走扩展攒下的 nextTurn 消息——归本次
+// 运行（agent-session.ts:1924-1925）；之后再入队的等下一轮。
 func (p *PreparedPrompt) takeNextTurn() {
 	p.nextTurn = p.session.agent.TakePendingNextTurn()
 }
 
 // startingMessages is the starting batch of a user prompt's run: the user message, then the nextTurn messages the preparation took (agent-session.ts:1909-1925). The Agent's prepare-prompt hook appends the handlers' messages and the system patch.
+// startingMessages 拼起跑消息批：user 消息在前、本次取走的
+// nextTurn 上下文消息在后——Agent 的 prepare-prompt 钩子再往上
+// 追加 handler 消息与系统补丁。
 func (p *PreparedPrompt) startingMessages() []agent.AgentMessage {
 	user := agent.AgentMessage{User: &agent.UserMessage{Role: agent.RoleUser, Content: append(ai.UserContentBlocks(nil), p.content...), Timestamp: time.Now().UnixMilli()}}
 	return append([]agent.AgentMessage{user}, p.nextTurn...)
@@ -183,6 +193,9 @@ func (s *Session) BeginPreparedPrompt(ctx context.Context, start *RunStart, p *P
 }
 
 // admitRunPrompt makes the prepared run's tool loadout, system prompt, run options and handler messages current for the run that was just claimed.
+// admitRunPrompt 把裁决结果生效到刚认领的运行：应用工具 loadout、
+// 替换系统提示、发布 run 选项、把 handler 消息排进 agent_start
+// 前置队列。
 func (s *Session) admitRunPrompt(p *PreparedPrompt) {
 	s.applyPromptToolLoadout(s.admittedToolNames(p.run.SelectedTools))
 	if p.systemPrompt != nil {
@@ -193,6 +206,8 @@ func (s *Session) admitRunPrompt(p *PreparedPrompt) {
 }
 
 // finishRunPrompt ends the prepared run's system prompt and run options.
+// finishRunPrompt 收尾本运行的临时态：恢复基线系统提示、清 run
+// 选项槽。
 func (s *Session) finishRunPrompt(p *PreparedPrompt) {
 	if p.systemPrompt != nil {
 		s.agent.ClearSystemPrompt()
@@ -204,6 +219,9 @@ func (s *Session) finishRunPrompt(p *PreparedPrompt) {
 // request hooks record the run's prompt sections in the transcript as they do for a prompt the Session prepared
 // (agent-session.ts:1724 builds the run's options for every mode). Nil ends the run. The Session refreshes the options
 // before each later turn.
+// SetRunPrompt 供"模式自己备过 before_agent_start"的路径发布
+// run——Session 的请求钩子照样把 run 的 prompt sections 记进转录；
+// 每轮后续请求前会重读。nil 表示结束本次 run。
 func (s *Session) SetRunPrompt(run *icodingagent.BeforeAgentStartRun) {
 	s.runPrompt.Store(run)
 }

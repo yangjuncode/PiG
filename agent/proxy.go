@@ -22,6 +22,9 @@ import (
 )
 
 // ProxyAssistantMessageEventType is the closed `type` union of a proxy event (proxy.ts ProxyAssistantMessageEvent).
+//
+// 代理事件类型的封闭联合（proxy.ts）：start/xxx_start/delta/end/done/
+// error 一组固定取值，对应 provider 端流事件的紧凑形态。
 type ProxyAssistantMessageEventType string
 
 // The proxy event types.
@@ -68,6 +71,11 @@ type ProxyAssistantMessageEvent struct {
 }
 
 // UnmarshalJSON decodes the event and records the members of a toolcall_end toolCall.
+//
+// 自定义解码两件事：contentIndex 走 parseProxyContentIndex 按 JS 数组
+// 索引语义解析（数字或规范数字字符串）；toolcall_end 的 toolCall 成员
+// 表存进 toolCallFields，供 mergeProxyToolCall 判断"线上写了哪些字段"——
+// 缺省字段要保留流式累积的值而不是被空值覆盖。
 func (event *ProxyAssistantMessageEvent) UnmarshalJSON(data []byte) error {
 	type plain ProxyAssistantMessageEvent
 	var decoded struct {
@@ -90,12 +98,19 @@ func (event *ProxyAssistantMessageEvent) UnmarshalJSON(data []byte) error {
 }
 
 // maxProxyArrayIndex is the largest JavaScript array index, 2^32-2.
+//
+// JS 数组索引上界 2^32-2（数组长度可到 2^32-1，索引到 2^32-2）。
 const maxProxyArrayIndex = math.MaxUint32 - 1
 
 // parseProxyContentIndex reads a wire contentIndex. Pi uses the member as a property key of the content array
 // (`partial.content[proxyEvent.contentIndex]`), so an index is any value whose property key is an array index: an
 // integral number from 0 (-0 included) to 2^32-2, or a string spelling such a number canonically ("0", "17", not "01").
 // Any other value (absent, null, negative, fractional, another string) names a non-index property; it reports true.
+//
+// 线上 contentIndex 的 JS 属性键语义：上游把它当 `partial.content[k]`
+// 的下标用，所以"合法索引"= 属性键为数组下标——0（含 -0）到 2^32-2
+// 的整数，或规范写法的数字字符串（"0"、"17"，"01" 不算）。其余一切
+// （缺省、null、负数、小数、其他字符串）是非索引属性，返回 notArrayIndex。
 func parseProxyContentIndex(raw json.RawMessage) (int, bool) {
 	// The first byte names the kind, so the value decodes straight into a float64 or a string instead of an interface value.
 	switch first := firstJSONByte(raw); {
@@ -116,6 +131,9 @@ func parseProxyContentIndex(raw json.RawMessage) (int, bool) {
 }
 
 // firstJSONByte is the first byte of text that is not JSON whitespace, or 0.
+//
+// 跳过 JSON 空白看首字节——单看首字节就能决定按 float64 还是 string
+// 解码，省掉 interface{} 通用解码。
 func firstJSONByte(text []byte) byte {
 	for _, b := range text {
 		if b != ' ' && b != '\t' && b != '\n' && b != '\r' {
@@ -362,6 +380,10 @@ func runProxyRequest(ctx context.Context, options ProxyStreamOptions, body []byt
 
 // proxyAbortReason is the message fetch rejects with when the signal aborts before the response arrives: a cancel cause, the
 // TimeoutError of AbortSignal.timeout for an expired deadline, or the default AbortError.
+//
+// 响应还没回来就被 abort 时 fetch 的拒绝原因：有 cancel cause 用它
+// （含 AbortSignal.timeout 到期的 TimeoutError）；普通取消归为
+// AbortError（上游 fetch 的默认拒绝形态）。
 func proxyAbortReason(ctx context.Context) error {
 	cause := context.Cause(ctx)
 	switch {
@@ -569,6 +591,10 @@ func (converter *proxyEventConverter) process(proxyEvent ProxyAssistantMessageEv
 }
 
 // mergeProxyToolCall mirrors Object.assign(content, proxyEvent.toolCall): members the wire call omits keep the streamed call's value.
+//
+// 对应上游 Object.assign(content, proxyEvent.toolCall)：线上 toolCall
+// 没写的成员（id/name/arguments）保留流式累积值——toolcall_end 常只带
+// 增量片段，不能让它把前面 delta 攒下的字段抹掉。
 func mergeProxyToolCall(streamed, wire ai.ToolCall, fields map[string]json.RawMessage) ai.ToolCall {
 	if _, ok := fields["id"]; !ok {
 		wire.ID = streamed.ID
@@ -584,6 +610,10 @@ func mergeProxyToolCall(streamed, wire ai.ToolCall, fields map[string]json.RawMe
 
 // proxyEventStoresContent reports the events that write `partial.content[index]`. The others only read it, and a read at a
 // non-index key finds nothing in Pig, as in Pi: a store at such a key has already ended the stream.
+//
+// 会写 `partial.content[index]` 的只有三种 start 事件（text/thinking/
+// toolcall）；其余事件只读。非索引键上的读在 Pi 与 PiG 里都拿不到
+// 东西——那种键上的写早把流终结了。
 func proxyEventStoresContent(eventType ProxyAssistantMessageEventType) bool {
 	switch eventType {
 	case ProxyEventTextStart, ProxyEventThinkingStart, ProxyEventToolcallStart:

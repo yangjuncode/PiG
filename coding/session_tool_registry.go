@@ -120,6 +120,9 @@ func (tool *sessionBoundTool) ReserveMutationOrder(args json.RawMessage) (*agent
 
 // MayTakeFileMutationQueue and RegistersInFileMutationQueue pass the tool's own answers on: the parallel dispatcher orders an extension tool's registration in
 // the file mutation queue against the edit and write calls of its batch through the tool it was given, which is this one.
+//
+// 两个文件变更队列标记透传：并行派发器要给"扩展工具"排文件变更
+// 顺序时问的是包装后的本工具，须把问题转给内层实现回答。
 func (tool *sessionBoundTool) MayTakeFileMutationQueue() bool {
 	mayTake, ok := tool.AgentTool.(agent.MayTakeFileMutationQueue)
 	return ok && mayTake.MayTakeFileMutationQueue()
@@ -387,6 +390,8 @@ func (r *sessionToolRegistry) refresh(runner *inproc.Runner) error {
 }
 
 // entry is the admitted entry of name.
+//
+// 按名取已注册条目（index→entries 二级映射）。
 func (r *sessionToolRegistry) entry(name string) (sessionToolEntry, bool) {
 	index, ok := r.index[name]
 	if !ok {
@@ -563,6 +568,8 @@ func (s *Session) refreshTools(includeAllExtensionTools bool) error {
 }
 
 // ReloadOption configures Session.Reload (agent-session.ts reload(options)).
+//
+// Session.Reload 的函数式选项（当前仅 WithBeforeSessionStart）。
 type ReloadOption func(*reloadOptions)
 
 type reloadOptions struct {
@@ -571,6 +578,9 @@ type reloadOptions struct {
 
 // WithBeforeSessionStart runs fn after the new runner is bound and before it receives session_start, only when the mode bound its UI or command
 // actions (reload's options.beforeSessionStart, agent-session.ts:3676-3678). An error from fn fails the reload.
+// WithBeforeSessionStart 在新 runner 绑定后、收到 session_start
+// 前插一段回调——只当模式绑过 UI/命令动作才跑（reload 的
+// options.beforeSessionStart）；出错即整次 reload 失败。
 func WithBeforeSessionStart(fn func(context.Context) error) ReloadOption {
 	return func(o *reloadOptions) { o.beforeSessionStart = fn }
 }
@@ -580,6 +590,12 @@ func WithBeforeSessionStart(fn func(context.Context) error) ReloadOption {
 // tools a settings reload newly added to defaultTools activate; and, when the mode bound its UI or command actions, the new runner gets them
 // and session_start with reason reload, then the resources its resources_discover handlers contribute. A failure before the new runner exists
 // leaves the old one stale, as Pi does.
+// Reload 即 AgentSession.reload 的全流程：旧扩展收
+// session_shutdown(reason=reload) 后变陈旧（runtime 视新 runner
+// 是否复用它再决定是否失效）；设置与资源重新装载；新 runner
+// 继承旧 flag 值；设置新增的 defaultTools 工具自动激活；绑过
+// UI/命令动作时再补 session_start(reason=reload) 与资源发现。
+// 新 runner 建成前失败则旧 runner 保持陈旧（与上游一致）。
 func (s *Session) Reload(ctx context.Context, options ...ReloadOption) error {
 	var reload reloadOptions
 	for _, option := range options {
@@ -644,11 +660,16 @@ func (s *Session) Reload(ctx context.Context, options ...ReloadOption) error {
 }
 
 // contextResourceLoader is a resource loader whose reload runs under the context of the call that asked for it, as Pi's reload runs for the awaiting caller.
+//
+// 能接受调用方 ctx 的 reload 接口——上游 reload 为等待它的调用
+// 方而跑，可取消。
 type contextResourceLoader interface {
 	ReloadWith(ctx context.Context, options ...ResourceLoaderReloadOptions) error
 }
 
 // reloadResourceLoader reloads loader under ctx when it can take one.
+// reloadResourceLoader 优先走带 ctx 的 ReloadWith，不支持退普通
+// Reload。
 func reloadResourceLoader(ctx context.Context, loader ResourceLoader) error {
 	if withContext, ok := loader.(contextResourceLoader); ok {
 		return withContext.ReloadWith(ctx)
@@ -658,6 +679,9 @@ func reloadResourceLoader(ctx context.Context, loader ResourceLoader) error {
 
 // usesDefaultTools reports whether the session's initial tools come from the defaultTools setting.
 // upstream: sdk.ts:472 `(options.tools === undefined || toolModifiers !== undefined) && !options.noTools`; agent-session.ts:500 `config.usesDefaultTools ?? false`, so a session built on a base tool override does not use them unless it says so.
+// usesDefaultTools 判定"初始工具集是否来自 defaultTools 设置"：
+// 显式给了 UsesDefaultTools 听它的；否则按上游推导——没给
+// BaseToolsOverride/AllowedTools/NoTools/SkipBuiltinTools 才算用默认。
 func usesDefaultTools(opts SessionOptions) bool {
 	if opts.UsesDefaultTools != nil {
 		return *opts.UsesDefaultTools

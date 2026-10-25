@@ -103,6 +103,7 @@ func branchedSessionEntries(source *Session, path []SessionEntry) ([]json.RawMes
 // rebasedMessage is the decode of raw, entry's record with its parentId set to parent, when entry is a decoded message entry whose parent
 // raw names as a string: the same entry with that parent and raw as its record, since the rewrite changes no other member. It is nil for
 // any other entry, which the caller decodes from raw.
+// 重挂父链后的消息条目：raw 由调用方重新解码。
 func rebasedMessage(entry SessionEntry, parent *string, raw json.RawMessage) FileEntry {
 	message, ok := asMessage(entry)
 	if !ok || (parent != nil && sessionentry.IsJSValue(*parent)) {

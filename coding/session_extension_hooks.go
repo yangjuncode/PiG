@@ -294,6 +294,9 @@ func (s *Session) extensionProviderResponseHook(ctx context.Context, response ai
 }
 
 // extensionProviderStreamEventWanted reports whether extensionProviderStreamEventHook would emit an event now; when it would not, the hook returns nil and does nothing else.
+//
+// "现在发扩展 provider 流事件有没有人接"的预查：没人接时钩子
+// 直接返回 nil，省掉包装事件的全部工作。
 func (s *Session) extensionProviderStreamEventWanted() bool {
 	runner := s.currentRunner()
 	return runner != nil && runner.HasHandlers(icodingagent.EventProviderStreamEvent)

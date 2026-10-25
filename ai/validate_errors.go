@@ -252,6 +252,9 @@ func (s *argumentSchema) argumentErrorsAt(order schemaObjectOrder, value any, pa
 	return lines
 }
 
+// resolveArgumentRef 解析 $ref（仅支持 "#/path" 本地指针）：按 JSON
+// Pointer 语义逐段下钻——~1→/、~0→~ 反转义，URL 解码，经 child() 走
+// 惰性解析缓存；解不出来返回 nil（退化为不跟引用）。
 func (s *argumentSchema) resolveArgumentRef(ref string) *argumentSchema {
 	fragment, ok := strings.CutPrefix(ref, "#/")
 	if !ok {
@@ -271,11 +274,17 @@ func (s *argumentSchema) resolveArgumentRef(ref string) *argumentSchema {
 	return current
 }
 
+// checkKeyword 只按某个关键字校验值：临时构造单关键字 schema 走
+// 编译校验器——错误遍历要用它判断"该报哪个关键字分支"。
 func (s *argumentSchema) checkKeyword(keyword string, value any) bool {
 	schema := &argumentSchema{doc: map[string]any{keyword: s.value(keyword)}}
 	return schema.check(value)
 }
 
+// argumentLimitErrors 生成上/下限类错误（minItems/maxItems、
+// minLength/maxLength、min/maxProperties）：TypeBox 的遍历顺序是
+// 数组与字符串先上限后下限、properties 先下限后上限——报告顺序
+// 也要与之一致。
 func (s *argumentSchema) argumentLimitErrors(size float64, minimum, maximum, unit string, emit func(string)) {
 	// Array and string upper bounds precede lower bounds in TypeBox's error traversal.
 	order := []string{maximum, minimum}
@@ -296,10 +305,13 @@ func (s *argumentSchema) argumentLimitErrors(size float64, minimum, maximum, uni
 	}
 }
 
+// argumentPatternMatches 判定 pattern 是否命中：编译失败即不匹配。
 func argumentPatternMatches(pattern, value string) bool {
 	expression, err := regexp.Compile(pattern)
 	return err == nil && expression.MatchString(value)
 }
+
+// argumentPath 拼接错误路径：根处 key 直接返回，否则 "path.key"。
 func argumentPath(path, key string) string {
 	if path == "" {
 		return key
@@ -308,8 +320,13 @@ func argumentPath(path, key string) string {
 }
 
 // argumentKeySegment is a member name as it appears in Pi's error path: TypeBox appends the raw key to the instance path ("${instancePath}/${key}", unescaped) and validation.ts turns every "/" into ".".
+//
+// 成员名在错误路径里的呈现：TypeBox 原样拼 "${instancePath}/${key}"
+// （不转义），validation.ts 再把每个 "/" 换成 "."——含斜杠的键名
+// 在错误路径里会变成点多级，与上游逐字一致。
 func argumentKeySegment(key string) string { return strings.ReplaceAll(key, "/", ".") }
 
+// escapeArgumentPointer 是 JSON Pointer 转义：~→~0、/→~1。
 func escapeArgumentPointer(value string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(value, "~", "~0"), "/", "~1")
 }

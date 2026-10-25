@@ -270,6 +270,10 @@ func (s *Session) createBoundaryPreviewManager(drafts []extension.SessionBoundar
 }
 
 // boundaryProjection is the projection of a preview manager holding the session's branch and then drafts (agent-session.ts _buildBoundaryContext). With no drafts the preview holds exactly the branch, whose entries keep their ids and parent links, so its projection is the session's own and the copy is skipped. That projection's messages are the session's own objects, as Pi's are: the caller reads them and never modifies them.
+//
+// 边界上下文用的投影：有草稿（扩展预写条目）时先建预览 manager
+// 把草稿叠到分支尾再投影；无草稿直接拿会话自己的投影视图，
+// 消息就是会话原对象——只读不改。
 func (s *Session) boundaryProjection(drafts []extension.SessionBoundaryDraft) (icodingagent.SessionProjection, error) {
 	if len(drafts) == 0 {
 		return s.inner.BuildSessionProjectionView(), nil
@@ -323,6 +327,11 @@ func applyBoundaryDrafts(manager *icodingagent.Session, drafts []extension.Sessi
 }
 
 // recordedBoundaryContext is projectBoundaryContext for a boundary dispatch: it records the preview and the inputs of its projected part in the dispatch's wire cache, so subprocess handlers share one encoding while those inputs stay the same. While they stay the same and no handler that reads Go values has held the latest preview, the next preview reuses its projected part instead of projecting the session again: a projection of the same session state is equal to it.
+//
+// 带 wire 缓存的边界预览：把投影输入（会话+修订号）记进派发缓存，
+// 子进程处理器共享同一份编码；输入未变且无"读 Go 值"的处理器拿走
+// 过最新预览时，下次直接复用投影部分，不重投影——同一会话状态的
+// 投影必然相等。
 func (s *Session) recordedBoundaryContext(wire *boundarywire.Cache, drafts []extension.SessionBoundaryDraft, boundary string) (extension.BoundaryContextPreview, error) {
 	inner := s.inner
 	revision := inner.Revision()
@@ -350,6 +359,11 @@ func (s *Session) recordedBoundaryContext(wire *boundarywire.Cache, drafts []ext
 }
 
 // projectBoundaryContext is agent-session.ts _buildBoundaryContext with each context entry's SourceEntry unset and its record returned in sources: Pi's entry is the object the record parses to, which boundarywire.Cache.Deliver decodes for a handler that reads Go values. Without drafts, the preview's messages are the session's own objects, as Pi's are (shared): Deliver hands a handler that reads Go values copies of them.
+//
+// 上游 _buildBoundaryContext：预览里每条 context entry 的
+// SourceEntry 置空、原始记录单独进 sources 返回——上游那条 entry
+// 就是记录解析出的对象；boundarywire.Deliver 为"读 Go 值"的处理器
+// 解码它。无草稿时消息即会话原对象（shared=true）。
 func (s *Session) projectBoundaryContext(drafts []extension.SessionBoundaryDraft, boundary string) (preview extension.BoundaryContextPreview, sources []json.RawMessage, shared bool, err error) {
 	projection, err := s.boundaryProjection(drafts)
 	if err != nil {
@@ -374,6 +388,10 @@ func (s *Session) projectBoundaryContext(drafts []extension.SessionBoundaryDraft
 }
 
 // completeBoundaryContext adds to the projected part of a preview (contextEntries, contextMessages, llmMessages) the pending messages and canContinue, which read the run state at each build.
+//
+// 给投影部分补上"每次都现读运行态"的字段：pendingMessages（队列
+// steering/followUp + 待注入 custom）与 canContinue（上下文尾部非
+// assistant、有待注入 custom、或队列为空之外还有待发消息）。
 func (s *Session) completeBoundaryContext(projected extension.BoundaryContextPreview, boundary string) extension.BoundaryContextPreview {
 	hasNonSystem, finalAssistant := false, false
 	for _, message := range projected.LLMMessages {
@@ -399,6 +417,11 @@ func (s *Session) completeBoundaryContext(projected extension.BoundaryContextPre
 // subprocess handlers every context entry's record, whose encoding boundarywire keeps by the record's bytes: keeping the record a projection
 // handed out encodes each entry once while it stays in the context, and lets boundarywire find its kept encoding. Each projection keeps only
 // the records it used.
+//
+// 跨投影的"已发记录"缓存：会话里按追加对象持有的消息条目没有
+// 原始 JSON 记录，每次读都要重编码；这里按（条目ID+消息对象指针）
+// 记上次发出去的那份 raw，让 boundarywire 按字节找到已缓存编码——
+// 同一消息在上下文里待着期间只编码一次。每趟投影只留用过的记录。
 type boundaryRecords struct {
 	mu   sync.Mutex
 	pass uint64
@@ -406,6 +429,9 @@ type boundaryRecords struct {
 }
 
 // boundaryRecordKey names a message entry by its id and the message object it holds, so a record is handed out only for the value it encodes.
+//
+// 缓存键 = 条目 ID + 四个消息变体指针：同一条目对象换了消息指针
+// 就是不同键——记录只对"它编码的那个值"有效。
 type boundaryRecordKey struct {
 	id         string
 	system     *ai.SystemMessage
@@ -414,12 +440,16 @@ type boundaryRecordKey struct {
 	toolResult *agent.ToolResultMessage
 }
 
+// keptBoundaryRecord = 一份已发记录 + 它最后被哪趟投影用过。
 type keptBoundaryRecord struct {
 	raw  json.RawMessage
 	pass uint64
 }
 
 // begin starts a projection's pass.
+//
+// 开一趟投影的代次（pass 单调递增）：本趟用到的记录都打上这个
+// 代次，结束后 forget 清掉没被打上的旧记录。
 func (b *boundaryRecords) begin() uint64 {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -428,6 +458,10 @@ func (b *boundaryRecords) begin() uint64 {
 }
 
 // record returns entry's record, the one an earlier projection handed out when it names the same message object.
+//
+// 取条目记录：非消息条目直接取 Raw；消息条目按（ID+对象指针）查
+// 缓存，命中复用并刷新代次，未中编码一份存起来——保证同一对象在
+// 上下文里期间只编码一次。
 func (b *boundaryRecords) record(entry icodingagent.SessionEntry, pass uint64) json.RawMessage {
 	message, ok := icodingagent.AsMessage(entry)
 	if !ok {
@@ -453,6 +487,8 @@ func (b *boundaryRecords) record(entry icodingagent.SessionEntry, pass uint64) j
 }
 
 // forget drops the records pass did not hand out.
+//
+// 清掉本趟投影没碰过的记录——对应消息已滚出上下文，不再需要。
 func (b *boundaryRecords) forget(pass uint64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()

@@ -70,6 +70,7 @@ func newSessionFromEntries(cwd, id string, entries []FileEntry) (*Session, error
 
 // findSessionHeader is the first record of type "session", nil when there is none. _loadEntries finds the header by its type alone, so a
 // record of that type whose id is missing or ill-typed, which is no SessionHeader member, still owns the identity.
+// 在条目序列里找 session header——版本号判定与迁移都靠它。
 func findSessionHeader(entries []FileEntry) (*SessionHeader, error) {
 	for _, entry := range entries {
 		if entry.Raw() == nil {
@@ -238,6 +239,7 @@ func MigrateSessionEntries(entries []FileEntry) error {
 // assignIDToNonObject is migrateV1ToV2's `entry.id = generateId(ids); entry.parentId = prevId` on a record that is not an object. An array takes
 // the id as a property that JSON.stringify never writes, so the record is unchanged and the chain goes through it; a number, string or boolean
 // is a primitive, and the write throws a TypeError in strict mode.
+// 给非对象形态的原始行补发条目 ID（迁移：无法解析的记录也要有 ID 才能挂进父子链）。
 func assignIDToNonObject(raw json.RawMessage, ids map[string]struct{}, previous **string) error {
 	trimmed := bytes.TrimLeft(raw, " \t\r\n")
 	if len(trimmed) > 0 && trimmed[0] == '[' {

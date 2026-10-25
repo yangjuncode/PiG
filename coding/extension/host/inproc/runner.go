@@ -276,6 +276,9 @@ func NewRunner(extensions []extension.Extension, cwd string, sharedRuntime ...*e
 // NewExtensionRunner is Pi's ExtensionRunner constructor (extensions, runtime, cwd, sessionManager, modelRegistry): the runner over the loader's extensions and its shared runtime, with the log ctx.sessionManager exposes and the registry ctx.modelRegistry and provider registration read. A nil runtime gives the runner a fresh one; a nil sessionManager or modelRegistry waits for the binding that supplies it ([Runner.BindSessionManager], [Runner.BindCore]).
 //
 // upstream: runner.ts:395-408 (constructor)
+// NewExtensionRunner 构造扩展 runner（上游 ExtensionRunner 构造器）：
+// runtime 为 nil 时自建；sessionManager/modelRegistry 为 nil 时等后续
+// BindSessionManager/BindCore 绑定再供给。
 func NewExtensionRunner(extensions []extension.Extension, runtime *extension.ExtensionRuntime, cwd string, sessionManager extension.SessionManager, modelRegistry extension.ModelRegistry) *Runner {
 	r := NewRunner(extensions, cwd, runtime)
 	if sessionManager != nil {
@@ -388,6 +391,9 @@ func (r *Runner) InvalidateKeepingRuntime(message string) {
 	r.invalidate(message, false)
 }
 
+// invalidate 把 runner 标陈旧的内部实现：message 是给后续调用的
+// 错误说明；invalidateRuntime=false 时保留 runtime 供新 runner
+// 接管（reload 场景），true 则连同 runtime 一起失效。
 func (r *Runner) invalidate(message string, invalidateRuntime bool) {
 	r.invalidateOnce.Do(func() {
 		if message == "" {
@@ -590,6 +596,9 @@ type providerRegistry interface {
 	UnregisterProvider(string)
 }
 
+// nativeProviderRegistry 是"能注册原生 Go provider"的注册表接口：
+// 扩展 contextActions.ModelRegistry 实现它时 runner 才暴露
+// RegisterNativeProvider 能力。
 type nativeProviderRegistry interface {
 	RegisterNativeProvider(context.Context, *extension.NativeProvider) error
 }
@@ -864,6 +873,9 @@ func (r *Runner) Commands() []extension.ResolvedCommand {
 }
 
 // CommandsVersion reports a counter that moves whenever Commands can return something different: the sum of the extensions' command versions, which only grow. The boolean is false when an extension's commands have no version.
+//
+// 命令表的"内容版本"：各扩展命令版本之和——只增不减，调用方比对
+// 版本即可知命令列表有没有变。有扩展不报版本时 bool=false。
 func (r *Runner) CommandsVersion() (uint64, bool) {
 	var total uint64
 	for i := range r.extensions {
@@ -1091,6 +1103,8 @@ var reservedKeybindings = map[string]struct{}{
 }
 
 // ShortcutEntry is one extension shortcut under its normalized key.
+//
+// 一条扩展快捷键（按规范化后的键位为键）。
 type ShortcutEntry struct {
 	Key      extension.KeyID
 	Shortcut extension.ExtensionShortcut
@@ -1307,6 +1321,9 @@ type eventHandlerSnapshot struct {
 }
 
 // jsonEventHandlerSnapshot is eventHandlerSnapshot with, for each handler, whether it reads its event only as JSON.
+//
+// 处理器快照 + "该处理器是否只按 JSON 读事件"的标记位——派发时
+// 可让"只读 JSON"的处理器共享同一份编码，只有真要 Go 值的才解码。
 type jsonEventHandlerSnapshot struct {
 	ext      *extension.Extension
 	handlers []extension.HandlerFn
@@ -1314,6 +1331,10 @@ type jsonEventHandlerSnapshot struct {
 }
 
 // snapshotJSONEventHandlers is snapshotEventHandlers for a dispatch that shares work among the handlers that read the event only as JSON: a boundary dispatch decodes a preview's sources only for a handler that reads Go values (boundarywire), and an event that no handler changed keeps its encoding (eventwire).
+//
+// 按事件取各扩展处理器快照并带上 jsonOnly 标记——wire 缓存机制
+// （boundarywire/eventwire）据此复用编码、只为需要 Go 值的处理器
+// 解码。
 func snapshotJSONEventHandlers(extensions []extension.Extension, event string) []jsonEventHandlerSnapshot {
 	snapshots := make([]jsonEventHandlerSnapshot, 0, len(extensions))
 	for i := range extensions {
@@ -1590,6 +1611,10 @@ func (r *Runner) EmitToolCall(ctx context.Context, event extension.ToolCallEvent
 
 // AwaitEventLoopTurns gives each extension that handles event and runs on an event loop of its own (Extension.EventLoopTurn) one turn of that loop, concurrently, and returns when every one took it. Pi runs its tools on the extensions' event loop, so the callbacks an event handler queued run before the tool's result; this keeps that order when the tool ran elsewhere.
 // pig additive (D19): a turn that fails is not waited for; the extension's next dispatch reports its connection.
+// AwaitEventLoopTurns 给"处理该事件且有自己事件循环"的每个扩展
+// 并发各放一个 turn，全部跑完才返回——上游工具跑在扩展事件循环上，
+// 处理器排队的回调先于工具结果执行；这里在工具跑别处时保住该顺序。
+// （D19 附加：失败的 turn 不等待，下次派发再报连接问题。）
 func (r *Runner) AwaitEventLoopTurns(ctx context.Context, event string) {
 	var turns sync.WaitGroup
 	for _, snapshot := range snapshotEventHandlers(r.extensions, event) {
@@ -1700,6 +1725,9 @@ func (r *Runner) EmitToolResult(ctx context.Context, event extension.ToolResultE
 
 // toolResultUsage is the chained usage as the typed override: the event carries the tool's own usage as a *ai.Usage or an
 // ai.Usage, and a handler returns a *ai.Usage.
+//
+// 链式钩子间 usage 的归一：事件可携带 *ai.Usage 或 ai.Usage 两种
+// 形态，统一成指针供下一个 handler 改写。
 func toolResultUsage(usage any) *ai.Usage {
 	switch value := usage.(type) {
 	case *ai.Usage:
@@ -1908,6 +1936,10 @@ func (r *Runner) EmitContextTracked(ctx context.Context, messages []extension.Ag
 }
 
 // emitContext is EmitContextTracked that also reports whether the returned list is the runner's own: it is not when every handler read its event only as JSON and none replied with a list, so there was nothing to copy and the list is messages itself.
+//
+// EmitContextTracked 加"返回列表归属"报告：全部 handler 只按 JSON
+// 读事件且无人回写列表时，返回的就是传入的 messages 本身
+// （owned=false）——调用方据此可省掉克隆。
 func (r *Runner) emitContext(ctx context.Context, messages []extension.AgentMessage) (out []extension.AgentMessage, replaced, owned bool, err error) {
 	if err := r.assertActive(); err != nil {
 		return nil, false, false, err

@@ -65,6 +65,9 @@ func (m AssistantMessage) MarshalJSON() ([]byte, error) {
 }
 
 // AppendStringify appends the JSON.stringify text of MarshalJSON's output to dst (json.StringifyAppender).
+//
+// MarshalJSON 的"直接写进调用方缓冲"版本（json.StringifyAppender
+// 约定）——写会话文件时避免再分配一份中间字节。
 func (m AssistantMessage) AppendStringify(dst []byte) ([]byte, error) {
 	type plain AssistantMessage
 	return json.AppendStringify(dst, (*plain)(m.Observe()))
@@ -76,6 +79,9 @@ func (m ToolResultMessage) MarshalJSON() ([]byte, error) {
 }
 
 // AppendStringify appends the JSON.stringify text of MarshalJSON's output to dst (json.StringifyAppender).
+//
+// 同上：直接复用 AgentMessage{ToolResult} 的信封序列化，保持
+// "toolResult" role 在前、显式 details:null 的线上形态。
 func (m ToolResultMessage) AppendStringify(dst []byte) ([]byte, error) {
 	return AgentMessage{ToolResult: &m}.AppendStringify(dst)
 }
@@ -101,6 +107,9 @@ func (m AgentMessage) MarshalJSON() ([]byte, error) {
 
 // AppendStringify appends the JSON.stringify text of MarshalJSON's output to dst (json.StringifyAppender), encoding the message's members
 // into dst itself.
+//
+// 与 MarshalJSON 同一出口、但把成员直接编码进 dst——持久化每条
+// 消息时少一次整对象分配。
 func (m AgentMessage) AppendStringify(dst []byte) ([]byte, error) {
 	value, err := m.wire(false)
 	if err != nil {
@@ -111,6 +120,10 @@ func (m AgentMessage) AppendStringify(dst []byte) ([]byte, error) {
 
 // wire returns what MarshalJSON encodes: the JSON text the message writes as it is (its decoded source, cloned when clone is set, or a
 // custom message's members) as a json.RawMessage, or the value whose encoding is the message.
+//
+// 序列化的"内容源"决策：有保留原文（解码时的 source）且 clone 需要
+// 独立副本时返回克隆字节；custom 消息返回成员 map；其余返回待编码
+// 的信封变体——MarshalJSON/AppendStringify 只差在后者直接编码进 dst。
 func (m AgentMessage) wire(clone bool) (any, error) {
 	variants := 0
 	if m.System != nil {
@@ -320,6 +333,9 @@ func (m AgentMessage) SourceJSON() ([]byte, error) {
 }
 
 // sourceText is the text SourceJSON returns as it is held, when that is the text m was decoded from (not a custom object's members).
+//
+// 取出"解码原文"字节：各变体自己的 source 字段；custom 消息仅当原文
+// 不是对象（{开头）时才用它——对象原文与成员表等价，走成员编码。
 func (m AgentMessage) sourceText() []byte {
 	switch {
 	case m.System != nil && m.source != nil:
@@ -338,6 +354,10 @@ func (m AgentMessage) sourceText() []byte {
 
 // TextBytes is the length of the strings that make up most of m's JSON: the text it was decoded from, or its content's text, thinking,
 // image data and tool-call argument strings and keys, a tool result's details strings, and a custom message's strings. A writer sizes the buffer it encodes m into from it.
+//
+// 估算消息 JSON 里字符串载荷的总长（原文长度，或文本/思维/图片
+// base64/参数键值串的合计）——写会话文件前用来给编码缓冲区定容，
+// 减少增长扩容次数；只是容量提示，不影响写出的字节内容（D112）。
 func (m AgentMessage) TextBytes() int {
 	if text := m.sourceText(); text != nil {
 		return len(text)
@@ -360,6 +380,8 @@ func (m AgentMessage) TextBytes() int {
 	return 0
 }
 
+// contentTextBytes 累计一组内容块的文本载荷：文本/思维/图片数据/
+// 工具调用参数各自按线上形态计长。
 func contentTextBytes[T any](content []T) int {
 	size, budget := 0, textBytesBudget
 	for _, block := range content {
@@ -379,9 +401,15 @@ func contentTextBytes[T any](content []T) int {
 
 // textBytesBudget bounds the values valueTextBytes visits for one message: the walk is a size hint, so a large or cyclic value is cut short.
 // pig additive (D112): Pi sizes no buffer before JSON.stringify; the count only sizes the buffer a writer encodes into, so a cut walk changes how often it grows, not the bytes written.
+//
+// 遍历预算上限：size 估算只是提示，超大或成环的值走到 4096 个就
+// 截断——截短只影响缓冲区增长次数，不影响最终写出的字节（D112）。
 const textBytesBudget = 4096
 
 // valueTextBytes is the length of the strings and keys in a decoded JSON value, counting at most *budget values.
+//
+// 递归统计一个解码 JSON 值里全部字符串与对象键的总长，budget 记满
+// 即停；非标准 Go 值（如工具自定的 details 类型）交给反射版本。
 func valueTextBytes(value any, budget *int) int {
 	if *budget <= 0 {
 		return 0
@@ -414,6 +442,9 @@ func valueTextBytes(value any, budget *int) int {
 
 // reflectTextBytes is valueTextBytes for a Go value: the length of its exported strings and map keys, and of its byte slices in base64,
 // counting at most *budget nested values.
+//
+// 任意 Go 值的反射版遍历：导出字段的字符串与 map 键按原长计，
+// []byte 按 base64 编码后的长度计（与其 JSON 形态一致）。
 func reflectTextBytes(value reflect.Value, budget *int) int {
 	child := func(v reflect.Value) int {
 		if *budget <= 0 {
@@ -456,6 +487,10 @@ func reflectTextBytes(value reflect.Value, budget *int) int {
 }
 
 // WithEmptyContent returns a copy of m with empty content, as the JavaScript spread { ...m, content: [] } builds it, and { ...m, content: "" } for a system message: a content member of the decoded object keeps its place, and a missing one follows the other members.
+//
+// 清空 content 的拷贝（对应 JS 展开 `{...m, content:[]}`；system 是
+// `content:""`）：解码原文里的 content 成员保持原位改写，没写过的
+// 排在其他成员之后——成员顺序与上游构造的对象一致。
 func (m AgentMessage) WithEmptyContent() AgentMessage {
 	switch {
 	case m.System != nil:
@@ -486,6 +521,10 @@ func (m AgentMessage) WithEmptyContent() AgentMessage {
 }
 
 // NullContent reports a system, user, assistant or toolResult message whose content is null or missing: in the object it was decoded from, or in its fields when it was not decoded.
+//
+// "content 是 null 或没写"的判定：有解码原文时查解码时记的
+// nullContent 位（区分"写了 null"与"根本没写"）；内存直接构造的
+// 消息查字段是否为 nil。
 func (m AgentMessage) NullContent() bool {
 	switch {
 	case m.System != nil:
@@ -513,6 +552,9 @@ func (m AgentMessage) NullContent() bool {
 }
 
 // withEmptyContent sets the content member of a decoded message's text to empty, or returns nil when there is no text or it cannot be rewritten, so the fields encode the message.
+//
+// 把解码原文里的 content 成员改写成空值并重新规范化：改写失败
+// （无原文/解析失败）返回 nil，退化为"按字段编码"。
 func withEmptyContent(source *messageSource, empty string) *messageSource {
 	if source == nil {
 		return nil
@@ -563,6 +605,10 @@ func (m *AgentMessage) UnmarshalJSON(data []byte) error {
 }
 
 // keepSource retains text, JSON.stringify(JSON.parse(data)), when it differs from the encoding of the decoded fields; a message Pi wrote retains nothing and, being canonical text in the encoder's member order, is accepted by one scan of its members without encoding. borrowed reports that text is the caller's data, which the message copies before retaining.
+//
+// "要不要留原文"的判定：字段能编出与原文一致的字节（直接相等、
+// 或只差 Go 独有转义、或规范化后相等）就不留——Pi 自己写的消息
+// 属于这种；不一致才保留（borrowed 时先克隆防调用方改 buffer）。
 func (m *AgentMessage) keepSource(text []byte, borrowed, nullContent bool) {
 	if m.encodesAs(text) {
 		return
@@ -594,6 +640,10 @@ func (m *AgentMessage) keepSource(text []byte, borrowed, nullContent bool) {
 }
 
 // goEscapes are the escapes encoding/json writes inside a string for characters JSON.stringify writes as they are.
+//
+// Go encoding/json 与 JSON.stringify 的转义分歧表：Go 会把 <、>、&、
+// U+2028、U+2029 写成 \uXXXX，JSON.stringify 原样输出——比较两边
+// 编码时要先容忍这五处。
 var goEscapes = [...]struct{ escape, raw string }{
 	{`\u003c`, "<"},
 	{`\u003e`, ">"},
@@ -603,6 +653,10 @@ var goEscapes = [...]struct{ escape, raw string }{
 }
 
 // equalUpToGoEscapes reports whether encoded, which encoding/json wrote, spells canonical, which JSON.stringify wrote, with some characters of its strings escaped as encoding/json escapes them. Then both parse to one value, so canonicalizing encoded gives canonical. Where the two first differ, both prefixes are equal valid JSON text, so canonical stands outside an escape there and a backslash in encoded starts one.
+//
+// "只差 Go 转义"的逐字节对比：encoded（Go 编码）里把五个 goEscapes
+// 换回字面字符后与 canonical 完全相等即 true——此时两文本解析到同
+// 一值，canonical 就是 encoded 的规范化结果。
 func equalUpToGoEscapes(encoded, canonical []byte) bool {
 	i, j := 0, 0
 	for i < len(encoded) && j < len(canonical) {
@@ -628,6 +682,10 @@ func equalUpToGoEscapes(encoded, canonical []byte) bool {
 }
 
 // decode decodes data into m and reports whether its content member is null or missing.
+//
+// 严格解码主路径：解进 agentMessageWire 探测 role/content，顺带报出
+// "content 是否 null/缺省"（写入 DetailsNull 等三态标记要用）。
+// 数字装不进整数字段的错（JSON.parse 语义下合法）不视为失败。
 func (m *AgentMessage) decode(data []byte) (bool, error) {
 	var wire agentMessageWire
 	if err := json.Unmarshal(data, &wire); err != nil && !numberOutsideIntegerField(err) {
@@ -694,6 +752,10 @@ func (m *AgentMessage) decode(data []byte) (bool, error) {
 }
 
 // numberOutsideIntegerField reports that the decoder met a number an integer field cannot hold: a fraction, or a value beyond the field's range. JSON.parse keeps any number, so Pi keeps the message; the decoder fills every other field and leaves that one zero. Records of package ai decode with encoding/json.
+//
+// 识别"数字装不进整数字段"这一类可容忍的解码错误：JSON.parse 对
+// 任何数字都收，Pi 也保留这条消息——解码器只把该字段留零，其他字段
+// 照常填，不当整条失败。兼容两种 JSON 库的错误形态。
 func numberOutsideIntegerField(err error) bool {
 	if typeErr, ok := errors.AsType[*json.UnmarshalTypeError](err); ok {
 		return numberIntoInteger(typeErr.Value, typeErr.Type)
@@ -704,6 +766,8 @@ func numberOutsideIntegerField(err error) bool {
 	return false
 }
 
+// numberIntoInteger 判定 UnmarshalTypeError 描述的正是"number → 整数
+// 类型"的不匹配：value 以 "number" 前缀且目标种类是任一整型。
 func numberIntoInteger(value string, target reflect.Type) bool {
 	if !strings.HasPrefix(value, "number") || target == nil {
 		return false
@@ -758,6 +822,8 @@ func optionalUsageToWire(usage *ai.Usage) *ai.Usage {
 	return &wire
 }
 
+// usageFromWire 把线上 Usage 转成内存 Usage：当前两形态字段一致，
+// 拷贝一份防共享（nil 透传）。
 func usageFromWire(wire *ai.Usage) *ai.Usage {
 	if wire == nil {
 		return nil
@@ -769,6 +835,8 @@ func usageFromWire(wire *ai.Usage) *ai.Usage {
 // jsInt64 reads an integer member the way JSON.parse reads a number: any spelling of a whole number (1.767225603e12, 1e2, 5.0) is that integer, and a
 // fraction truncates toward zero, so a session message whose count or time was written that way is kept as Pi keeps it. A value outside the type's range clamps.
 // Anything that is not a JSON number (a string, a boolean, an array) is an error, as for an int field.
+// jsInt64 的语义说明见上：它让会话文件里以"科学计数法/小数"拼写的
+// 整数仍能读回，超范围钳位——与上游 JSON.parse 读数一致。
 type jsInt64 int64
 
 func (n *jsInt64) UnmarshalJSON(data []byte) error {
@@ -797,6 +865,8 @@ func (n *jsInt64) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ptr 输出可选整数字段的指针形态：nil → nil（字段缺省），有值转
+// 成 *int64——对应线上 durationMs 等"可缺席"字段。
 func (n *jsInt64) ptr() *int64 {
 	if n == nil {
 		return nil

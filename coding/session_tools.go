@@ -140,6 +140,8 @@ func (s *Session) toolPromptMetadata() (map[string]string, map[string][]string) 
 // normalizePromptGuidelines trims each guideline and drops the empty and repeated ones.
 //
 // upstream: agent-session.ts _normalizePromptGuidelines
+//
+// 工具提示语清洗：逐条去首尾空白，丢空串与重复项（保持首现顺序）。
 func normalizePromptGuidelines(guidelines []string) []string {
 	var unique []string
 	seen := make(map[string]struct{})
@@ -204,6 +206,9 @@ func (s *Session) restoreToolsFromTranscript(modifiers ...string) error {
 }
 
 // applyTranscriptTools activates the tools the system messages of an already replay-checked branch declare.
+//
+// 按"已重放校验过的" system 消息序列应用工具激活集，再叠加
+// +name/-name 修饰——restoreToolsFromTranscript 的第二阶段。
 func (s *Session) applyTranscriptTools(messages []agent.AgentMessage, modifiers []string) {
 	systems := make([]ai.Message, len(messages))
 	mentioned := map[string]struct{}{}

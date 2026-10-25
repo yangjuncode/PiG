@@ -73,6 +73,9 @@ func (s *Session) publishQueueEvent(event agent.QueueUpdateEvent) {
 }
 
 // appendQueueOverflow appends ev to the overflow and reports whether one was pending.
+//
+// 把事件挂进队列溢出区（队列发布溢出未决期间的暂存）——保证它
+// 排在溢出事件之后执行，FIFO 不乱。
 func (s *Session) appendQueueOverflow(ev agent.AgentEvent) bool {
 	s.queueEvents.mu.Lock()
 	defer s.queueEvents.mu.Unlock()

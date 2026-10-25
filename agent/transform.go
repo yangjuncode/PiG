@@ -392,6 +392,9 @@ func hasToolResults(msgs []AgentMessage) bool {
 }
 
 // imageOmittedPlaceholder is the text that replaces an image dropped for a model's per-request image limit.
+//
+// 被图片上限丢弃的图在消息里的占位文本——模型能看到"这里本来有张图
+// 但被裁了"，而不是无声消失。
 func imageOmittedPlaceholder(limit int) string {
 	return fmt.Sprintf("[image omitted: this model accepts at most %d images per request]", limit)
 }
@@ -399,6 +402,10 @@ func imageOmittedPlaceholder(limit int) string {
 // limitImagesPerRequest keeps the newest model.InputLimits.Images.MaxPerRequest images of a request and replaces each older image
 // with a text placeholder, so a long run that reads many images does not hit the provider's image cap.
 // pig divergence (D137): upstream carries the limit as metadata only and sends every image (Pi #10162).
+//
+// 每次请求的图片数裁剪（D137 分歧）：模型声明 MaxPerRequest 时保留
+// 最新 N 张，更早的图原位换成文本占位——防止长会话里累积的图片撑爆
+// provider 上限。上游只把上限当元数据携带、图片全发（Pi #10162）。
 func limitImagesPerRequest(msgs []ai.Message, model *ai.Model) []ai.Message {
 	if model == nil || model.InputLimits == nil || model.InputLimits.Images == nil || model.InputLimits.Images.MaxPerRequest <= 0 {
 		return msgs
@@ -451,6 +458,8 @@ func limitImagesPerRequest(msgs []ai.Message, model *ai.Model) []ai.Message {
 	return out
 }
 
+// countMessageImages 数一条 provider 消息里的图片块：User 的块数组
+// 与 ToolResult 的 content 数组都算。
 func countMessageImages(msg ai.Message) int {
 	count := 0
 	switch m := msg.(type) {

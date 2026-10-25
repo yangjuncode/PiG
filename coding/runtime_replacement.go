@@ -75,6 +75,9 @@ type runtimeReplacement struct {
 // NewAgentSessionRuntime is upstream's `new AgentSessionRuntime(session, services, createRuntime, diagnostics, modelFallbackMessage)` (agent-session-runtime.ts:81-93):
 // a Runtime that owns the given Session and its Services and retains createRuntime for later replacements. The Session must be the one constructed over services.
 // ctx bounds the Runtime's own cancellation signal, as a Go call bounds it; upstream's constructor has no such input.
+// 中文说明：把已建好的 Session+Services 装进 Runtime，并保留
+// createRuntime 工厂供后续会话替换复用——Runtime 关闭即连带二者。
+// ctx 充当上游 AbortSignal 的角色，取消时中止 runtime 自己的信号。
 func NewAgentSessionRuntime(ctx context.Context, session *Session, services *AgentSessionServices, createRuntime CreateAgentSessionRuntimeFactory, diagnostics []AgentSessionRuntimeDiagnostic, modelFallbackMessage string) (*Runtime, error) {
 	if session == nil || services == nil || createRuntime == nil {
 		return nil, errors.New("coding: runtime Session, Services and factory are required")
@@ -383,6 +386,10 @@ func (rt *Runtime) freshSessionManager(parent string) (*SessionManager, error) {
 }
 
 // SwitchSessionOptions is the options object of AgentSessionRuntime.switchSession (agent-session-runtime.ts:196-201).
+//
+// switchSession 的选项：CwdOverride 用于"文件里记的目录已不存在"时
+// 改挂新 cwd；WithSession 在替换落地后拿到新会话上下文回调；
+// ProjectTrustContextFactory 给目标 cwd 出信任上下文（信任提示 UI）。
 type SwitchSessionOptions struct {
 	// CwdOverride replaces the Session's stored working directory when that directory no longer exists.
 	CwdOverride string
@@ -393,6 +400,9 @@ type SwitchSessionOptions struct {
 }
 
 // switchOptionsFromExtension carries the options an extension's switchSession call supplies; the extension API has no cwd override or trust factory.
+//
+// 扩展 API 的 switchSession 选项 → 内部选项的收窄：扩展侧没有
+// cwd 覆盖和信任工厂，只透传 WithSession。
 func switchOptionsFromExtension(options *extension.SwitchSessionOptions) *SwitchSessionOptions {
 	if options == nil {
 		return nil
@@ -401,6 +411,9 @@ func switchOptionsFromExtension(options *extension.SwitchSessionOptions) *Switch
 }
 
 // processCWD is the directory SessionManager.open falls back to when the file has no header and no override (session-manager.ts open: `?? process.cwd()`); fallback stands in when the process directory is unreadable.
+//
+// 上游 `?? process.cwd()` 的 Go 对应：会话文件无 header 且无覆盖时
+// 取进程 cwd；进程 cwd 读不到（目录被删）用 fallback。
 func processCWD(fallback string) string {
 	if dir, err := nodepath.Cwd(); err == nil {
 		return dir
@@ -435,6 +448,9 @@ func (rt *Runtime) SwitchSession(ctx context.Context, path string, options ...*S
 }
 
 // openSwitchTarget loads the destination of a switch and checks that its cwd exists (SessionManager.open, assertSessionCwdExists).
+//
+// switch 目标的装载+校验：Open 读文件（含迁移与 cwd 覆盖），
+// AssertSessionCwdExists 确认记录的 cwd 仍存在。
 func (rt *Runtime) openSwitchTarget(path, cwdOverride string) (*icodingagent.Session, error) {
 	var override []string
 	if cwdOverride != "" {
@@ -452,6 +468,9 @@ func (rt *Runtime) openSwitchTarget(path, cwdOverride string) (*icodingagent.Ses
 
 // ValidateSwitchSession reports the error that switching to path would return from loading it, without running any handler or replacing anything.
 // Pi's switchSession raises it before it waits for any replacement ahead of it. The loaded Session is discarded.
+//
+// 干跑 switch 的装载校验：只报"切过去会碰到的错"，不跑任何钩子、
+// 不替换任何东西——上游在处理中的替换之前就先抛这个错。
 func (rt *Runtime) ValidateSwitchSession(path string) error {
 	_, err := rt.openSwitchTarget(path, "")
 	return err
@@ -467,16 +486,25 @@ type RuntimeForkResult struct {
 type forkSessionKey struct{}
 
 // WithForkSession makes a fork started with the returned context read its entry, and the Session file it branches, from session instead of the Runtime's current Session. An RPC input batch that requests a fork while an earlier replacement of the batch is still pending forks the Session that was current when the fork was requested, as Pi's does.
+//
+// 通过 ctx 指定"本次 fork 针对哪个 Session"：RPC 批量输入里 fork
+// 请求抵达时，若前一次替换还在途，应从"请求发出时的当前 Session"
+// 分叉，而非替换后的新 Session——与上游行为一致。
 func WithForkSession(ctx context.Context, session *Session) context.Context {
 	return context.WithValue(ctx, forkSessionKey{}, session)
 }
 
+// forkSessionOf 从 ctx 取 WithForkSession 指定的目标 Session。
 func forkSessionOf(ctx context.Context) *Session {
 	session, _ := ctx.Value(forkSessionKey{}).(*Session)
 	return session
 }
 
 // forkTarget is the check Pi's fork makes against the current Session once the before handlers returned: the entry exists, and for position "before" it is a user message. It returns the leaf to branch at and the selected text.
+//
+// fork 的前置校验（before 钩子回来之后做）：entryID 必须存在；
+// position 为 "before" 时还必须是 user 消息——分叉点落在其父条目，
+// 消息文本作为 selectedText 返回。
 func (s *Session) forkTarget(entryID, position string) (leaf, selected *string, err error) {
 	entry, ok := s.inner.GetEntry(entryID)
 	if !ok {
@@ -496,6 +524,10 @@ func (s *Session) forkTarget(entryID, position string) (leaf, selected *string, 
 }
 
 // ValidateFork reports the error that forking at entryID would return from this Session without running any handler or replacing anything: an entry that does not exist or is not a user message for position "before", or a file-backed Session that has not been saved. A caller that dispatches a fork while another replacement is still in flight uses it to answer a request that Pi rejects before that replacement applies.
+//
+// fork 的干跑校验：只报 fork 会碰到的错（条目不存在、"before" 不是
+// user 消息、文件会话未保存），不跑钩子不替换——供"另一替换还在途"
+// 时提前回绝请求，时序与上游一致。
 func (s *Session) ValidateFork(entryID, position string) error {
 	if position == "" {
 		position = "before"

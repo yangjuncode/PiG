@@ -92,6 +92,10 @@ func (s *Session) promptSectionUpdate(messages []agent.AgentMessage) (*ai.System
 }
 
 // systemMessageWithoutTools is message without its tool changes. The replay that promptSectionUpdate runs reads only the sections and whether a system message exists, both of which the tool changes leave as they are, and replaying them copies every tool schema each turn.
+//
+// 剥掉工具增删记录的 system 消息：promptSectionUpdate 的重放只看
+// sections 与"有没有 system 消息"，工具记录对两者都无影响——去掉
+// 它们可避免每轮重放都拷贝全部工具 schema。
 func systemMessageWithoutTools(message ai.SystemMessage) ai.SystemMessage {
 	message.ToolsAdded, message.ToolsRemoved = nil, nil
 	return message
@@ -153,6 +157,8 @@ func (s *Session) HiddenDeclarations() map[string]struct{} {
 }
 
 // HiddenDeclarationNames lists the tools whose declarations the loadout hides, in the order the hooks hid them: upstream's `hiddenTools: [...this._hiddenDeclarations]` (agent-session.ts _rebuildSystemPrompt).
+// HiddenDeclarationNames 列出被 loadout 隐藏的声明（隐藏顺序与
+// 上游 `hiddenTools: [...this._hiddenDeclarations]` 一致）。
 func (s *Session) HiddenDeclarationNames() []string {
 	if order := s.loadout.hiddenOrder.Load(); order != nil {
 		return slices.Clone(*order)
@@ -294,6 +300,8 @@ func (s *Session) prepareRequest(ctx context.Context, request agent.PrepareReque
 // executableContext is the projected transcript with the agent's current tools: messages declare the provider-visible loadout and context.tools keeps the executable implementations.
 //
 // upstream: agent-session.ts _installAgentRequestProjection (`tools: this.agent.state.tools.slice()`)
+// executableContext 构造"投影转录 + 当前工具表"的请求上下文：
+// 消息里声明的是模型可见 loadout，context.tools 挂可执行实现。
 func (s *Session) executableContext(messages []agent.AgentMessage) *agent.AgentContext {
 	return &agent.AgentContext{Messages: messages, Tools: s.agent.Tools()}
 }

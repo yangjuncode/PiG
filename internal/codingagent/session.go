@@ -82,6 +82,7 @@ type (
 
 // GetLatestCompactionEntry returns the newest compaction entry, or nil when there is none. As upstream casts the newest entry of that type without validating it, a compaction entry whose JSON does not decode is still the newest: only its base members are set.
 // Mirrors upstream packages/coding-agent/src/core/session-manager.ts getLatestCompactionEntry.
+// 取分支上最新一条 compaction 条目（上游 getLatestCompactionEntry）。
 func GetLatestCompactionEntry(entries []SessionEntry) *CompactionEntry {
 	for _, entry := range slices.Backward(entries) {
 		if entry.Base().Type != "compaction" {
@@ -99,6 +100,7 @@ func GetLatestCompactionEntry(entries []SessionEntry) *CompactionEntry {
 // LatestCompactionEntryOf is GetLatestCompactionEntry of the branch the projection was built from, read from the projection:
 // buildContextEntries puts the newest compaction of the branch first, and a branch without one starts with an entry of another
 // type, so the answer costs one entry and not a walk of the whole branch.
+// 从已建好的投影直接取最新压缩条目——只查一条，不回走整支。
 func LatestCompactionEntryOf(projection SessionProjection) *CompactionEntry {
 	if len(projection.Entries) == 0 {
 		return nil
@@ -108,6 +110,7 @@ func LatestCompactionEntryOf(projection SessionProjection) *CompactionEntry {
 
 // asMessage is the entry as a MessageEntry, false for any other entry and for a message entry whose record does not decode. A
 // sessionentry.LazyEntry is read and decoded; one whose record changed on disk panics with its *sessionentry.RecordChangedError.
+// 把惰性条目读成解码后的消息条目；记录在盘上已变的条目 panic（宁可崩也不读串位数据）。
 func asMessage(e SessionEntry) (MessageEntry, bool) {
 	return mustMessage(e)
 }
@@ -247,6 +250,7 @@ type Session struct {
 }
 
 // sessionClock is the time a new session's header records; tests replace it to make two sessions share a timestamp, as Pi's `new Date()` does for two sessions created in one millisecond.
+// 新会话 header 记时间用的时钟；测试替换它以制造可控时间戳。
 var sessionClock = time.Now
 
 // NewSession creates an in-memory session with an ISO millisecond header timestamp and an optional parent session path.
@@ -276,6 +280,8 @@ func (s *Session) CWD() string {
 	return s.header.CWD
 }
 func (s *Session) Path() string { return s.path }
+
+// 返回会话 header（文件首行元信息：id/cwd/version/parent 等）。
 func (s *Session) GetHeader() SessionHeader {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -286,6 +292,7 @@ func (s *Session) ParentSession() string { return s.header.ParentSession }
 func (s *Session) SetPath(p string)      { s.path = p }
 
 // GetEntries returns a copy of all session entries (in append order).
+// 按追加顺序返回全部条目的拷贝（防外部改到内部状态）。
 func (s *Session) GetEntries() []SessionEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -294,6 +301,7 @@ func (s *Session) GetEntries() []SessionEntry {
 
 // entryHandles is GetEntries with each message entry that is not resident a sessionentry.LazyEntry, for this module's whole-history
 // readers, which read entries through the sessionentry funnel.
+// 条目读取句柄：外部读条目统一走 sessionentry 漏斗（惰性解码、按需解码）。
 func (s *Session) entryHandles() []SessionEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -301,6 +309,7 @@ func (s *Session) entryHandles() []SessionEntry {
 }
 
 // Revision identifies the current entries and leaf: it changes whenever either changes, so a value derived from the branch stays valid while the revision does.
+// 当前条目集+叶子指针的版本号：任一变化它就变——投影/缓存用它做一致性键。
 func (s *Session) Revision() uint64 {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -309,6 +318,7 @@ func (s *Session) Revision() uint64 {
 
 // GetEntryCount returns the number of distinct session entry IDs, excluding the header, without copying entries like GetEntries.
 // A loaded file that repeats an ID counts it once. Mirrors upstream getEntryCount, which returns byId.size (session-manager.ts:1511-1513).
+// 条目计数（重复 ID 只算一次；上游 getEntryCount）。
 func (s *Session) GetEntryCount() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -317,6 +327,7 @@ func (s *Session) GetEntryCount() int {
 
 // GetLeafID returns the ID of the current leaf entry (the parent of the
 // next AppendEntry). nil = "no entries yet, next append is a root".
+// 当前叶子条目 ID：nil 表示还没有条目，下一次 append 就是根。
 func (s *Session) GetLeafID() *string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -368,6 +379,7 @@ func (s *Session) AppendEntry(entry any) error {
 }
 
 // appendEntryRecord adds the entry whose encoded record is raw. ownMessage reports that raw is the record this session just encoded from a message entry, so the decoded entry stands for it in the accounting and in the conversation gate and the record is not parsed again for them.
+// 追加一个已编码好 raw 记录的条目；ownMessage 表示 raw 即消息本体（可免再解码）。
 func (s *Session) appendEntryRecord(raw []byte, ownMessage bool) error {
 	return s.appendEntryRecordOf(compactionWithoutRecord(sessionentry.DecodeSessionEntry(raw), raw), raw, ownMessage)
 }
@@ -375,6 +387,7 @@ func (s *Session) appendEntryRecord(raw []byte, ownMessage bool) error {
 // compactionWithoutRecord is entry, decoded from raw, without its record when it is a compaction that encodes to raw again: a compaction stays
 // resident for the session's life (a context read takes every entry before its kept range), and its record repeats its summary, escaped. Pi
 // holds the parsed entry and no text of it. Every reader of the entry gets raw's bytes.
+// 挂一条只有解析结果、没有原文记录的压缩条目——读它的都是 raw 字节。
 func compactionWithoutRecord(entry SessionEntry, raw []byte) SessionEntry {
 	compaction, ok := entry.(CompactionEntry)
 	if !ok {
@@ -388,6 +401,7 @@ func compactionWithoutRecord(entry SessionEntry, raw []byte) SessionEntry {
 }
 
 // appendEntryRecordOf is appendEntryRecord of the entry se whose record is raw.
+// 以 raw 为记录追加 se（appendEntryRecord 的包装）。
 func (s *Session) appendEntryRecordOf(se SessionEntry, raw []byte, ownMessage bool) error {
 	base := se.Base()
 	if isUndescribed(se) {
@@ -437,11 +451,13 @@ func (s *Session) appendEntryRecordOf(se SessionEntry, raw []byte, ownMessage bo
 // Persist writes one entry the manager already holds to the session file, as upstream SessionManager._persist does (session-manager.ts:1172).
 // An unflushed session is not written until it holds a user or assistant message, so setup entries alone leave no file. The first write creates the file with the header and every buffered entry; later calls append the entry.
 // A session without a file persists nothing.
+// 把条目记录写盘；无文件的会话不写（内存会话）。
 func (s *Session) Persist(entry SessionEntry) error {
 	return s.persistRecord(entry, entry.Raw())
 }
 
 // persistRecord is Persist of entry, whose record is raw.
+// Persist 的记录级实现：把 entry 的 raw 落成一行。
 func (s *Session) persistRecord(entry SessionEntry, raw []byte) error {
 	s.mu.Lock()
 	path := s.path
@@ -572,10 +588,12 @@ func writeSessionFile(path string, lines [][]byte, mode int) error {
 
 // sessionWriteBuffer is the largest buffer a whole session file is written through.
 // pig additive (D112): Pi writes the whole file with one writeFileSync; the buffer size changes how many writes carry the same bytes, never the bytes.
+// 会话写缓冲（D112 附加）：上游一次性 writeFileSync 整文件，这里定容减少扩容次数。
 const sessionWriteBuffer = 64 << 10
 
 // sessionWriteBufferFor is the buffer size for writing lines: their bytes and newlines, at most sessionWriteBuffer, so a file that fits
 // is still one write and a new session's first records (a few hundred bytes) do not allocate 64 KB.
+// 按消息大小选缓冲：仍是一次写，新会话的头几百字节不必分配 64KB。
 func sessionWriteBufferFor(lines [][]byte) int {
 	size := 0
 	for _, line := range lines {
@@ -589,6 +607,7 @@ func sessionWriteBufferFor(lines [][]byte) int {
 
 // SessionMessage is the union appendMessage takes (session-manager.ts: Message | CustomMessage | BashExecutionMessage): an
 // agent.AgentMessage, which carries the LLM messages and the custom messages in AgentMessage.Custom, or a BashExecutionMessage.
+// 条目里装的消息：agent.AgentMessage（LLM 消息 + Custom map 里的自定义消息）。
 type SessionMessage = extension.SessionMessage
 
 // AppendMessage persists one message (an agent.AgentMessage or a BashExecutionMessage), generating a fresh entry id and timestamp
@@ -617,6 +636,7 @@ func (s *Session) AppendMessage(message SessionMessage) (string, error) {
 	}
 }
 
+// 把一条 agent 消息落成消息条目并追加。
 func (s *Session) appendAgentMessage(msg agent.AgentMessage) (string, error) {
 	// Custom messages round-trip as "custom_message" entries, not generic
 	// "message" entries: messagesFromSession only reconstructs them from that
@@ -646,6 +666,7 @@ func (s *Session) appendAgentMessage(msg agent.AgentMessage) (string, error) {
 }
 
 // appendMessageEntry stores msg as a "message" entry linked to the current leaf.
+// 把 msg 存成挂在当前叶子下的 message 条目。
 func (s *Session) appendMessageEntry(msg agent.AgentMessage) (string, error) {
 	s.leafAppendMu.Lock()
 	defer s.leafAppendMu.Unlock()
@@ -689,6 +710,7 @@ func (s *Session) appendMessageEntry(msg agent.AgentMessage) (string, error) {
 // (session-manager.ts appendMessage); the record's decode is held instead when it differs from that message in Go: an absent usage, a
 // streaming view. A message whose decoded form is proven, or a tool result whose decoded form is proven apart from its Details (a tool's typed
 // details), needs no decode of the record just encoded.
+// 持一条刚编码好的消息条目——details 等已解析形态在手，不必回头再解码记录。
 func heldMessageEntry(entry MessageEntry, raw json.RawMessage) (SessionEntry, bool) {
 	shared := sessionentry.WithRecord(entry, raw)
 	var se SessionEntry
@@ -724,6 +746,7 @@ func heldMessageEntry(entry MessageEntry, raw json.RawMessage) (SessionEntry, bo
 // changes no other field, and its JSON is the encoder's valid output. A tool result's own decoded source sits on its ToolResult, which the copy
 // keeps and DecodedForm refuses. It reports false for Details that are nil, a nil map, slice or pointer, or a value whose type, or pointer to
 // it, has its own JSON or text encoding (which may write null).
+// details 旁挂的解码形态：details 自带 JSON/文本编码（可能写 null）。
 func decodedFormBesideDetails(msg agent.AgentMessage) (agent.AgentMessage, bool) {
 	if msg.ToolResult == nil || msg.User != nil || msg.Assistant != nil || msg.System != nil || msg.Custom != nil {
 		return agent.AgentMessage{}, false
@@ -743,6 +766,7 @@ var (
 
 // encodesAsNonNull reports whether the JSON encoder writes value as an object, an array or a string: a struct, a non-nil map, slice or array,
 // or a non-nil pointer to one, none of whose types (or pointers to them) carry their own JSON or text encoding.
+// 判定值编码后非 null（或其非空指针），且类型无自定义编码。
 func encodesAsNonNull(value reflect.Value) bool {
 	for value.IsValid() {
 		t := value.Type()
@@ -770,6 +794,7 @@ func encodesAsNonNull(value reflect.Value) bool {
 // decodesToAppended reports whether decoded, the decode of appended's record, holds what appended holds. A tool result's Details decode to
 // their JSON whatever Go value the tool gave them (a tool's typed details, an extension's map), and the record was encoded from that value,
 // so a tool result that differs from its decode only in Details holds the same JSON there.
+// 解码后与追加值一致的判定——只在 Details 上不同的 toolResult 仍共享同一份 JSON。
 func decodesToAppended(decoded SessionEntry, appended MessageEntry) bool {
 	if reflect.DeepEqual(decoded, SessionEntry(appended)) {
 		return true
@@ -786,6 +811,7 @@ func decodesToAppended(decoded SessionEntry, appended MessageEntry) bool {
 
 // AppendCustomMessageEntry persists an extension-injected custom message as a
 // "custom_message" entry and returns the new entry id.
+// 追加一条 custom_message 条目并返回新条目 ID。
 func (s *Session) AppendCustomMessageEntry(customType string, content any, display bool, details any) (string, error) {
 	entry, err := s.customMessageEntry(customType, content, display, details, true)
 	return entry.ID, err
@@ -906,6 +932,7 @@ func (s *Session) AppendBashExecution(message BashExecutionMessage) (string, err
 // GetEntry looks up a session entry by its hex ID. Returns false if
 // the ID isn't present. Used by the chat layer to render markers (e.g.
 // branch-summary chip on fork) without exporting the byID map.
+// 按 ID 取单条（供 fork 的分支摘要芯片等），不导出 byID 表。
 func (s *Session) GetEntry(id string) (SessionEntry, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -930,6 +957,7 @@ func (s *Session) GetSessionName() string {
 }
 
 // noteNameLocked keeps name equal to the result of scanning the entries backwards for the first session_info that parses (session-manager.ts getSessionName): a later entry wins, so each appended or loaded one replaces it. s.mu must be held.
+// 反向扫条目更新会话名（取最近一条 session_info）；持锁调用。
 func (s *Session) noteNameLocked(raw []byte, entryType string) {
 	if entryType != "session_info" {
 		return
@@ -941,6 +969,7 @@ func (s *Session) noteNameLocked(raw []byte, entryType string) {
 
 // AppendModelChange appends a model_change entry as a child of the current leaf, advances the leaf, and returns the entry id
 // (session-manager.ts appendModelChange(provider, modelId)).
+// 记一条 model_change 条目（provider+modelId）。
 func (s *Session) AppendModelChange(provider, modelID string) (string, error) {
 	s.leafAppendMu.Lock()
 	defer s.leafAppendMu.Unlock()
@@ -1034,6 +1063,7 @@ func (s *Session) AppendCompactionHookUndefined(summary, firstKeptEntryID string
 	return s.appendCompaction(summary, firstKeptEntryID, tokensBefore, details, false, true, usage)
 }
 
+// appendCompaction 的内部实现：组好压缩条目后走统一追加管线。
 func (s *Session) appendCompaction(summary, firstKeptEntryID string, tokensBefore int, details any, fromHook, fromHookUndefined bool, usage *ai.Usage) (string, error) {
 	now := time.Now().UTC()
 	// compactionSystemMessage only reads the context's latest system message, so it reads the kept projection rather than a copy of the
@@ -1184,6 +1214,7 @@ func (s *Session) GetBranch(fromID ...string) []SessionEntry {
 
 // branchHandles is GetBranch with each message entry that is not resident a sessionentry.LazyEntry, for this module's whole-history
 // readers, which read entries through the sessionentry funnel.
+// 分支读取句柄：统一走 sessionentry 漏斗。
 func (s *Session) branchHandles(fromID ...string) []SessionEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -1244,6 +1275,7 @@ func (s *Session) BuildSessionProjection() SessionProjection {
 // The projection of the current leaf is kept and extended by the entries appended to it, so a turn projects only its own entries; a
 // leaf move, a compaction or a context edit projects the branch again. Entries are immutable once appended, so the result equals a new
 // projection of the branch.
+// 建当前分支的投影视图（共享内部缓冲的只读投影）。
 func (s *Session) BuildSessionProjectionView() SessionProjection {
 	s.projectionCalls.Add(1)
 	s.mu.RLock()
@@ -1269,12 +1301,14 @@ func (s *Session) BuildSessionProjectionView() SessionProjection {
 
 // contextReplacedLocked notes that ctxPath was replaced, not extended at its leaf, and drops the projection kept for it. The caller holds
 // s.mu for writing.
+// 上下文被整体替换后的内部状态对账（持 s.mu 调用）。
 func (s *Session) contextReplacedLocked() {
 	s.ctxGen++
 	s.projView = nil
 }
 
 // BuildSessionContext returns the messages, thinking level and model of the branch ending at the current leaf (session-manager.ts buildSessionContext). An unset leaf yields no messages.
+// 取当前叶所在分支的消息+思考级别+模型。
 func (s *Session) BuildSessionContext() SessionContext {
 	projection := s.BuildSessionProjection()
 	messages := projection.Messages
@@ -1285,6 +1319,7 @@ func (s *Session) BuildSessionContext() SessionContext {
 }
 
 // BuildContextEntries returns the compaction-aware entry list of the branch ending at the current leaf (session-manager.ts buildContextEntries). An unset leaf yields no entries.
+// 取当前叶分支经压缩裁剪后的条目列表。
 func (s *Session) BuildContextEntries() []SessionEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -1298,6 +1333,7 @@ func (s *Session) BuildContextEntries() []SessionEntry {
 // latest compaction's kept range, every earlier entry that is not a message, and before the kept range the newest assistant message of each
 // API. buildSessionProjection, getSessionContextSettings, prepareCompaction, the newest assistant usage and the newest compaction or model
 // selection read the same from it as from GetBranch, without reading history the context no longer holds. Nil when there is no leaf.
+// 模型可见的分支条目：上下文选取与 GetBranch 同源，但不读被裁掉的历史。
 func (s *Session) GetContextBranch() []SessionEntry {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -1308,6 +1344,7 @@ func (s *Session) GetContextBranch() []SessionEntry {
 }
 
 // contextPathToLocked returns the entries of contextPathIn for the path ending at leafID. The caller holds s.mu.
+// 取 leafID 终结路径在 contextPathIn 里的条目（持锁调用）。
 func (s *Session) contextPathToLocked(leafID string) []SessionEntry {
 	indexes := s.contextIndexesLocked(leafID)
 	if indexes == nil {
@@ -1320,6 +1357,7 @@ func (s *Session) contextPathToLocked(leafID string) []SessionEntry {
 // is its own parent and an orphan whose parent is missing are roots, in entry order. Children are sorted oldest first by
 // timestamp (a stable sort, so an unparsable timestamp keeps its place); the roots are not sorted. A label resolves from the
 // latest label entry for its target.
+// 建会话树视图：每个节点挂其最新 label 条目。
 func (s *Session) GetTree() []*SessionTreeNode {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -1328,6 +1366,7 @@ func (s *Session) GetTree() []*SessionTreeNode {
 
 // treeHandles is GetTree with each message entry that is not resident a sessionentry.LazyEntry, for this module's whole-history readers,
 // which read entries through the sessionentry funnel.
+// 树读取句柄：统一走 sessionentry 漏斗。
 func (s *Session) treeHandles() []*SessionTreeNode {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -1335,6 +1374,7 @@ func (s *Session) treeHandles() []*SessionTreeNode {
 }
 
 // treeOfLocked is getTree over entries, which are every entry in append order. The caller holds s.mu.
+// 对给定条目集建树（持 s.mu 调用）。
 func (s *Session) treeOfLocked(entries []SessionEntry) []*SessionTreeNode {
 	// Pi keys nodes by id, so an id the log repeats is one node, the last entry's: byID holds the last slot of each id.
 	all := make([]SessionTreeNode, len(entries))
@@ -1397,6 +1437,7 @@ func (s *Session) treeOfLocked(entries []SessionEntry) []*SessionTreeNode {
 
 // treeRoot is the session's roots under one synthetic root node with an empty entry, the shape the tree selector and the
 // ASCII renderer take.
+// 树的根条目（ASCII 渲染器等从这里起手）。
 func (s *Session) treeRoot() *SessionTreeNode { return &SessionTreeNode{Children: s.GetTree()} }
 
 // ─── ID generators ────────────────────────────────────────────────────────────
@@ -1410,6 +1451,7 @@ func (s *Session) generateEntryID() (string, error) {
 
 // entryIDPool serves the random bytes of entry IDs a pool at a time: every message appended to a Session takes an ID, and one getrandom
 // system call per ID is the cost of the ID, not of the randomness. A pool is 64 IDs of four bytes, drawn from fill.
+// 条目 ID 的随机字节池：一次系统调用备 64 个 ID 的量，摊薄成本。
 type entryIDPool struct {
 	fill func([]byte) (int, error)
 	mu   sync.Mutex
@@ -1418,6 +1460,7 @@ type entryIDPool struct {
 }
 
 // read fills b, at most the pool's size, from the pool and refills the pool from fill when it runs dry.
+// 从池里取满 b，池空则从 fill 补。
 func (pool *entryIDPool) read(b []byte) error {
 	pool.mu.Lock()
 	defer pool.mu.Unlock()
@@ -1432,10 +1475,12 @@ func (pool *entryIDPool) read(b []byte) error {
 }
 
 // entryIDRandom is the pool of this process's entry IDs, drawn from crypto/rand.
+// 本进程条目 ID 的全局池，字节取自 crypto/rand。
 var entryIDRandom = entryIDPool{fill: rand.Read}
 
 // systemRandomType is the type of crypto/rand.Reader as the process starts: the system source. A different type is a source installed by a
 // test, which supplies the bytes of each ID itself, so the pool does not stand between the source and the ID.
+// 随机源类型：测试可自带字节流绕开池。
 var systemRandomType = reflect.TypeOf(rand.Reader)
 
 // generateEntryID returns an eight-character lowercase hexadecimal entry ID.

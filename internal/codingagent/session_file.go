@@ -28,9 +28,11 @@ import (
 )
 
 // FileEntry is one record of a session file: the header (SessionHeader) or an entry (SessionEntry) (session-manager.ts FileEntry).
+// 会话文件的一条记录：header（SessionHeader）或条目（SessionEntry）。
 type FileEntry = sessionentry.FileEntry
 
 // ParseSessionEntries splits JSONL content into its records, in order. Ports packages/coding-agent/src/core/session-manager.ts (parseSessionEntries): the content is trimmed and split on "\n", a line that is not valid JSON, including a blank one, is skipped (only JSON whitespace may surround a record, so a line led by U+00A0 is skipped). Unlike [LoadEntriesFromFile] it keeps a record whose JSON value is falsy (null, false, 0, ""), because Pi pushes whatever JSON.parse returns.
+// 把 JSONL 文本按行切成记录序列（保序）。
 func ParseSessionEntries(content string) []FileEntry {
 	entries := []FileEntry{}
 	//portlint:allow pathseparators Pi splits on "\n" alone (session-manager.ts parseSessionEntries: content.trim().split("\n")); a CRLF record keeps its \r and the JSON parse accepts it
@@ -78,6 +80,7 @@ func (r *sessionTailReader) Read(buffer []byte) (int, error) {
 }
 
 // isObjectLine reports whether a line's first byte after JSON whitespace opens an object: a valid such line is a truthy record.
+// 判定一行去掉 JSON 空白后是否以 { 开头——会话文件合法行都是对象。
 func isObjectLine(line []byte) bool {
 	line = bytes.TrimLeft(line, " \t\r\n")
 	return len(line) > 0 && line[0] == '{'
@@ -148,6 +151,7 @@ func readSessionFileEntries(path string) ([]FileEntry, bool, error) {
 // EnsureSessionDir creates a persisted session's directory as Pi's SessionManager constructor does: it skips any path
 // that exists, even a file, and otherwise creates it recursively with Node's error text
 // (session-manager.ts:1011-1013: existsSync, then mkdirSync).
+// 确保会话目录存在（existsSync→mkdirSync 的 Go 版）。
 func EnsureSessionDir(dir string) error {
 	if dir == "" {
 		return nil
@@ -283,6 +287,7 @@ var (
 // loadPersistedSession reads a persisted session file as LoadEntriesFromFile and restoreSessionFileEntries do, but keeps message bodies only
 // for the active context (see entrySlot): each other entry is indexed by where its line lies. empty reports a file with no session records, which
 // the caller handles as LoadEntriesFromFile's empty result. A file whose version needs migration is migrated and rewritten first.
+// 读持久化会话文件；版本要迁移的先迁移再解析。
 func loadPersistedSession(path string) (session *Session, empty bool, err error) {
 	session, err = streamSessionFile(path)
 	switch {
@@ -309,12 +314,14 @@ func loadPersistedSession(path string) (session *Session, empty bool, err error)
 	return session, false, err
 }
 
+// 流式读取会话文件（逐行回调，不把全文件驻留内存）。
 func streamSessionFile(path string) (*Session, error) {
 	return streamSessionFileBatched(path, lineBatching{})
 }
 
 // streamSessionFileBatched is streamSessionFile, preparing lines as batching says. The zero lineBatching is defaultLineBatching, taken at the
 // runtime default width when the file holds more than one batch.
+// 分批流式读：多于一批时按运行时宽度分 goroutine 并行准备。
 func streamSessionFileBatched(path string, batching lineBatching) (*Session, error) {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -435,11 +442,13 @@ const (
 
 // lineBatching is how forEachPreparedLine splits the work: runs of at least batchBytes, at most depth of them read ahead, on workers
 // goroutines.
+// 行批处理配置：每批行数与并行 goroutine 数。
 type lineBatching struct {
 	batchBytes, depth, workers int
 }
 
 // defaultLineBatching prepares on as many goroutines as may run, within indexInFlightBytes.
+// 默认批策略：在 indexInFlightBytes 上限内尽量用满可运行核数。
 func defaultLineBatching() lineBatching {
 	depth := indexInFlightBytes / indexBatchBytes
 	return lineBatching{batchBytes: indexBatchBytes, depth: depth, workers: min(runtime.GOMAXPROCS(0), depth)}
@@ -448,6 +457,7 @@ func defaultLineBatching() lineBatching {
 // forEachPreparedLine calls visit with each line of r and its offset, in order, as forEachJSONLLineOffset does. With more than one worker it
 // reads ahead of visit and prepares the lines (prepareIndexLine) on the workers, and visit receives each line's preparation; otherwise visit
 // receives nil. It returns the first error in line order: visit's, or then the read's. It returns once every goroutine it started has ended.
+// 对每行做“预处理（可并行）→按行序 visit”的流水；visit 出错即以首个错收尾。
 func forEachPreparedLine(r io.Reader, batching lineBatching, visit func(line []byte, off int64, prepared *preparedLine) error) error {
 	depth, workers := batching.depth, batching.workers
 	if workers < 2 {
@@ -534,10 +544,12 @@ func forEachPreparedLine(r io.Reader, batching lineBatching, visit func(line []b
 }
 
 // errIndexStopped ends the read of forEachPreparedLine once visit has returned an error.
+// visit 返回错误后终止读取的哨兵错误。
 var errIndexStopped = errors.New("session: index stopped")
 
 // lineBatch is a run of consecutive lines with their offsets, copied out of the read, and their preparations once done is closed. err is the
 // read's error after the last line.
+// 一批行：含批内各行及读批后的错误位。
 type lineBatch struct {
 	buf      []byte
 	lines    []batchLine
@@ -546,17 +558,20 @@ type lineBatch struct {
 	done     chan struct{}
 }
 
+// 批内一行的原始记录（批处理流水线的最小单位）。
 type batchLine struct {
 	start, end int
 	off        int64
 }
 
+// 往批里加一行。
 func (b *lineBatch) add(line []byte, off int64) {
 	start := len(b.buf)
 	b.buf = append(b.buf, line...)
 	b.lines = append(b.lines, batchLine{start: start, end: len(b.buf), off: off})
 }
 
+// 对批内各行做预处理（可并行的解码部分在这里做掉）。
 func (b *lineBatch) prepare() {
 	b.prepared = slices.Grow(b.prepared[:0], len(b.lines))[:len(b.lines)]
 	for k, line := range b.lines {
@@ -564,6 +579,7 @@ func (b *lineBatch) prepare() {
 	}
 }
 
+// 重置批状态供复用（保留已分配的容器）。
 func (b *lineBatch) reset() {
 	clear(b.prepared)
 	b.buf, b.lines, b.prepared, b.err, b.done = b.buf[:0], b.lines[:0], b.prepared[:0], nil, make(chan struct{})
@@ -571,6 +587,7 @@ func (b *lineBatch) reset() {
 
 // indexLine adds the record of one line after the header as newSessionFromEntries adds a decoded record. A message or custom message is not
 // kept decoded; setBranchLocked reads back the ones the active context needs.
+// 行索引登记：需要的行解码保留；setBranchLocked 按需回读。
 func (s *Session) indexLine(line []byte, off int64) error {
 	prepared := prepareIndexLine(line)
 	return s.applyIndexLine(&prepared, line, off)
@@ -578,6 +595,7 @@ func (s *Session) indexLine(line []byte, off int64) error {
 
 // preparedLine is the part of indexing one line that depends on that line alone (prepareIndexLine), so lines may be prepared in any order
 // and on any goroutine. applyIndexLine adds it to the index; lines are applied in file order.
+// 预处理产物：可来自任何 goroutine；applyIndexLine 按文件顺序入索引。
 type preparedLine struct {
 	state preparedLineState
 	// base is a message's base members, and slot its slot without a cold part.
@@ -592,6 +610,7 @@ type preparedLine struct {
 	entry SessionEntry
 }
 
+// 预处理行的状态位（索引登记需要的中间结果）。
 type preparedLineState uint8
 
 const (
@@ -603,6 +622,7 @@ const (
 
 // prepareIndexLine reads what indexing line needs from the line alone. One decode serves the base members and the accounting when both
 // decode; otherwise each decodes on its own, as the full load does.
+// 索引行的预处理：共享解码的行一次解码，其余各自解码。
 func prepareIndexLine(line []byte) preparedLine {
 	if !jsonvalid.Valid(line) {
 		// JSON.parse throws on the line, so the load skips it.
@@ -644,6 +664,7 @@ func prepareIndexLine(line []byte) preparedLine {
 
 // prepareMessageLine prepares a message or custom message line, which the index keeps without its body. account is its accounting decode,
 // when decoded. The /tree search text is read when /tree first needs it (indexSearchTexts, after the selector's first paint), not here.
+// 消息行的预处理：/tree 搜索文本等惰性字段按需再算。
 func prepareMessageLine(base SessionEntryBase, account sessionAccountingEntry, decoded bool, line []byte) preparedLine {
 	p := preparedLine{state: lineMessage, base: base, slot: baseSlot(base), account: account, counted: decoded, hash: recordHash(line)}
 	if base.Type == "message" {
@@ -662,6 +683,7 @@ func prepareMessageLine(base SessionEntryBase, account sessionAccountingEntry, d
 }
 
 // applyIndexLine adds the prepared record of line, at off in the file, to the index.
+// 把 line 的预处理记录（文件偏移 off）并入索引。
 func (s *Session) applyIndexLine(p *preparedLine, line []byte, off int64) error {
 	switch p.state {
 	case lineMessage:
@@ -692,6 +714,7 @@ func (s *Session) applyIndexLine(p *preparedLine, line []byte, off int64) error 
 
 // accountsRecord reports whether the session accounting reads a record of entryType (sessionAccountingAccumulator.addDecoded); a record of
 // another type does not change it.
+// 按记录类型更新索引账目；其他类型不改索引。
 func accountsRecord(entryType string) bool {
 	switch entryType {
 	case "usage", "compaction", "branch_summary", "message", "bash_execution":
@@ -702,6 +725,7 @@ func accountsRecord(entryType string) bool {
 
 // leafOf is the leaf after an entry with id is added: _buildIndex and _appendEntry set leafId to the entry's id, so an entry whose id is null
 // leaves the leaf null.
+// 从索引算当前叶子；算不出返回空。
 func leafOf(id string) *string {
 	if sessionentry.IsNull(id) {
 		return nil
@@ -711,6 +735,7 @@ func leafOf(id string) *string {
 
 // rawJSONString is the string a SessionEntryBase string member decodes to from raw: absent and null are "", a JSON string is its value, and
 // any other value does not decode.
+// 取 raw JSON 里的字符串值；其他形态不解码。
 func rawJSONString(raw json.RawMessage) (string, bool) {
 	if len(raw) == 0 || string(raw) == "null" {
 		return "", true

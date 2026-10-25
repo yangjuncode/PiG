@@ -41,12 +41,21 @@ func validateToolArgs(toolName string, schema map[string]any, args json.RawMessa
 
 // decodeSchemaInstance decodes a JSON text into the value a schema validator checks. sdkjson keeps a lone surrogate escape as one
 // UTF-16 unit, as the structuredClone of JSON.parse's result does; encoding/json would hand the tool U+FFFD.
+//
+// 参数 JSON → 校验用值的解码：刻意用 sdkjson 而非 encoding/json——
+// 孤立代理项转义要保留成单个 UTF-16 单元（同 JSON.parse 的
+// structuredClone 语义），encoding/json 会把它变成 U+FFFD，
+// 模型会看到自己没写过的替换字符。
 func decodeSchemaInstance(text json.RawMessage) (any, error) {
 	var instance any
 	err := sdkjson.Unmarshal(text, &instance)
 	return instance, err
 }
 
+// validateToolArgsSchema 是带 schema 的完整校验管线：取缓存解析树 →
+// 解码参数（保 UTF-16 语义）→ normalizeOptionalNulls → convert →
+// coerce → draft-2020 校验 → 失败时按 TypeBox 遍历顺序生成错误。
+// 成功返回可能被整形过的参数（marshal 回源成员顺序）。
 func validateToolArgsSchema(toolName string, rawSchema, args json.RawMessage) (json.RawMessage, error) {
 	entry := toolArgumentSchemas.entry(rawSchema)
 	// The parsed schema caches its children and its compiled form as validation reaches them, so one validation at a time uses it.
@@ -113,9 +122,16 @@ func validateToolArgsSchema(toolName string, rawSchema, args json.RawMessage) (j
 
 // typeboxMaxErrors is typebox 1.3.27 Settings.maxErrors.
 // upstream: node_modules/typebox/build/system/settings/settings.mjs:maxErrors
+//
+// 单次校验收集错误的数量上限——与 TypeBox Settings.maxErrors 同值：
+// 错误报告到 8 条就截断，防止病态 schema/参数爆出无限长错误清单。
 const typeboxMaxErrors = 8
 
 // toolArgumentSchemas holds the parsed and compiled schema of each tool whose arguments were validated. A tool call validates against its tool's schema every time, so parsing and compiling it once per distinct schema leaves only the arguments to decode per call.
+//
+// 参数 schema 的"解析+编译"全局缓存：同一工具的 schema 每次调用都要
+// 校验参数，按 schema 原文做 key 只解析编译一次，之后每次调用只剩
+// 参数解码的成本。对应上游 WeakMap 缓存，但加了容量上界（D112）。
 var toolArgumentSchemas argumentSchemaCache
 
 const (
@@ -127,12 +143,17 @@ const (
 	argumentSchemaCacheMaxBytes = 1 << 20
 )
 
+// argumentSchemaCache 是带 LRU 上限的 schema 缓存：entries 按原文 key，
+// order 记录插入顺序用于淘汰最老条目。
 type argumentSchemaCache struct {
 	mu      sync.Mutex
 	entries map[string]*argumentSchemaEntry
 	order   []string
 }
 
+// argumentSchemaEntry 是一份 schema 的缓存项：raw 存原文，schema/err
+// 是惰性解析结果，done 表示已算过；mu 让并发调用对同一 schema 只解析
+// 一次且各自可原地改 wrapped/mutated 状态。
 type argumentSchemaEntry struct {
 	mu     sync.Mutex
 	raw    json.RawMessage
@@ -142,6 +163,9 @@ type argumentSchemaEntry struct {
 }
 
 // entry returns the cache entry for the schema text. A schema too large to cache gets an entry of its own that is not kept.
+//
+// 取缓存项：超过 1MiB 的 schema 不进缓存（造个临时项）——一条巨型
+// schema 不该把小 schema 都挤出去；命中上限时淘汰最老（FIFO）。
 func (cache *argumentSchemaCache) entry(raw json.RawMessage) *argumentSchemaEntry {
 	if len(raw) > argumentSchemaCacheMaxBytes {
 		return &argumentSchemaEntry{raw: raw}
@@ -166,6 +190,9 @@ func (cache *argumentSchemaCache) entry(raw json.RawMessage) *argumentSchemaEntr
 }
 
 // parsed is parseArgumentSchema of the entry's schema text, computed once. The caller holds entry.mu.
+//
+// 惰性解析：第一次调用才 parseArgumentSchema，结果（含错误）固化——
+// 之后永远返回同一份，调用方须持有 entry.mu。
 func (entry *argumentSchemaEntry) parsed() (*argumentSchema, error) {
 	if !entry.done {
 		entry.schema, entry.err = parseArgumentSchema(entry.raw)
@@ -196,6 +223,9 @@ type argumentSchema struct {
 }
 
 // setMember writes a converted or coerced member back, noting on the root when it is not the value already there.
+//
+// 回写对象成员并在"值真的变了"时在 root 上置 mutated——convert/coerce
+// 的全部原地修改都经这里记账，供外层判断要不要替换整个参数根值。
 func (s *argumentSchema) setMember(object map[string]any, key string, value any) {
 	if current, ok := object[key]; !ok || !sameArgumentValue(current, value) {
 		s.root.mutated = true
@@ -204,6 +234,8 @@ func (s *argumentSchema) setMember(object map[string]any, key string, value any)
 }
 
 // setItem is setMember for an array item.
+//
+// setMember 的数组版：写回元素并同样记账 mutated。
 func (s *argumentSchema) setItem(items []any, i int, value any) {
 	if !sameArgumentValue(items[i], value) {
 		s.root.mutated = true
@@ -211,6 +243,9 @@ func (s *argumentSchema) setItem(items []any, i int, value any) {
 	items[i] = value
 }
 
+// parseArgumentSchema 把 schema 原文解析成惰性树：doc=解码值，
+// fields=对象成员 raw JSON，keys=成员出现顺序（用流式 Decoder 取，
+// Unmarshal 进 map 会丢序——成员顺序参与 TypeBox 的遍历/错误枚举）。
 func parseArgumentSchema(raw json.RawMessage) (*argumentSchema, error) {
 	s := &argumentSchema{children: map[string]*argumentSchema{}}
 	s.root = s
@@ -242,6 +277,8 @@ func parseArgumentSchema(raw json.RawMessage) (*argumentSchema, error) {
 	return s, nil
 }
 
+// child 取成员 key 的子 schema（惰性解析+缓存进 children，root 指回
+// 根节点共享 wrapped/mutated 状态）；成员不存在或解析失败返回 nil。
 func (s *argumentSchema) child(key string) *argumentSchema {
 	if child, ok := s.children[key]; ok {
 		return child
@@ -259,6 +296,8 @@ func (s *argumentSchema) child(key string) *argumentSchema {
 	return child
 }
 
+// list 把成员 key（数组形态的 schema 列表，如 anyOf/oneOf/items 元组）
+// 逐项解析成子 schema 切片，同样走 children 缓存（key 为 "字段/下标"）。
 func (s *argumentSchema) list(key string) []*argumentSchema {
 	var raws []json.RawMessage
 	if json.Unmarshal(s.fields[key], &raws) != nil {
@@ -278,6 +317,9 @@ func (s *argumentSchema) list(key string) []*argumentSchema {
 	return out
 }
 
+// value/text/types/anySlice 是 schema 节点的便利取值器：
+// value=doc 对象成员原值；text=取字符串成员；types=把 type 字段归一成
+// []string（单值或联合数组）；anySlice=安全的 []any 断言。
 func (s *argumentSchema) value(key string) any {
 	object, _ := s.doc.(map[string]any)
 	return object[key]
@@ -300,6 +342,9 @@ func (s *argumentSchema) types() []string {
 
 func anySlice(value any) []any { values, _ := value.([]any); return values }
 
+// validator 惰性编译 draft-2020 校验器：注册 TypeBox 格式后经
+// CompilerSchema 把老式写法翻译成 draft-2020 再编译，结果（含错误）
+// 缓存——同一 schema 只编译一次。
 func (s *argumentSchema) validator() (*jsonschema.Schema, error) {
 	if s.compiled != nil || s.compileErr != nil {
 		return s.compiled, s.compileErr
@@ -314,6 +359,7 @@ func (s *argumentSchema) validator() (*jsonschema.Schema, error) {
 	return s.compiled, s.compileErr
 }
 
+// check 是"值是否过本 schema"的快速判断：编译失败即 false。
 func (s *argumentSchema) check(value any) bool {
 	validator, err := s.validator()
 	return err == nil && validator.Validate(value) == nil
@@ -347,6 +393,8 @@ func (s *argumentSchema) normalizeOptionalNulls(value any) {
 	}
 }
 
+// eachItem 遍历数组项并允许 visit 回写矫正值：items 是元组 schema 时
+// 按下标对齐逐项处理，是单一 schema 时应用到全部项。
 func (s *argumentSchema) eachItem(items []any, visit func(*argumentSchema, any) any) {
 	if tuple := s.list("items"); tuple != nil {
 		for i := range min(len(items), len(tuple)) {
@@ -398,6 +446,10 @@ func (s *argumentSchema) coerce(value any) any {
 	return value
 }
 
+// coerceArgumentUnion 处理联合 schema 的矫正：先找已匹配的分支直接
+// 返回；否则对每个分支克隆试矫正，native（TypeBox）模式下还要拿矫正
+// 结果对整个联合重校验（上游 Convert 的语义），普通 coerce 只校验该
+// 分支。全不匹配返回原值。
 func coerceArgumentUnion(value any, children []*argumentSchema, native bool) any {
 	for _, child := range children {
 		if child.check(value) {
@@ -425,6 +477,10 @@ func coerceArgumentUnion(value any, children []*argumentSchema, native bool) any
 
 // typeboxPropertyNameMatcher is Guard.EntriesRegExp's new RegExp(`^${name}$`), unwrapped as TypeBox writes it (so "a|b" is ^a or b$). A name Go cannot compile matches only
 // itself; TypeBox throws there.
+//
+// 复刻上游 Guard.EntriesRegExp 行为：属性名原样拼进 `^${name}$`——
+// 名字里含正则元字符时会按正则匹配（"a|b" 实际变成 ^a 或 b$）。
+// Go 编译不了的表达式降级成"只匹配自己"（上游此时会抛，分歧点）。
 func typeboxPropertyNameMatcher(name string) func(string) bool {
 	expression, err := regexp.Compile("^" + name + "$")
 	if err != nil {
@@ -434,6 +490,9 @@ func typeboxPropertyNameMatcher(name string) func(string) bool {
 }
 
 // nameMatcher is typeboxPropertyNameMatcher(name), compiled once per schema instead of once per validated object.
+//
+// 按 schema 缓存编译好的属性名匹配器——上游每校验一个对象编译一次
+// 正则，这里按 schema 编译一次复用。
 func (s *argumentSchema) nameMatcher(name string) func(string) bool {
 	if matcher, ok := s.matchers[name]; ok {
 		return matcher
@@ -446,6 +505,11 @@ func (s *argumentSchema) nameMatcher(name string) func(string) bool {
 	return matcher
 }
 
+// eachProperty 是 convert/coerce 共享的"对象成员遍历+回写"：
+// properties 里声明的成员按其子 schema 矫正（native 模式走 TypeBox
+// 的 EntriesRegExp 语义——属性名正则匹配到谁就矫正谁，可能不止自己）；
+// additionalProperties 兜底处理未声明成员（native 下对每个不匹配已知
+// 属性的 key 都矫正一遍，复刻 FromAdditionalProperties）。
 func (s *argumentSchema) eachProperty(value any, native bool) {
 	object, ok := value.(map[string]any)
 	if !ok {
@@ -501,6 +565,8 @@ func (s *argumentSchema) eachProperty(value any, native bool) {
 	}
 }
 
+// cloneArgumentValue 深拷贝参数值：联合矫正试错时不能污染原参数，
+// 先在克隆体上试，成功才采用。
 func cloneArgumentValue(value any) any {
 	switch value := value.(type) {
 	case map[string]any:
@@ -520,6 +586,8 @@ func cloneArgumentValue(value any) any {
 	}
 }
 
+// sameArgumentValue 的"同一值"判定复刻 JS 语义：map/切片按引用相等
+// 比较（JS 的 === 对容器是身份比较，原地矫正后仍"相等"）；标量按值。
 func sameArgumentValue(left, right any) bool {
 	// JavaScript compares containers by identity; coercion mutates them in place.
 	switch left := left.(type) {
@@ -538,6 +606,8 @@ func sameArgumentValue(left, right any) bool {
 	}
 }
 
+// prettyArguments 把参数 JSON 美化输出（错误信息里给模型看的参数
+// 回显）：规范化失败就回退原文。
 func prettyArguments(raw json.RawMessage) string {
 	encoded, err := stringifyArgumentJSON(raw)
 	if err != nil {

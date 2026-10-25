@@ -441,6 +441,9 @@ type SessionOptions struct {
 
 // NewAgentSession is upstream's `new AgentSession(config)`: the Session for config, built against config.Services. A nil UsesDefaultTools is false, as the constructor reads it; NewSession derives it as createAgentSession does.
 // upstream: agent-session.ts:485 constructor(config: AgentSessionConfig), agent-session.ts:500 `config.usesDefaultTools ?? false`
+// 中文说明：上游 `new AgentSession(config)` 的入口——config.Services
+// 已就绪时直接建 Session；UsesDefaultTools 缺省按 false（构造器原样
+// 读取该布尔指针）。
 func NewAgentSession(config SessionOptions) (*Session, error) {
 	if config.UsesDefaultTools == nil {
 		config.UsesDefaultTools = new(false)
@@ -863,6 +866,9 @@ func NewSession(svcs *AgentSessionServices, opts SessionOptions) (*Session, erro
 }
 
 // replayedTranscriptIf replays the transcript only when Pi's constructor restores the loadout from it.
+//
+// 只有"上游构造器需要从转录恢复 loadout"时才重放——新会话跳过
+// 整条分支遍历。
 func replayedTranscriptIf(replay bool, inner *icodingagent.Session) ([]agent.AgentMessage, error) {
 	if !replay {
 		return nil, nil
@@ -873,6 +879,9 @@ func replayedTranscriptIf(replay bool, inner *icodingagent.Session) ([]agent.Age
 // replayedTranscript is the system messages of the session's whole current branch, including those before a compaction, which Pi's _restoreToolsFromTranscript replays for the loadout, with the TypeError that replay throws for a wrong-typed tool list.
 //
 // upstream: agent-session.ts:1815-1844 (_restoreToolsFromTranscript)
+//
+// 收集整支（含压缩点之前）的全部 system 消息——工具声明重放只看
+// 这些；工具列表类型非法时带上游抛的 TypeError。
 func replayedTranscript(inner *icodingagent.Session) ([]agent.AgentMessage, error) {
 	var systems []agent.AgentMessage
 	for _, entry := range inner.GetBranch() {
@@ -931,6 +940,9 @@ func (s *Session) turnEndWithEntryIDs(event agent.TurnEndEvent) agent.TurnEndEve
 }
 
 // restoreCreatedSessionState is restoreSessionRuntimeState as createAgentSession applies it (sdk.ts:211): only a session with messages restores its saved model and thinking level; one that holds entries and no messages starts like a new session.
+//
+// createAgentSession 施加的规则：有消息才恢复存档的模型/思考级别；
+// 只有条目没消息的会话当新会话起步（用 fallback）。
 func restoreCreatedSessionState(inner *icodingagent.Session, services *AgentSessionServices, fallbackModel *ai.Model, fallbackThinking ai.ModelThinkingLevel, restoreModel bool) (*ai.Model, ai.ModelThinkingLevel) {
 	if len(inner.BuildContext(inner.GetLeafID())) == 0 {
 		return fallbackModel, fallbackThinking
@@ -993,6 +1005,9 @@ func (s *Session) StartEvent() extension.SessionStartEvent {
 func (s *Session) ExtensionRunner() *inproc.Runner { return s.currentRunner() }
 
 // HasExtensionHandlers reports whether a loaded extension handles eventType (agent-session.ts hasExtensionHandlers). A Session without a runner has none.
+//
+// 有没有已加载扩展注册了 eventType 处理器——发事件前预查可省掉
+// 无谓的 runner 往返；无 runner 的会话恒 false。
 func (s *Session) HasExtensionHandlers(eventType string) bool {
 	runner := s.currentRunner()
 	return runner != nil && runner.HasHandlers(eventType)
@@ -1099,6 +1114,10 @@ func (s *Session) prepareContentRun(ctx context.Context, content []ai.UserConten
 // or nil when none is due, in which case the overflow guard has already reset
 // with the new user message. The returned function compacts, then resets the
 // guard. The caller holds s.mu, also while the returned function runs.
+//
+// 新 user 消息前的"该不该压缩"裁决：在当前 goroutine 上只做决定，
+// 返回的闭包才真正执行压缩——把"查"和"做"拆开，调用方可把慢压缩
+// 挪下输入循环。被中止的回复也参与裁决（临近窗口 abort 仍要压）。
 func (s *Session) promptCompactionDueLocked(ctx context.Context) (func(context.Context) error, error) {
 	var due func(context.Context) error
 	if la := lastAssistantMessage(s.agent.Messages()); la != nil {
@@ -1129,6 +1148,11 @@ func (s *Session) promptCompactionDueLocked(ctx context.Context) (func(context.C
 // or nil when none is due. A mode runs the returned function off its input loop, as Pi's check resumes without I/O unless it compacts. The Session
 // lock is never waited for: ok is false when another operation holds it (a compaction in progress), and the caller then runs CheckPromptCompaction
 // off its loop, so the loop keeps answering while Pi's own check would still be waiting for that compaction.
+//
+// prompt() 压缩检查的"快车道"：TryLock 拿锁（拿不到→ok=false，调用
+// 方去循环外走 CheckPromptCompaction——此时别处正有压缩在跑，等锁
+// 只会让输入循环卡死）；拿到则在本 goroutine 裁决并返回可挪走的
+// 压缩闭包。
 func (s *Session) BeginPromptCompactionCheck(ctx context.Context) (due func(context.Context) error, ok bool, err error) {
 	if !s.mu.TryLock() {
 		return nil, false, nil
@@ -1226,6 +1250,9 @@ func (s *Session) Events() <-chan agent.AgentEvent { return s.events }
 // With or without it, a producer whose event has nothing queued ahead executes
 // that event on its own goroutine, listeners included, as Pi's synchronous _emit
 // does; the executor goroutine runs only events queued behind others.
+// DiscardEvents 丢弃模式：置标志后把 events 通道里已积压的事件
+// 全部取出并 Acknowledge（不解阻塞生产者）——供"即将关闭、不再
+// 有消费者"的路径清空队列。
 func (s *Session) DiscardEvents() {
 	s.discardEvents.Store(true)
 	for {
@@ -1282,6 +1309,8 @@ func (s *Session) Tools() []agent.AgentTool {
 }
 
 // State is the agent's live state (agent-session.ts:1426 `get state()` returns this.agent.state).
+//
+// agent 实时状态直读（上游 `get state()`）——模型、流式标志等。
 func (s *Session) State() agent.AgentState { return s.agent.State() }
 
 // Model is the active model (agent-session.ts:1442 `this.agent.state.model`).
@@ -1329,6 +1358,9 @@ func (runtime *ModelRuntime) sameBoundModelMetadata(current, refreshed *ai.Model
 func (s *Session) ModelRuntime() *ModelRuntime { return s.modelRuntime }
 
 // SettingsManager is upstream AgentSession.settingsManager (agent-session.ts:371): the settings this Session reads its compaction, retry, image and cache-warming policy from.
+//
+// 本 Session 读策略（压缩阈值、重试、图片上限、缓存预热）的设置
+// 管理器——与 Services 共享同一份。
 func (s *Session) SettingsManager() *icodingagent.SettingsManager {
 	return s.services.SettingsManager()
 }
@@ -1348,6 +1380,8 @@ func (s *Session) StreamModel(ctx context.Context, model *ai.Model, request ai.C
 type ModelMutationOptions = icodingagent.ModelMutationOptions
 
 // ModelCycleResult reports a model-cycle selection and its clamped thinking level.
+//
+// 模型循环选择的结果：选中的模型 + 按该模型能力钳过的思考级别。
 type ModelCycleResult = icodingagent.ModelCycleResult
 
 // SetModel swaps the active LLM model and records a model_change in the Session transcript.
@@ -1361,6 +1395,9 @@ func (s *Session) SetModel(m *ai.Model, options ...ModelMutationOptions) error {
 }
 
 // CheckModelAuth reports the error SetModel returns when m's provider has no configured auth (agent-session.ts:2477-2480 setModel's checkAuth step).
+//
+// 干跑 SetModel 的认证检查：provider 需要认证而无配置时报
+// "No API key for provider/model"——供 UI 在真正切换前预检。
 func (s *Session) CheckModelAuth(m *ai.Model) error {
 	return s.checkModelAuth(s.backgroundContext(), m)
 }
@@ -1405,6 +1442,10 @@ func (s *Session) SetModelOnMain(ctx context.Context, m *ai.Model, options Model
 }
 
 // notificationContext ends when ctx or the Session's lifetime ends; release frees it.
+//
+// 通知类操作的 ctx：随调用方 ctx 或 Session 生命周期任一结束而
+// 结束（AfterFunc 桥接 lifetime 取消进 WithCancelCause）；release
+// 归还资源。Session 关闭时挂着的通知不再悬空。
 func (s *Session) notificationContext(ctx context.Context) (context.Context, func()) {
 	lifetime := s.backgroundContext()
 	merged, cancel := context.WithCancelCause(ctx)
@@ -1655,6 +1696,10 @@ func (s *Session) Dispose() {
 }
 
 // closeSuperseded closes a Session whose replacement was already built. A replacement with the same Session ID (a switch to the current file, an in-memory fork) owns the ID's provider resources, which the outgoing Session's Close must not release.
+//
+// 被替换会话的收尾：若后继者同 Session ID（切回本文件/内存 fork），
+// 该 ID 名下的 provider 资源归后继所有——本 Close 不得释放
+// （successorOwnsResources 标记阻止 CleanupSessionResources）。
 func (s *Session) closeSuperseded(successor *Session) error {
 	if successor != nil && successor.ID() == s.ID() {
 		s.successorOwnsResources.Store(true)
@@ -1887,6 +1932,10 @@ func (s *Session) ContextUsage() *SessionContextUsage {
 }
 
 // contextUsageMemo is the last estimate ContextUsage computed and the Session log state and window it was computed for. The estimate was computed after the revision was read, so it is never older than the state the key names.
+//
+// ContextUsage 的备忘值：记下"上次估算"及其对应的会话日志、
+// 修订号与窗口——估算是在读 revision 之后算的，所以它描述的
+// 状态只会更新不会更旧。
 type contextUsageMemo struct {
 	log      *icodingagent.Session
 	revision uint64
@@ -1906,6 +1955,10 @@ func (u *SessionContextUsage) clone() *SessionContextUsage {
 }
 
 // projectedContextUsage computes the estimate of ContextUsage over log's current branch.
+//
+// 在"当前分支投影"上算上下文用量：先找最新压缩点，之后只认投影里
+// 存活 assistant 消息的 Usage（被 context_edit 删改的不算；压缩点
+// 之前的 usage 度量的是旧上下文也不算）。
 func (s *Session) projectedContextUsage(log *icodingagent.Session, contextWindow int) *SessionContextUsage {
 	projection := log.BuildSessionProjectionView()
 	branch := log.GetContextBranch()
@@ -2113,6 +2166,10 @@ func (s *Session) SetThinkingLevel(level ai.ModelThinkingLevel, options ...Model
 // SetThinkingLevelOnMain dispatches only the synchronous state mutation to the owner loop and runs the thinking_level_select notification on the
 // caller, as SetModelOnMain does: the notification admits an extension handler's synchronous prefix, which must not run on the input loop. A
 // superseded dispatcher can reject the mutation without executing it.
+//
+// "回主循环改思考级别"：dispatch 只承载同步的状态变更，通知
+// （thinking_level_select，可能触发扩展处理器的同步前缀）留在
+// 调用方栈上跑——前缀不许上输入循环。
 func (s *Session) SetThinkingLevelOnMain(level ai.ModelThinkingLevel, options ModelMutationOptions, dispatch func(func() error) error) error {
 	var notify func()
 	mutate := func() error {
@@ -2175,6 +2232,10 @@ type BashResult struct {
 }
 
 // ExecuteBashOptions is the options object of upstream executeBash. ExcludeFromContext persists the result as a `bashExecution` entry but drops it from LLM context (the `!!cmd` semantics, via bashExecutionToText); ID is the optional correlation identifier of the output events; a nil Operations runs the local shell.
+//
+// executeBash 选项：ExcludeFromContext=持久化但不让模型看到（!!cmd
+// 语义）；ID=输出事件的关联标识；Operations 为 nil 时跑本地 shell，
+// 否则走扩展提供的 BashOperations（远程/沙箱执行）。
 type ExecuteBashOptions struct {
 	// ExcludeFromContext is the optional excludeFromContext of upstream executeBash: nil leaves the member out of the recorded message.
 	ExcludeFromContext *bool
@@ -2273,6 +2334,9 @@ func (s *Session) RecordBashResult(command string, result BashResult, excludeFro
 }
 
 // RecordUserBashResult records an interactive user Bash result through recordBashResult (icodingagent.InteractiveSessionHandle).
+//
+// 交互模式用户手动跑的 bash（!cmd）的结果落盘入口：交互侧永远给
+// 布尔值，所以记录里的 excludeFromContext 成员必带。
 func (s *Session) RecordUserBashResult(command string, result icodingagent.BashResult, excludeFromContext bool) error {
 	// Interactive mode always passes a boolean (interactive-mode.ts:7029,7058), so the recorded message carries the member.
 	return s.recordBashResult(command, BashResult{
@@ -2375,10 +2439,14 @@ func latestCompactionTimestamp(entries []icodingagent.SessionEntry) (ms int64, o
 }
 
 // projectionCompactionTimestamp is latestCompactionTimestamp of the branch the projection was built from, without a walk of the branch.
+//
+// 从已建好的投影直接取"最新压缩点时间戳"，不再回走整支。
 func projectionCompactionTimestamp(projection icodingagent.SessionProjection) (ms int64, ok bool) {
 	return compactionTimestamp(icodingagent.LatestCompactionEntryOf(projection))
 }
 
+// compactionTimestamp 把压缩条目的 ISO 时间戳解析成毫秒：nil 条目
+// 或解析失败（NaN）都 ok=false。
 func compactionTimestamp(compaction *icodingagent.CompactionEntry) (ms int64, ok bool) {
 	if compaction == nil {
 		return 0, false
@@ -2430,6 +2498,9 @@ func (s *Session) resolveCompleter() compaction.SimpleCompleter {
 }
 
 // AgentSessionEventListener is a Session event listener (agent-session.ts:240 `(event: AgentSessionEvent) => void`).
+//
+// Session 事件的同步监听器签名：Subscribe 注册，按注册序在事件
+// 发布到 Events 通道前运行。
 type AgentSessionEventListener func(agent.AgentEvent)
 
 type sessionEventListener struct {
@@ -2481,6 +2552,8 @@ func (s *Session) notifyListeners(event agent.AgentEvent) {
 }
 
 // hasListeners reports whether a Session listener is subscribed now.
+//
+// 当前有没有同步监听器——事件派发快路径用它跳过同步投递。
 func (s *Session) hasListeners() bool {
 	listeners := s.listeners.Load()
 	return listeners != nil && len(*listeners) > 0
@@ -2494,6 +2567,9 @@ type synchronousSessionEvent struct {
 }
 
 // endEvents ends the Session event executor.
+//
+// 关闭事件执行器的终止信号（eventsDone 一次性 close）——生产者
+// 的 enqueueEvent 见到它就不再投递。
 func (s *Session) endEvents() {
 	s.eventsDoneOnce.Do(func() { close(s.eventsDone) })
 }
@@ -2504,6 +2580,11 @@ func (s *Session) emitOrderedEvent(ev agent.AgentEvent) {
 }
 
 // emitPublishedEvent is emitOrderedEvent for the producer that just executed ev's listener phase (handleAgentEvent). When nothing is queued ahead and the publication cannot block on a full Events channel, the producer executes it on its own goroutine; otherwise it is queued.
+//
+// "已跑完监听器阶段"的事件发布：TryLock 抢占——队列为空且 Events
+// 通道放得下（至多两条：事件 + auto_retry_end）就由生产 goroutine
+// 就地执行保 FIFO；否则正常排队。TryLock 不能等：生产者可能正
+// 拿着执行器当前回调要等的 stream turn。
 func (s *Session) emitPublishedEvent(ev agent.AgentEvent) {
 	published := publishedSessionEvent{ev}
 	// TryLock: the producer may hold the stream turn the executor's current callback waits for, so it must not wait for execMu here.
@@ -2520,6 +2601,10 @@ func (s *Session) emitPublishedEvent(ev agent.AgentEvent) {
 }
 
 // enqueueEvent sends ev on rawEvents for the executor and counts it in queued until the executor finishes it. While a queue publication overflow is pending, ev joins the overflow instead, so it executes after the overflow (queueEventPublication). It reports false when stop or the end of the executor came first.
+//
+// 常规入队路径：queued 计数（执行完才减）让 inlineReadyLocked 知道
+// "前面还有没有排着的"；队列发布溢出未决时改挂进溢出队列，保证
+// 次序；eventsDone 先到或 stop 触发返回 false。
 func (s *Session) enqueueEvent(ev agent.AgentEvent, stop <-chan struct{}) bool {
 	if s.queueEvents.pending.Load() && s.appendQueueOverflow(ev) {
 		return true
@@ -2538,6 +2623,10 @@ func (s *Session) enqueueEvent(ev agent.AgentEvent, stop <-chan struct{}) bool {
 
 // inlineReadyLocked reports, under execMu, whether the calling producer may execute its event itself: the executor is running and nothing is queued ahead of the event, so executing it now keeps the Session's FIFO order.
 // An overflow starts only while a callback executes under execMu, so the overflow cannot become pending while the caller holds execMu.
+//
+// "生产者能不能就地执行"的判定（持 execMu 时）：执行器未结束、
+// queued 为空、无溢出未决——就地跑不破坏 FIFO。溢出只能在回调
+// 持锁期间开始，故持锁时它不可能变成 pending。
 func (s *Session) inlineReadyLocked() bool {
 	if s.executorEnded || s.queued.Load() != 0 || s.queueEvents.pending.Load() {
 		return false
@@ -2552,6 +2641,11 @@ func (s *Session) inlineReadyLocked() bool {
 
 // execLock is execMu: a mutex whose waiters block on a channel receive, so a goroutine waiting for it, such as the executor goroutine while a
 // producer executes a callback inline, is durably blocked for testing/synctest; a sync.Mutex waiter is not. Taking a free lock is one atomic add.
+//
+// 基于 channel 的互斥锁：等待者阻塞在 channel 收上（可被
+// testing/synctest 的"持久阻塞"检测看到——sync.Mutex 的等待者
+// 看不到）；拿空锁只是一次原子加。claims=持有者+等待者计数，
+// handoff 单槽传递锁令牌。
 type execLock struct {
 	// claims counts the holder and the goroutines waiting for it.
 	claims atomic.Int32
@@ -2574,6 +2668,9 @@ func (l *execLock) Unlock() {
 func (l *execLock) TryLock() bool { return l.claims.CompareAndSwap(0, 1) }
 
 // finishQueuedLocked marks one queued event executed. An event a test sent on rawEvents directly was never counted.
+//
+// 一件排队事件执行完的计数结算（CAS 到 0 为止）；测试直接灌进
+// rawEvents 的事件没计过数，减到 0 即停。
 func (s *Session) finishQueuedLocked() {
 	for {
 		queued := s.queued.Load()
@@ -2817,6 +2914,11 @@ func (s *Session) dispatchSessionNameEvent(event agent.SessionInfoChangedEvent) 
 }
 
 // dispatchUnawaitedEvent is Pi's `void runner.emit(event)`: it admits the first handler's synchronous prefix on the initiating call, without awaiting suspended extension work. The Session cancels and joins the emissions on Close and reports a dispatch failure under eventType.
+//
+// 对应上游 `void runner.emit(event)` 的"发射不管"：发起调用只等
+// 第一个处理器同步前缀的确认（WithAcknowledgment），扩展后续异步
+// 工作不阻塞调用方；Session Close 时统一取消并 join；派发失败按
+// eventType 上报。
 func (s *Session) dispatchUnawaitedEvent(runner *inproc.Runner, eventType string, event extension.ExtensionEvent) {
 	invoked := make(chan struct{})
 	ctx := invocation.WithAcknowledgment(s.backgroundContext(), func() { close(invoked) })
@@ -2877,6 +2979,10 @@ func (s *Session) reportAgentEventPanic(ev agent.AgentEvent, recovered any) {
 // runner it goes to stderr like print mode's listener. A listener that panics,
 // which may be the failure being reported, is named on stderr together with
 // report.
+//
+// 扩展错误报告的投递：有 runner 走其错误监听器；监听器 panic
+// （它可能正是被报告的那个故障）把 panic 与原报告一起写 stderr；
+// 无 runner 时与 print 模式一致直写 stderr。
 func reportExtensionError(runner *inproc.Runner, report *extension.ExtensionError, stderr io.Writer) {
 	if runner != nil {
 		failure := emitExtensionError(runner, report)
@@ -3093,6 +3199,10 @@ type compactionYieldKey struct{}
 
 // WithCompactionYield returns ctx carrying yield, which a manual compaction calls with its own context after its synchronous checks and before its first
 // await (session_before_compact or the summary request auth). A mode uses it to let work that Pi runs while the compaction awaits, such as a replacement's teardown, act first.
+//
+// 给手动压缩挂"让渡点"的 ctx：压缩做完同步检查、首次 await 之前
+// 回调 yield——模式实现借此让"上游会在压缩 await 期间跑的工作"
+// （如替换 teardown）先发生，保持时序一致。
 func WithCompactionYield(ctx context.Context, yield func(context.Context)) context.Context {
 	return context.WithValue(ctx, compactionYieldKey{}, yield)
 }
@@ -3719,6 +3829,9 @@ func (s *Session) NavigateTreeHandle(ctx context.Context, targetID string, optio
 }
 
 // BaseToolOverride is one entry of SessionOptions.BaseToolsOverride: the record key Pi activates and the tool registered for it.
+//
+// 基础工具覆盖项：Name 是上游激活用的记录键，Tool 是换上的实现——
+// 用于把内置工具替换成调用方/扩展给的变体。
 type BaseToolOverride struct {
 	Name string
 	Tool agent.AgentTool

@@ -41,6 +41,9 @@ func (s *Session) runDefaultCompaction(ctx context.Context, prep compaction.Comp
 }
 
 // withoutDeletedHeaders drops the headers an auth result deletes; summary requests take only header values.
+//
+// 认证结果里"要求删除"的 header（值为 nil）在落地前剔掉——摘要
+// 请求只收实际的头值。
 // upstream: packages/coding-agent/src/core/agent-session.ts:withoutDeletedHeaders
 func withoutDeletedHeaders(headers ai.ProviderHeaders) map[string]string {
 	if headers == nil {
@@ -109,9 +112,15 @@ func (s *Session) prepareSummarizationRequest(ctx context.Context, model *ai.Mod
 }
 
 // errOperationAborted is DOMException AbortError's message: the reason a plainly aborted AbortSignal rejects with.
+//
+// 普通 abort 的拒绝原因（DOMException AbortError 的消息文本）。
 var errOperationAborted = errors.New("This operation was aborted")
 
 // abortSignalReason is the reason an aborted signal rejects with: AbortError for a plain abort, TimeoutError for AbortSignal.timeout(), or the caller's cause.
+//
+// 已中止信号的拒绝原因：普通取消→AbortError；deadline 到期→
+// AbortSignal.timeout 的 TimeoutError；有 cause 用 cause——对应
+// 上游 getAuth 先检查信号再发请求的拒绝时序（resolve.ts:33-44）。
 func abortSignalReason(ctx context.Context) error {
 	cause := context.Cause(ctx)
 	switch {

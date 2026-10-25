@@ -62,6 +62,10 @@ type ModelRegistry struct {
 // path, the merged settings, or model lookup goes through this type.
 // Anything specific to a single conversation (history, tools, hooks)
 // belongs on Session, not Services.
+// AgentSessionServices 是"会话级共享服务容器"（原 Services）：cwd、
+// agentDir、认证存储、设置管理器、模型注册表与运行时、资源加载器、
+// 扩展 flag 值与启动诊断。刻意保持窄——凡是要碰认证文件/合并设置/
+// 模型查找的都过它；属于单个会话的东西（历史、工具、钩子）归 Session。
 type AgentSessionServices struct {
 	cwd          string
 	agentDir     string
@@ -86,12 +90,18 @@ type AgentSessionServices struct {
 }
 
 // ExtensionFlagValue is one entry of [CreateAgentSessionServicesOptions.ExtensionFlagValues]: the value of --Name, a bool or a string.
+//
+// 一条扩展命令行 flag 的值：--name 形式的 bool（true）或字符串值——
+// 数组保序（对应上游 Map 的插入序，诊断输出按此序展示）。
 type ExtensionFlagValue struct {
 	Name  string
 	Value any
 }
 
 // AgentSessionRuntimeDiagnostic is a startup problem found while creating Services (upstream AgentSessionRuntimeDiagnostic).
+//
+// 启动期诊断条目（Services 装配/扩展 flag 应用中发现的问题）——
+// 不致命但要回报给调用方和 UI。
 type AgentSessionRuntimeDiagnostic = icodingagent.AgentSessionRuntimeDiagnostic
 
 // CreateAgentSessionServicesOptions configures CreateAgentSessionServices. All fields are optional;
@@ -145,7 +155,12 @@ type CreateAgentSessionServicesOptions struct {
 	ResourceLoaderReloadOptions *ResourceLoaderReloadOptions
 }
 
-// CreateAgentSessionServices constructs a Services container. Failure modes:
+// CreateAgentSessionServices constructs a Services container.
+//
+// 服务容器装配：CWD 缺省取 SessionManager 的 GetCwd 再退 os.Getwd；
+// 认证/设置/注册表按目录装载（文件缺失或损坏一律回退默认，不报错）；
+// 可注入调用方自管的 ModelRuntime/ResourceLoader（关闭权留调用方）。
+// Failure modes:
 //
 //   - cannot resolve CWD when none provided → wrapped os.Getwd error
 //   - auth.json directory cannot be created/read → wrapped error
@@ -283,6 +298,9 @@ func (s *AgentSessionServices) ResourceLoader() *DefaultResourceLoader { return 
 
 // Diagnostics are the problems found while creating the Services and applying extension flags. Upstream
 // AgentSessionServices.diagnostics.
+//
+// 启动诊断快照（克隆防外部改）：装配 Services 与应用扩展 flag 期间
+// 发现的全部非致命问题。
 func (s *AgentSessionServices) Diagnostics() []AgentSessionRuntimeDiagnostic {
 	return slices.Clone(s.diagnostics)
 }
@@ -403,6 +421,10 @@ func (runtime *ModelRuntime) GetModels(providerID ...string) []*ai.Model {
 
 // runtimeModels lists GetModels() as resolver models without building a plain bundled catalog's models: such a model's BuildNativeModel
 // builds the bound model GetModels lists.
+//
+// 把 GetModels() 的结果表达成 resolver 用的 RuntimeModel 列表：
+// 纯目录数据源的模型不逐个 BuildNativeModel——那种模型的构造结果
+// 就是 GetModels 已列出的绑定模型。
 func (runtime *ModelRuntime) runtimeModels() []icodingagent.RuntimeModel {
 	if runtime == nil || runtime.services == nil {
 		return nil
@@ -586,6 +608,10 @@ func (runtime *ModelRuntime) start(ctx context.Context, model *ai.Model, transcr
 }
 
 // knowsProvider reports whether Pi's Models would resolve auth for the model's provider. A caller-owned provider the runtime does not know is Pi's
+//
+// "运行时认不认这个 provider"的判定：registry 构造的（requestOptions
+// Provider 包裹）都算认识；调用方自建的未知 provider 走上游 compat
+// 路径——不做认证解析，被中止的请求由 provider 自报 aborted。
 // compat path (registerFauxProvider and compat.complete): no auth resolution rejects an aborted request, the provider reports it as aborted.
 func (runtime *ModelRuntime) knowsProvider(model *ai.Model, provider ai.Provider) bool {
 	if _, registryBuilt := provider.(*requestOptionsProvider); registryBuilt {

@@ -29,6 +29,9 @@ type sessionCacheWarming struct {
 
 // CacheWarmer is the part of a cache warmer that a Session drives: Pi's AgentSessionConfig.cacheWarmer, `Pick<CacheWarmer, "cancel" | "status" | "onAgentSettled" | "onModeChanged" | "onWarmed">` (agent-session.ts:266).
 // The caller's stream function starts it; the Session does not.
+// CacheWarmer 是会话驱动的预热器接口面（上游 AgentSessionConfig
+// .cacheWarmer 的 Pick）：取消/状态/agent_settled/模式变化/预热完成
+// 五件事。启动它的责任在调用方的流函数，不在 Session。
 type CacheWarmer interface {
 	Cancel()
 	Status() icodingagent.CacheWarmingStatus
@@ -39,6 +42,8 @@ type CacheWarmer interface {
 }
 
 // cacheWarmerHooks is the warmer whose status and lifecycle hooks the Session reports: the caller's while it serves, otherwise the Session's own.
+// cacheWarmerHooks 取"该向谁报状态与生命周期"的预热器：调用方
+// 供应的还在服役用它，否则用 Session 自建的。
 func (s *Session) cacheWarmerHooks() CacheWarmer {
 	s.warming.mu.Lock()
 	defer s.warming.mu.Unlock()

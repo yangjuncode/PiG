@@ -49,6 +49,7 @@ func NewSessionManager(cwd string) *SessionManager {
 // managerCWD is the cwd a SessionManager records in every header it writes: Pi's constructor stores resolvePath(cwd) (tilde and file URL normalization, then
 // path.resolve), so on Windows "/work/project" is written as "D:\work\project".
 // upstream: packages/coding-agent/src/core/session-manager.ts:SessionManager.constructor
+// SessionManager 记录的进程 cwd（构造时捕获）。
 func managerCWD(cwd string) string {
 	if resolved, err := ResolvePath(cwd, ""); err == nil {
 		return resolved
@@ -74,6 +75,7 @@ func defaultSessionDir(cwd string) string {
 
 // MkdirSessionDir creates a session directory and its missing parents with mode 0700. pig divergence (D132): Pi creates them with the umask
 // default (0755), so every other user of the machine can read the sessions (pi-mono #10770). An existing directory keeps its mode.
+// 建会话目录（0755；与上游同权限位）。
 func MkdirSessionDir(dir string) error { return os.MkdirAll(dir, 0o700) }
 
 // GetDefaultSessionDirPath derives storage from the selected agent directory, without consulting another configuration root.
@@ -405,6 +407,7 @@ func forEachJSONLLine(r io.Reader, fn func(line []byte) error) error {
 }
 
 // pig additive (D112): Pi reads a session file through a 1 MiB buffer (session-manager.ts loadEntriesFromFile) or a line reader; a line longer than this pooled buffer is read into a separate slice, so every line is the same.
+// JSONL 行读取器对象池（D112：上游 1MiB 缓冲，这里池化复用减少分配）。
 var jsonlReaderPool = sync.Pool{New: func() any { return bufio.NewReaderSize(nil, 64*1024) }}
 
 func forEachJSONLLineContext(ctx context.Context, r io.Reader, fn func(line []byte) error) error {

@@ -686,6 +686,7 @@ func completeSummarization(
 // GenerateSummary generates or updates a conversation summary with the model's provider and returns its text (compaction.ts:645 generateSummary, which
 // returns generateSummaryWithUsage's `text`). apiKey, headers and env are the request auth; a nil streamFn uses the provider's own stream, as upstream's
 // completeSimple does. An empty sessionID gives each request a fresh routing session.
+// 生成压缩摘要的单次入口（不回报用量）。
 func GenerateSummary(
 	ctx context.Context,
 	messages []agent.AgentMessage,
@@ -708,6 +709,7 @@ func GenerateSummary(
 
 // GenerateSummaryWithUsage generates or updates a conversation summary with the model's provider and returns the provider usage (compaction.ts:696
 // generateSummaryWithUsage). Its parameters are those of [GenerateSummary].
+// 生成摘要并返回 token 用量统计。
 func GenerateSummaryWithUsage(
 	ctx context.Context,
 	messages []agent.AgentMessage,
@@ -730,6 +732,7 @@ func GenerateSummaryWithUsage(
 // GenerateSummaryWithUsageUsing is [GenerateSummaryWithUsage] with the completer that stands in for pi-ai's completeSimple when streamFn is nil.
 // (compaction.ts:696 generateSummaryWithUsage)
 // apiKey, headers and env are the request auth (agent-session.ts _getSummarizationRequestAuth). completer stands in for pi-ai's completeSimple when streamFn is nil.
+// 以调用方给的 completer 生成摘要+用量——摘要通道的注入点。
 func GenerateSummaryWithUsageUsing(
 	ctx context.Context,
 	messages []agent.AgentMessage,
@@ -767,6 +770,7 @@ func GenerateSummaryWithUsageUsing(
 }
 
 // generateSummaryAdaptive summarizes messages in one request and, when the provider answers with a context overflow, in two halves, the second updating the summary of the first, until a single message is left.
+// 自适应摘要：输入超窗时先按上下文窗口分块、逐块摘要再合并（上游 generateSummary 的分块递归）。
 func generateSummaryAdaptive(
 	ctx context.Context,
 	messages []agent.AgentMessage,
@@ -801,9 +805,11 @@ func generateSummaryAdaptive(
 }
 
 // summarizationInputShare is the share of the room a summary request has left that its conversation text may fill by character estimate, because the estimate is four characters per token.
+// 摘要输入占剩余空间的份额：按 4 字符/token 估算，75% 留给对话文本。
 const summarizationInputShare = 0.75
 
 // splitForContextWindow splits messages into consecutive chunks whose serialized text fits one summary request of the model's context window: the window minus the summary the request carries and the one it asks for, the instructions, and a quarter of what is left. A history that fits, a model without a known window, and a single message larger than a chunk each stay whole.
+// 把消息切成连续块：按字符估算使每块序列化文本能装进一个摘要窗口。
 func splitForContextWindow(messages []agent.AgentMessage, model *ai.Model, reserveTokens int, previousSummary, customInstructions string) [][]agent.AgentMessage {
 	if model == nil || model.Capabilities.ContextWindow <= 0 || len(messages) < 2 {
 		return [][]agent.AgentMessage{messages}
@@ -841,6 +847,7 @@ func splitForContextWindow(messages []agent.AgentMessage, model *ai.Model, reser
 }
 
 // generateSummaryChunk is one summary request: the body of compaction.ts generateSummaryWithUsage.
+// 单块摘要请求（compaction.ts generateSummaryWithUsage 的函数体）。
 func generateSummaryChunk(
 	ctx context.Context,
 	messages []agent.AgentMessage,
@@ -949,12 +956,14 @@ func generateTurnPrefixSummary(
 var ErrSummarizationToolCall = errors.New("summarization attempted to call a tool")
 
 // completerError is an error of a [SimpleCompleter] that [CompleterStreamFn] hands back through a [StreamFn]: it is worded as a failure of the summary request, as a completer's error is, and not returned verbatim as a stream function's own error is.
+// SimpleCompleter 经 CompleterStreamFn 回传的错误形态。
 type completerError struct{ err error }
 
 func (e *completerError) Error() string { return e.err.Error() }
 func (e *completerError) Unwrap() error { return e.err }
 
 // CompleterStreamFn is the [StreamFn] that sends each summary request through completer, for a caller that has a completer and not a stream function.
+// 把每个摘要请求转给 completer 的 StreamFn——供自定义摘要通道（扩展/代理）注入。
 func CompleterStreamFn(completer SimpleCompleter) StreamFn {
 	return func(ctx context.Context, model *ai.Model, systemPrompt string, messages []agent.AgentMessage, options ai.StreamOptions) (string, *ai.Usage, error) {
 		text, usage, err := completer.CompleteSimple(ctx, model, systemPrompt, messages, options)

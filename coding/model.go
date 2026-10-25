@@ -214,6 +214,10 @@ func buildProviderForEntry(providerID, modelID string, apiKind ai.API, entry ico
 	return ai.WrapBuiltinProvider(providerID, provider), nil
 }
 
+// buildLeafProviderForEntry 是"叶子 provider"的构造分派：
+// test-faux 需 PIG_TEST_FAUX=1 解锁（防生产误用）；resolvedAuth 已拿到
+// 凭据的走 apiLeaf 直包；其余经 WrapBuiltinProvider 套上内建封装。
+// explicitKey > entry.APIKey 的优先级与上游一致。
 func buildLeafProviderForEntry(providerID, modelID string, apiKind ai.API, entry icodingagent.ModelEntry, svcs *AgentSessionServices, explicitKey string, resolvedAuth, apiLeaf bool) (ai.Provider, error) {
 	apiKey := entry.APIKey
 	if explicitKey != "" {
@@ -558,6 +562,11 @@ func (registry *ModelRegistry) Complete(ctx context.Context, model *ai.Model, re
 }
 
 // requestOptionsProvider wraps a built provider with the request preparation ModelRuntime applies to a registry-built provider.
+//
+// provider 包装层：给"已建好的 provider"补上 ModelRuntime 对
+// registry 构造 provider 做的请求装配——配置 header 合并、
+// OpenCode 会话路由头、before_provider_headers 变换、
+// StreamSimple 的推理/输出预算推导。configured 存条目级配置头。
 type requestOptionsProvider struct {
 	ai.Provider
 	providerID string
@@ -569,6 +578,10 @@ func newRequestOptionsProvider(provider ai.Provider, providerID string, configur
 }
 
 // SimpleStreamOptions prepares the request options of a simple stream the way ModelRuntime.StreamSimple does for a registry-built provider (start): an omitted reasoning level sends the API's native thinking off, and the output budget stays within the room the context window leaves (simple-options.ts buildBaseOptions). A provider of extension-registered stream callbacks or a native provider prepares its own options.
+//
+// StreamSimple 的请求选项推导（对应上游 buildBaseOptions）：未指定
+// 推理级别时显式关掉 API 原生 thinking；输出预算钳到上下文窗口
+// 剩余空间内。扩展注册的流回调与原生 provider 自己管选项，直接透传。
 func (provider *requestOptionsProvider) SimpleStreamOptions(model *ai.Model, transcript ai.TranscriptContext, options ai.StreamOptions) ai.StreamOptions {
 	switch provider.Provider.(type) {
 	case *registeredStreamProvider, *nativeModelProvider:
@@ -600,6 +613,9 @@ func (provider *requestOptionsProvider) Stream(ctx context.Context, transcript a
 }
 
 // withOpenCodeSessionHeaders adds OpenCode's per-conversation routing header, including for custom providers pointing at OpenCode, below the auth and request headers and before the request's header transform sees them (model-runtime.ts applyAuth getOpenCodeSessionHeaders).
+//
+// OpenCode 的会话路由头：加在认证头/请求头"之下"、header 变换
+// "之前"——自定义 provider 指向 OpenCode 时同样生效。
 func withOpenCodeSessionHeaders(providerID, baseURL, sessionID string, headers ai.ProviderHeaders) ai.ProviderHeaders {
 	return ai.MergeProviderHeaders(ai.GetOpenCodeSessionHeaders(ai.ClientIdentityTarget{Provider: providerID, BaseURL: baseURL}, sessionID), headers)
 }

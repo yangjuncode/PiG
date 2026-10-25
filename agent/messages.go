@@ -43,6 +43,10 @@ func ConvertToLLM(msgs []AgentMessage) []ai.Message {
 }
 
 // appendLLM appends the provider message of m, or nothing for a message that sends nothing.
+//
+// 联合信封的分派：System/User/Assistant/ToolResult 各自转成对应的
+// provider 消息形态；Custom 走 customUserMessage——只有能折成 user
+// 消息的 custom 才有东西发，其余返回原样（不发任何消息）。
 func appendLLM(out []ai.Message, m AgentMessage) []ai.Message {
 	switch {
 	case m.System != nil:
@@ -62,6 +66,9 @@ func appendLLM(out []ai.Message, m AgentMessage) []ai.Message {
 }
 
 // toolResultLLM is the provider form of a tool result message.
+//
+// ToolResultMessage → ai.ToolResultMessage 的平移：含 DetailsNull
+// （区分"没写 details"与"写了 null"）、NestedCalls 等全部线上字段。
 func toolResultLLM(m *ToolResultMessage) ai.ToolResultMessage {
 	return ai.ToolResultMessage{
 		ToolCallID: m.ToolCallID, ToolName: m.ToolName,
@@ -76,6 +83,12 @@ func toolResultLLM(m *ToolResultMessage) ai.ToolResultMessage {
 // message's block-array content passes through, and only a bash execution excluded from context or custom content that is not
 // user content sends nothing. NormalizeMessages asks it too, because upstream runs transformMessages after convertToLlm and a
 // custom message that becomes a user message ends the tool flow.
+// 中文要点：bash_execution/branch_summary/compaction_summary 三种已知
+// custom role 折成一条"文本块 user 消息"（bash_execution 若标了
+// excludeFromContext 则什么都不发）；"custom" 消息的块数组内容原样
+// 透传；其余内容形态发不出去 → 返回 false。NormalizeMessages 也调它：
+// 上游 convertToLlm 之后才跑 transformMessages，能折成 user 的 custom
+// 会终结工具调用流，清洗时必须先知道这一点。
 func customUserMessage(m map[string]any) (ai.UserMessage, bool) {
 	role, _ := m["role"].(string)
 	switch role {
@@ -184,6 +197,10 @@ func (m *AssistantMessage) Observe() *AssistantMessage {
 }
 
 // ObserveProjection is Observe for a reader of block kinds, texts, thinking, tool calls, stop reason and error message (ai.AssistantMessage.ObserveProjection): it appends one projection per content block to content, returns that slice with the stop reason and error message, and copies nothing else. A streaming view projects its retained stream state; other messages their own fields.
+//
+// 轻量版 Observe：只投影每个内容块的"读视图"（种类/文本/思维/工具调用）
+// 加 stopReason/errorMessage，不拷贝其他任何字段——渲染层每帧都要读
+// 当前状态时用它比整条 Observe 便宜。流式视图转发给 streamView。
 func (m *AssistantMessage) ObserveProjection(content []ai.AssistantContentProjection) (blocks []ai.AssistantContentProjection, stopReason ai.StopReason, errorMessage string) {
 	if m == nil {
 		return content, "", ""
@@ -195,6 +212,9 @@ func (m *AssistantMessage) ObserveProjection(content []ai.AssistantContentProjec
 }
 
 // Publication is ai.AssistantMessage.Publication for the stream state a streaming view observes: while it is unchanged, Observe returns the same message. A message without a stream view returns (0, 0).
+//
+// 流式视图的"发布代次"：cell+seq 不变期间 Observe 返回同一份快照——
+// 调用方可用它判断"上次取的视图是否还有效"。非流式消息返回 (0,0)。
 func (m *AssistantMessage) Publication() (cell uintptr, seq uint64) {
 	if m == nil {
 		return 0, 0

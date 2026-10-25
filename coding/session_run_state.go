@@ -80,6 +80,9 @@ func (s *Session) IsStreaming() bool { return s.runState.active.Load() }
 func (s *Session) Signal() context.Context { return s.agent.Signal() }
 
 // ExtensionUserMessageRunPending reports whether a run an extension's sendUserMessage requested has not emitted agent_start yet. Pi's sendUserMessage goes through prompt(), which awaits the input handlers, the compaction check and before_agent_start before _startRun marks the Session busy, so the Session is still idle to the extension that sent it (agent-session.ts:2064-2140); here the run is prepared ahead of the extension's continuation and counts busy from its start (RunStart).
+// 中文说明：扩展 sendUserMessage 触发的运行是否已备妥但还没发
+// agent_start——上游此时 Session 对扩展仍"空闲"，这里自 RunStart
+// 起就算忙（计数值>0）。
 func (s *Session) ExtensionUserMessageRunPending() bool { return s.runState.userRunsPending.Load() > 0 }
 
 // IsIdle reports whether the session has no active run and no compaction in
@@ -121,6 +124,9 @@ func (s *Session) WaitForIdle(ctx context.Context) error {
 }
 
 // settlementBusyLocked reports whether agent_settled dispatch or a prompt it deferred is still pending. runState.mu must be held.
+//
+// "结算还在忙"的判定：agent_settled 正在派发、有被顺延的 prompt、
+// 或顺延批次还在跑——三者有其一 idle 判定就不能放行。
 func (s *Session) settlementBusyLocked() bool {
 	return s.runState.settling.Load() || len(s.runState.deferred) > 0 || s.runState.runningDeferred > 0
 }
@@ -176,6 +182,9 @@ func (s *Session) requestAbort(discardDeferred bool) {
 
 // AgentRunAbortRequested is upstream _agentRunAbortRequested: whether abort was requested while the current run was active. A new
 // run clears it.
+//
+// 当前运行期间有没有人请求过 abort（上游 _agentRunAbortRequested）——
+// 新运行清零。
 func (s *Session) AgentRunAbortRequested() bool { return s.runState.abortRequested.Load() }
 
 func (s *Session) agentRunAborted(ctx context.Context) bool {
@@ -190,6 +199,9 @@ func (s *Session) Abort(ctx context.Context) error {
 }
 
 // abortKeepingDeferred is Abort for manual compaction (upstream compact() awaits abort()).
+//
+// 手动压缩专用的 Abort：中止当前运行但不动顺延队列（上游
+// compact() 内部的 await abort()）。
 func (s *Session) abortKeepingDeferred(ctx context.Context) error {
 	s.requestAbort(false)
 	return s.WaitForIdle(ctx)
@@ -216,6 +228,10 @@ func (s *Session) ownAgentRun(cancel context.CancelFunc) context.CancelFunc {
 
 // ownStartedRun installs the run of a RunStart once the Agent claimed it. An abort requested since the start still applies: _startRun
 // clears the request only when the run starts, and _handleAgentEvent aborts the run at agent_start.
+//
+// RunStart 起跑后被 Agent 认领时的安装：与 ownAgentRun 的区别是
+// 不清 abortRequested——start 到 agent_start 之间来的 abort 请求
+// 依然有效，在 agent_start 处理点生效（同上游时序）。
 func (s *Session) ownStartedRun(cancel context.CancelFunc) context.CancelFunc {
 	return s.installAgentRun(cancel, false)
 }
@@ -250,6 +266,10 @@ func (s *Session) installAgentRun(cancel context.CancelFunc, clearAbortRequest b
 // before_agent_start handlers run, the Session is streaming, so a message sent meanwhile joins the run and a prompt must name its
 // streamingBehavior; bash results and custom messages wait for the run; and an abort requested meanwhile aborts the run at agent_start.
 // It ends when the Agent claims the run, or with Abandon.
+// RunStart 是一次"用户 prompt 起跑"的认领令牌：从标忙到 Agent
+// 真正认领（或被 Abandon/settleUnclaimed 回收）之间，期间来的
+// steering 消息归入本运行、bash 结果/custom 消息等待、abort 请求
+// 在 agent_start 生效。generation 防"旧令牌误改新运行状态"。
 type RunStart struct {
 	session    *Session
 	generation uint64
@@ -257,6 +277,9 @@ type RunStart struct {
 
 // BeginRunStart marks the Session busy for a user prompt's run (_startRun: `_isAgentRunActive = true; _agentRunAbortRequested = false`).
 // A Session that is already busy rejects the prompt, as prompt() does when it is streaming (agent-session.ts:2098-2103).
+// BeginRunStart 标忙（_startRun: `_isAgentRunActive = true`）：已关
+// 会话报错、流式中拒新 prompt（与上游 prompt() 一致）。持
+// pendingBashMu 让"忙判定"与其他 send/记录 bash 的决定原子化。
 func (s *Session) BeginRunStart() (*RunStart, error) {
 	s.pendingBashMu.Lock()
 	defer s.pendingBashMu.Unlock()
@@ -273,6 +296,9 @@ func (s *Session) BeginRunStart() (*RunStart, error) {
 
 // beginRunStartLocked is BeginRunStart for a caller that holds pendingBashMu and found the Session idle, so the busy decision is atomic with
 // the decisions of other sends and of recorded bash results.
+// beginRunStartLocked 是已确认空闲且持 pendingBashMu 时的标忙：
+// 代次自增、清 cancel/abortRequested、置 active——与 BeginRunStart
+// 同一组原子操作。
 func (s *Session) beginRunStartLocked() *RunStart {
 	s.runState.mu.Lock()
 	defer s.runState.mu.Unlock()
@@ -285,6 +311,9 @@ func (s *Session) beginRunStartLocked() *RunStart {
 
 // checkCompaction is _prepareRun's compaction check (agent-session.ts:1886-1891). Pi's check reports a failed or aborted compaction
 // through compaction_end instead of rejecting, so after an abort the run still starts and stops at agent_start.
+// checkCompaction 对应 _prepareRun 的压缩检查：压缩失败/中止经
+// compaction_end 报告而不是拒绝运行——abort 之后运行照常开始，
+// 到 agent_start 才停（上游时序）。
 func (r *RunStart) checkCompaction(ctx context.Context) error {
 	if err := r.session.CheckPromptCompaction(ctx); err != nil && !r.session.runState.abortRequested.Load() {
 		return err
@@ -295,6 +324,10 @@ func (r *RunStart) checkCompaction(ctx context.Context) error {
 // FlushHeldMessages appends the bash results and custom messages held while the run was starting before its starting messages
 // (agent-session.ts:1845-1848). No run exists yet, so they cannot split a tool call from its result. It reports whether it appended custom
 // messages, whose message_start and message_end events precede preflightResult("started").
+// FlushHeldMessages 把"起跑等待期间攒下的" bash 结果与 custom
+// 消息在起始消息之前落盘——此刻还没有运行，不会把 tool_call 与
+// 其结果拆开。返回值报是否追加了 custom 消息（它们要先发
+// message_start/end 再发 preflightResult("started")）。
 func (r *RunStart) FlushHeldMessages() (bool, error) {
 	s := r.session
 	s.mu.Lock()
@@ -307,6 +340,9 @@ func (r *RunStart) FlushHeldMessages() (bool, error) {
 
 // Abandon ends a start that failed before the Agent claimed its run (agent-session.ts:1838-1843, _startRun's catch): the Session returns
 // to idle, what was held for the run is appended and idle waiters wake. A run that claimed the Session since then keeps its state.
+// Abandon 回收一个"Agent 认领前就失败"的起跑：仅当代次仍归自己
+// 时清状态回 idle、把攒下的消息落盘、跑顺延动作并唤醒等待者；
+// 已被新运行认领的代次原样保留。
 func (r *RunStart) Abandon() {
 	s := r.session
 	s.runState.mu.Lock()
@@ -328,6 +364,9 @@ func (r *RunStart) Abandon() {
 
 // settleUnclaimed ends a start whose run the Agent rejected because another run holds it (agent-session.ts:1857-1876: agent.prompt
 // throws inside _startRun's try, and its finally appends the held messages and emits agent_settled before the error propagates).
+// settleUnclaimed 处理"运行被别人占着、Agent 拒收"的起跑：落盘
+// 攒下消息、发 agent_settled、跑顺延动作（对应上游 _startRun 的
+// try-finally 序列）。
 func (r *RunStart) settleUnclaimed() {
 	s := r.session
 	s.mu.Lock()
@@ -399,6 +438,8 @@ func (s *Session) runDeferredSettledActions() {
 }
 
 // runDeferredSettledBatch runs the prompts deferred so far and reports whether there were any.
+// runDeferredSettledBatch 取走当前顺延批（deferred 清槽、记 epoch、
+// 计 runningDeferred）并逐个跑——返回"本批是否有事"。
 func (s *Session) runDeferredSettledBatch() bool {
 	s.runState.mu.Lock()
 	deferred := s.runState.deferred

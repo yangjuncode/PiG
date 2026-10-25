@@ -66,6 +66,9 @@ type ResourceLoader interface {
 }
 
 // ResourceSource names the file a loaded resource came from (resource-loader.ts { path: string }).
+//
+// 资源来源记录：某份资源（系统提示、追加提示、skill）是从哪个文件
+// 读出来的——纯文本给的内容没有来源。
 type ResourceSource struct {
 	Path string
 }
@@ -170,12 +173,19 @@ func NewDefaultResourceLoader(opts DefaultResourceLoaderOptions) *DefaultResourc
 }
 
 // ResourceLoaderReloadOptions are the options of [DefaultResourceLoader.Reload] (resource-loader.ts ResourceLoaderReloadOptions).
+//
+// Reload 的选项：ResolveProjectTrust 在装载任何资源之前先裁决"项目
+// 是否可信"——先以不信任态加载 bootstrap 扩展集交给回调判，再把
+// 结果写回设置后正式加载。
 type ResourceLoaderReloadOptions struct {
 	// ResolveProjectTrust decides whether the project is trusted before any resource loads; the loader applies the answer to its settings.
 	ResolveProjectTrust func(ctx context.Context, input ResolveProjectTrustInput) (bool, error)
 }
 
 // ResolveProjectTrustInput is the argument of [ResourceLoaderReloadOptions.ResolveProjectTrust].
+//
+// 信任裁决回调的入参：不信任态下先加载出来的 bootstrap 扩展集——
+// 回调看着它决定要不要信任项目。
 type ResolveProjectTrustInput struct {
 	// ExtensionsResult is the bootstrap extension set, loaded with the project untrusted (resource-loader.ts loadProjectTrustExtensions).
 	ExtensionsResult LoadExtensionsResult
@@ -187,6 +197,10 @@ func (l *DefaultResourceLoader) Reload(options ...ResourceLoaderReloadOptions) e
 }
 
 // ReloadWith is Reload with the context ctx. A ResolveProjectTrust in options first loads the bootstrap extension set with project settings forced untrusted and hands it to the callback, then applies the answer to the settings (resource-loader.ts reload(options)); the final extension set reuses the bootstrap load. A failed decision or bootstrap load fails the reload and leaves the previous results in place, with the project untrusted as the bootstrap pass left it.
+//
+// Reload 的带 ctx 版：每次 reload 把扩展计时清零重来；裁决失败或
+// bootstrap 加载失败则整次 reload 失败、旧结果保留，但项目信任态
+// 停在 bootstrap 趟留下的"不信任"。
 func (l *DefaultResourceLoader) ReloadWith(ctx context.Context, options ...ResourceLoaderReloadOptions) error {
 	l.opMu.Lock()
 	defer l.opMu.Unlock()
@@ -305,6 +319,9 @@ func (l *DefaultResourceLoader) loadSkills(resolved []icodingagent.ResolvedResou
 }
 
 // skillsFromPaths is resource-loader.ts updateSkillsFromPaths: it loads the skills at paths without the default locations, applies the override and gives each skill the source info the extension paths, the metadata or the default location yield.
+//
+// 从显式路径加载 skills（不扫默认目录）：本地路径不存在记一条
+// 诊断而非失败；之后过覆盖钩子并附来源信息。
 func (l *DefaultResourceLoader) skillsFromPaths(paths []string, metadata *pathMetadataIndex, sources *extensionSources) (SkillsResult, error) {
 	result := SkillsResult{Skills: []*Skill{}, Diagnostics: []extension.ResourceDiagnostic{}}
 	if !l.options.NoSkills || len(paths) > 0 {
@@ -372,6 +389,9 @@ func (l *DefaultResourceLoader) loadPrompts(resolved []icodingagent.ResolvedReso
 }
 
 // promptsFromPaths is resource-loader.ts updatePromptsFromPaths: it loads the prompt templates at paths without the default locations, drops the name collisions, applies the override and gives each template its source info.
+//
+// 从显式路径加载提示模板：同名冲突去重（DedupePromptTemplates，
+// 冲突记入诊断），再过 PromptsOverride 钩子。
 func (l *DefaultResourceLoader) promptsFromPaths(paths []string, metadata *pathMetadataIndex, sources *extensionSources) PromptsResult {
 	result := PromptsResult{Prompts: []PromptTemplate{}, Diagnostics: []extension.ResourceDiagnostic{}}
 	if !l.options.NoPromptTemplates || len(paths) > 0 {
@@ -416,6 +436,9 @@ func (l *DefaultResourceLoader) loadSystemPrompt(trusted bool) (*string, *Resour
 }
 
 // promptSourcePath is the resolved path of a prompt input that names an existing file; literal prompt text has none (resource-loader.ts systemPromptSourcePath).
+//
+// 提示输入的来源解析：指向已存在文件的给 ResourceSource；字面
+// 提示文本返回 nil（没有来源）。
 func promptSourcePath(source string) *ResourceSource {
 	if source == "" || !exists(source) {
 		return nil
@@ -586,6 +609,10 @@ func (l *DefaultResourceLoader) GetAppendSystemPrompt() []string {
 }
 
 // GetSystemPromptSource returns the file the system prompt was read from by the last Reload; false when it came from literal text or there is none.
+//
+// 上次 Reload 时系统提示的文件来源；字面文本或没有系统提示时 false。
+// （下面的同名接口方法与其 GetExtensions/GetThemes 同理——读"上一次
+// 装载产物"的访问器，均返回克隆防外部改。）
 func (l *DefaultResourceLoader) GetSystemPromptSource() (ResourceSource, bool) {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
@@ -603,6 +630,10 @@ func (l *DefaultResourceLoader) GetAppendSystemPromptSources() []ResourceSource 
 }
 
 // staticResourceLoader serves collections its owner resolved elsewhere.
+//
+// 静态资源加载器：宿主在别处已解析好资源（skills/prompts），这里
+// 只把成品集合供出去——不可扩展、不可 reload（改就是
+// errStaticResourceLoader）。
 type staticResourceLoader struct {
 	templates []PromptTemplate
 	skills    []*Skill
@@ -641,6 +672,8 @@ func (*staticResourceLoader) GetThemes() ThemesResult {
 }
 
 // errStaticResourceLoader reports a mutation of a loader that holds only the collections its owner resolved elsewhere.
+//
+// 对静态加载器做可变操作（ExtendResources/Reload）的统一错误。
 var errStaticResourceLoader = errors.New("a static resource loader holds fixed resources and cannot be extended or reloaded")
 
 func (*staticResourceLoader) ExtendResources(ResourceExtensionPaths) error {

@@ -33,14 +33,17 @@ func marshalSessionLine(value any) ([]byte, error) {
 }
 
 // sessionLineOverhead is the room a message entry's record takes beyond its message's text: the entry's members and the message's metadata.
+// 一条会话行的固定开销估算（字段名、引号、冒号等 JSON 骨架字节）。
 const sessionLineOverhead = 1 << 10
 
 // sessionLineEscapeShare sizes the room a large record reserves for its text's escapes, one byte in eight, as the encoder reserves for one
 // long string (extensions/sdk/json stringEncoder): source text escapes a newline, tab or quote every few dozen bytes.
+// JSON 转义带来的平均放大系数估算——给编码缓冲定容用。
 const sessionLineEscapeShare = 8
 
 // sessionLinePooledMax is the largest buffer a message entry's record is encoded in through the encoder's pool (the pool keeps buffers up to
 // 64 KiB, extensions/sdk/json maxPooledEncodeBuffer). Beyond it a sized buffer reserves at most an eighth of the record beyond it.
+// 池化编码缓冲的容量上限：消息文本超出它就走专用大缓冲，不挤占池。
 const sessionLinePooledMax = 64 << 10
 
 // AppendContextEdit appends a branch-local edit to an earlier model-visible
@@ -165,6 +168,7 @@ func BuildSessionProjection(entries []SessionEntry, leafID *string, byID map[str
 }
 
 // ProjectSessionPath projects a root-to-leaf entry path as it stands, without walking parent links again. Compaction preparation uses it on SessionManager.getBranch() output (compaction.ts prepareCompaction passes that path to buildSessionProjection, which returns the same projection for a chained path).
+// 对一条已走出的根→叶路径直接投影（压缩准备阶段复用 getBranch 的结果，不重走父链）。
 func ProjectSessionPath(path []SessionEntry) SessionProjection {
 	return buildSessionProjection(path, asMessage, true)
 }
@@ -185,6 +189,7 @@ func buildSessionProjection(path []SessionEntry, decode messageDecoder, clone bo
 }
 
 // sessionProjector builds a projection entry by entry, so a projection of a path can be extended by entries appended to the path's leaf.
+// 逐条增量投影器：路径后续追加的条目可继续喂入，不必整支重投。
 type sessionProjector struct {
 	decode messageDecoder
 	clone  bool
@@ -198,6 +203,7 @@ type sessionProjector struct {
 }
 
 // newSessionProjector projects path, with room for spare more message entries in its slab.
+// 建投影器：路径先裁到最新压缩点，再逐条 add；spare 给后续增量预留容量。
 func newSessionProjector(path []SessionEntry, decode messageDecoder, clone bool, spare int) *sessionProjector {
 	// 第一步：buildContextEntries 把路径裁剪到最新压缩点之后。
 	contextEntries := buildContextEntries(path, decode)
@@ -227,6 +233,7 @@ func newSessionProjector(path []SessionEntry, decode messageDecoder, clone bool,
 }
 
 // add projects entry after the projected ones; first reports that it is the first context entry.
+// 把一条条目并入投影：先过 context_edit 的替换/删除，再映射成其上下文消息。
 func (p *sessionProjector) add(entry SessionEntry, first bool) {
 	projected := ProjectedSessionEntry{SourceEntry: entry}
 	// buildContextEntries can retain an older compaction whose ID lies in
@@ -248,6 +255,7 @@ func (p *sessionProjector) add(entry SessionEntry, first bool) {
 // entries, so the caller projects the path again), and reports false when one of them is a context edit, which replaces an earlier
 // entry's messages: the path must then be projected again too. The projected settings follow the appended entries as
 // getSessionContextSettings' backward walk reads them.
+// 在既有投影上追加新条目（增量投影入口）。
 func (p *sessionProjector) extend(entries []SessionEntry) bool {
 	for _, entry := range entries {
 		if entry.Base().Type == "context_edit" {
@@ -273,6 +281,7 @@ func (p *sessionProjector) extend(entries []SessionEntry) bool {
 
 // view is the projection with its slices capped at their length, so a caller's append cannot write into the projector's spare
 // capacity, and its own copy of the model.
+// 取当前投影结果视图（调用方只读）。
 func (p *sessionProjector) view() SessionProjection {
 	out := p.projection
 	out.Entries = out.Entries[:len(out.Entries):len(out.Entries)]
@@ -339,6 +348,7 @@ func sessionEntryToContextMessages(entry SessionEntry, decode messageDecoder, cl
 }
 
 // sessionEntryToContextMessagesInto is sessionEntryToContextMessages that carves the one-message result of a message entry from slab when slab has room.
+// sessionEntryToContextMessages 的无分配版：消息写进调用方给的切片。
 func sessionEntryToContextMessagesInto(entry SessionEntry, decode messageDecoder, clone bool, slab *[]agent.AgentMessage) []agent.AgentMessage {
 	one := func(message agent.AgentMessage) []agent.AgentMessage {
 		if slab == nil || len(*slab) == cap(*slab) {

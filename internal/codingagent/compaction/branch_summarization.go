@@ -437,6 +437,7 @@ func GenerateBranchSummary(ctx context.Context, entries []codingagent.SessionEnt
 }
 
 // summarizeBranchMessages sends one branch-summary request for messages (branch-summarization.ts generateBranchSummary).
+// 为一组分支消息发一条摘要请求（branch-summarization.ts generateSummary）。
 func summarizeBranchMessages(ctx context.Context, messages []agent.AgentMessage, opts GenerateBranchSummaryOptions) (string, *ai.Usage, error) {
 	// Serialize messages to text to prevent the model treating this as a
 	// live conversation.

@@ -199,6 +199,10 @@ type AgentMessage struct {
 }
 
 // messageSource is the JSON.stringify text of the object a message was decoded from.
+//
+// 反序列化时留下的原文（JSON.stringify 后的字节）：上游 Pi 保留解析
+// 出的对象并原样回写，成员顺序、未建模字段、数字拼写都不丢——
+// SourceJSON 用它比对决定"回写原文还是按当前字段重编码"。
 type messageSource struct {
 	text []byte
 	// nullContent reports that the object's content member is null or missing.
@@ -225,9 +229,13 @@ func (m AgentMessage) Role() string {
 }
 
 // MessageRole is the role property of the message (ai.RoleMessage): an agent transcript goes to the transcript helpers as it is.
+//
+// ai 包转录辅助函数需要的 role 适配：AgentMessage 直接以自身 role 应答。
 func (m AgentMessage) MessageRole() string { return m.Role() }
 
 // AsSystemMessage returns the wrapped system message, which the transcript helpers read when the role is "system".
+//
+// role 为 "system" 时把信封拆出 SystemMessage 供转录辅助函数读取。
 func (m AgentMessage) AsSystemMessage() (ai.SystemMessage, bool) {
 	if m.System == nil {
 		return ai.SystemMessage{}, false
@@ -442,6 +450,10 @@ type AgentTool interface {
 }
 
 // ExtensionTool is implemented by a tool whose Execute runs in an extension runtime, on an event loop of its own. Pi's loop turns during such a tool only if the tool awaits real work, which the host cannot tell, so the agent opens no wait for it (jsloop.Turns).
+//
+// 标记接口：Execute 跑在扩展运行时（JS 事件循环）内的工具。上游只有
+// 在工具真的 await 异步工作时事件循环才空转，但宿主无法分辨这种
+// "假 await"，所以 agent 侧对这类工具不开 jsloop.Turns 等待。
 type ExtensionTool interface {
 	// RunsInExtension reports whether the tool's Execute runs in an extension; a wrapper reports its wrapped tool's answer.
 	RunsInExtension() bool
@@ -586,6 +598,9 @@ func RefreshEvent(event AgentEvent) AgentEvent {
 }
 
 // assistantEventPartial returns the partial of the provider events ai.RefreshEvent refreshes, nil for the others. ai.RefreshEvent returns an event whose partial it keeps as it is, so comparing partials tells whether it refreshed one.
+//
+// 取出会被 ai.RefreshEvent 刷新的事件里那个 partial：刷新返回的事件
+// partial 不变，因此比较 partial 指针就能判断事件是否被刷新过。
 func assistantEventPartial(event ai.AssistantMessageEvent) *ai.AssistantMessage {
 	if start, ok := event.(ai.StartEvent); ok {
 		return start.Partial
@@ -827,6 +842,10 @@ type AfterToolCallHook func(ctx context.Context, toolCallID, toolName string, ar
 // ─── Agent ────────────────────────────────────────────────────────────────────
 
 // AgentInitialState seeds a new agent's state. A field that is set takes the place of the same-named AgentOptions field.
+//
+// 新 agent 的初始状态种子：填了的字段顶替 AgentOptions 同名字段
+// （上游 AgentOptions.initialState，agent.ts:115）——恢复会话、克隆
+// agent 时用它在构造期一次性灌入历史转录/模型/工具，而不是建完再改。
 //
 // upstream: packages/agent/src/agent.ts:115 (AgentOptions.initialState: Partial<Omit<AgentState, "pendingToolCalls" | "isStreaming" | ...>>)
 type AgentInitialState struct {
@@ -1592,6 +1611,16 @@ func (a *Agent) SetBeforeProviderHook(fn func(payload any, model *ai.Model) (any
 }
 
 // Ports packages/agent/src/agent.ts
+// ─── 可变运行选项的读写器 ───
+//
+// 下面这一组 Get*/Set*/Hook() 方法对应上游 Agent 上可被外界直接读写
+// 的公开字段/钩子（agent.ts：Session 与扩展会在运行间隙替换
+// agent.convertToLlm、agent.prepareRequest 等）。共同语义：
+//   - 全部经 stateMu 串行化；
+//   - 运行开始时由 createLoopConfig 快照一次——运行中改值只影响下一次
+//     运行，不回溯当前请求；
+//   - *Hook() 形式读出当前值，供调用方链式包装后再 Set 回去。
+
 // StreamFunction returns the caller's stream override. Nil denotes the stock stream, allowing summarization to distinguish optional custom-stream auth from required stock auth without comparing Go function values.
 func (a *Agent) StreamFunction() StreamFn {
 	a.stateMu.RLock()
@@ -1840,6 +1869,9 @@ func (a *Agent) QueueNextTurn(msg AgentMessage) {
 }
 
 // TakePendingNextTurn removes and returns the messages QueueNextTurn deferred. A run that starts from built messages delivers them beside its starting message (agent-session.ts:1918-1920 _prepareRun).
+//
+// 取走并清空扩展经 QueueNextTurn 攒下的"下一轮上下文"消息：从成品
+// 消息起跑的运行把它们排在起始消息之后一起发给模型。
 func (a *Agent) TakePendingNextTurn() []AgentMessage { return a.takePendingNextTurn() }
 
 // takePendingNextTurn removes and returns the deferred messages.
@@ -1871,6 +1903,9 @@ func (a *Agent) ClearAllQueues() {
 
 // ClearQueuedUserMessages removes the queued user messages from both queues and leaves queued custom messages in place.
 // pig divergence (D135): upstream clearAllQueues also destroys custom messages that nothing reports back to the caller.
+//
+// 只清两条队列里的 user 消息，custom 消息原样保留——D135 与上游
+// clearAllQueues 的分歧点：上游会连同无人认领的 custom 一起销毁。
 func (a *Agent) ClearQueuedUserMessages() {
 	a.steeringQueue.ClearUserMessages()
 	a.followUpQueue.ClearUserMessages()
@@ -2049,6 +2084,10 @@ func (a *Agent) PrepareNextTurnHook() func(ctx context.Context) (*AgentLoopTurnU
 
 // nextTurnHook is the hook the loop runs: the one that receives the turn wins, as upstream's `prepareNextTurnWithContext || prepareNextTurn`.
 // The caller holds stateMu.
+//
+// 两版 PrepareNextTurn 钩子的取舍：带 turn 上下文的新版优先；旧式无
+// context 版包一层适配器丢弃上下文参数（上游
+// `prepareNextTurnWithContext || prepareNextTurn` 的回退顺序）。
 func (a *Agent) nextTurnHook() PrepareNextTurn {
 	if a.opts.PrepareNextTurnWithContext != nil {
 		return a.opts.PrepareNextTurnWithContext
@@ -2445,11 +2484,18 @@ func (h *loopHost) emitObserved(observation *ai.StreamObservation, event AgentEv
 }
 
 // messageUpdateObserved reports whether anything could see a message_update now. A run without a gate (a standalone run, whose sink is the caller's) is always observed.
+//
+// 此刻发 message_update 是否有观察者：无闸门的运行（独立 run，sink
+// 就是调用方）恒为可见；Session 侧装了闸门时由闸门判定。
 func (h *loopHost) messageUpdateObserved() bool {
 	return h.messageUpdatesObserved == nil || h.messageUpdatesObserved()
 }
 
 // skipUnobservedUpdate stands for emitAssistantUpdate when nothing can observe the update: no event, no listener, no await. The Agent's state still records the update (Agent.reduceUnobservedUpdate).
+//
+// 无观察者时替代 emitAssistantUpdate 的旁路：不发事件、不唤醒监听器、
+// 不等 await，但仍把这次更新记账进 Agent 状态（reduceUnobservedUpdate）——
+// 省掉每次 delta 都要走一遍的同步派发成本。
 //
 // Upstream awaits its listeners for every update (agent-loop.ts:432-439, agent.ts processEvents, agent-session.ts _handleAgentEvent); none of those reactions does anything here, and the only other continuation that can run between them, the provider's, never waits for this consumer, so where its reactions fall between the consumer's changes nothing either can observe (docs/parity/equivalence/lw-quiet-b02c2ceabc.md).
 func (h *loopHost) skipUnobservedUpdate(capture *ai.ShallowCapture) {
@@ -2459,6 +2505,9 @@ func (h *loopHost) skipUnobservedUpdate(capture *ai.ShallowCapture) {
 }
 
 // assistantUpdatePartial returns the partial of an event the Agent emits as message_update, and whether it is one.
+//
+// 判定 provider 事件是否会被转译成 message_update（TextXxx /
+// ThinkingXxx / ToolCallXxx 九种），是则同时取出其中的 partial。
 func assistantUpdatePartial(event ai.AssistantMessageEvent) (*ai.AssistantMessage, bool) {
 	switch event := event.(type) {
 	case ai.TextStartEvent:
@@ -2497,6 +2546,9 @@ func shallowAssistantMessage(partial *ai.AssistantMessage) *AssistantMessage {
 }
 
 // shallowAssistantMessageFrom is shallowAssistantMessage for the partial as capture recorded it, at whatever later time it is called. The message records the captured publication, so a refresh keeps it while the stream has published nothing since.
+//
+// 延迟版浅视图构造：按 capture 当时记录的发布快照建消息——之后流若
+// 没再发布新内容，refresh 看到的仍是这份快照，不会回退成更旧的视图。
 func shallowAssistantMessageFrom(capture *ai.ShallowCapture) *AssistantMessage {
 	view := capture.ShallowCopy()
 	cell, seq := capture.Publication()
@@ -2523,6 +2575,10 @@ func agentAssistantMessage(message *ai.AssistantMessage) *AssistantMessage {
 }
 
 // observedAgentAssistantMessage is agentAssistantMessage for an observation the caller owns and drops (ai.AssistantMessage.Observe's result): the agent message takes its content, diagnostics and usage instead of copying them. An empty slice becomes nil, as agentAssistantMessage's copy does.
+//
+// 免拷贝版转换：调用方已 Observe 出快照且不再保留 observation 时，
+// 直接接管其 content/diagnostics/usage 切片（空切片归一成 nil，
+// 与拷贝版行为一致）。
 func observedAgentAssistantMessage(observed *ai.AssistantMessage) *AssistantMessage {
 	if observed == nil {
 		return &AssistantMessage{Role: RoleAssistant}
@@ -2537,6 +2593,9 @@ func observedAgentAssistantMessage(observed *ai.AssistantMessage) *AssistantMess
 	return assistantMessageWith(observed, content, diagnostics, &observed.Usage)
 }
 
+// assistantMessageWith 是上面几个转换变体的公共构造：按调用方定好的
+// content/diagnostics/usage 组装 agent 层 AssistantMessage，其余顶层
+// 字段从 provider 消息平移。
 func assistantMessageWith(message *ai.AssistantMessage, content []ai.AssistantContentBlock, diagnostics []ai.AssistantMessageDiagnostic, usage *ai.Usage) *AssistantMessage {
 	out := &AssistantMessage{
 		Role:                  RoleAssistant,

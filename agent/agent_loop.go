@@ -27,6 +27,10 @@ import (
 )
 
 // DefaultAgentIdentity is the request identity of agent loops: the ai package's defaults with provider attribution to PiG. The loop config's Identity overrides it field by field (agent-loop.ts DEFAULT_AGENT_IDENTITY).
+//
+// agent 循环发请求时的默认身份：ai 包默认值 + PiG 归因标记；
+// AgentLoopConfig.Identity 非空时逐字段覆盖它（上游
+// DEFAULT_AGENT_IDENTITY 的同名字段合并语义）。
 var DefaultAgentIdentity = ai.ClientIdentity{Attribution: new(ai.PiAttribution)}
 
 // createLoopConfig mirrors upstream Agent.createLoopConfig. With
@@ -101,6 +105,11 @@ func (a *Agent) createLoopConfig(skipInitialSteeringPoll bool) AgentLoopConfig {
 
 // loopHost connects a run to this agent: events reduce into agent state, the stream function is fixed when the run starts (agent.ts:443,455 pass this.streamFunction to runAgentLoop once), tools are read when a request needs them, and a SetModel or SetThinkingLevel call during the run applies to the next run.
 // The model and thinking level are fixed by cfg when the run starts (agent.ts:471-472). The caller holds stateMu.
+// loopHost 把一次运行所需的"宿主环境"打包成 loopRun 消费的接口：
+// 事件 sink、工具表、StreamFn、请求选项补丁、观察闸门（message/tool
+// update 有没有人看）、以及"无观察者时记账更新"的旁路。
+// 工具表与 StreamFn 在运行开始就冻结成闭包捕获的快照（上游
+// createContextSnapshot 语义）——运行中再 Set 只影响下一次运行。
 func (a *Agent) loopHost(cfg AgentLoopConfig) *loopHost {
 	// upstream: agent.ts:460 createContextSnapshot copies state.tools when the run starts; a later SetTools reaches the run through a context update.
 	tools := a.toolList()
@@ -138,9 +147,6 @@ func (a *Agent) loopHost(cfg AgentLoopConfig) *loopHost {
 //     整体替换（压缩后上下文变短就靠它）；
 //   - a.messages：对外可见的正式转录，只增不替换；
 //   - newMessages：本次运行新产生的消息，agent_end 返回的就是它。
-//
-// without replacing the agent transcript, as upstream keeps the
-// transcript separate.
 type loopRun struct {
 	h           *loopHost
 	ctx         context.Context
@@ -154,6 +160,9 @@ type loopRun struct {
 	toolResultsEndRun bool
 }
 
+// newLoopRun 构造一次运行的状态容器：context 起点=传入的历史+本次
+// prompt 消息；model/thinking 从冻结配置（loopHost.cfg）取——运行中
+// 换模型/思考级别由 refreshModel 机制逐轮拾取，不在此读取。
 func newLoopRun(ctx context.Context, host *loopHost, messages, newMessages []AgentMessage) *loopRun {
 	return &loopRun{h: host, ctx: ctx, context: messages, newMessages: newMessages, model: host.cfg.Model, thinking: ai.ModelThinkingLevel(host.cfg.Thinking)}
 }
@@ -709,6 +718,11 @@ func (r *loopRun) requestStream(observation *ai.StreamObservation, streamFn Stre
 // Date.now() and the stream records a second one as its start, and #time leaves a message untimed when its timestamp is
 // before the stream's start: a millisecond that ticks between the two reads drops durationMs. Otherwise it is the
 // milliseconds since the stream's start, rounded like Math.round.
+//
+// 请求装配期失败的 durationMs 计算（对应上游 event-stream.ts #time）：
+// 错误时间戳早于流开始时刻就返回 nil（不计时）——上游两次 Date.now()
+// 之间翻过 1ms 边界时 durationMs 会丢，这里原样复刻该边界行为；
+// 否则取"距流开始的毫秒数"并按 Math.round 规则取整。
 func setupErrorDuration(requestStarted, streamStarted, now time.Time) *int64 {
 	if requestStarted.UnixMilli() < streamStarted.UnixMilli() {
 		return nil
