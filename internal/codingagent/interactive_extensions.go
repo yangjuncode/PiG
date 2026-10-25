@@ -750,6 +750,14 @@ func (m *InteractiveMode) watchReplicatedState(bridge SubprocessUIBridge) func()
 	}
 }
 
+// 判定"index 之后是否有可用的
+// assistant usage"（倒序扫——最新的
+// 一条定结论）：aborted/error 的
+// assistant 没有可信 usage，遇到就
+// 判无；第一条正常 assistant 的
+// usage 即答案，不再往前翻（旧条
+// 目的 usage 不反映当前上下文规
+// 模）。
 func hasAssistantUsageAfter(entries []SessionEntry, index int) bool {
 	for i := len(entries) - 1; i > index; i-- {
 		msg, ok := asMessage(entries[i])
@@ -769,6 +777,13 @@ func hasAssistantUsageAfter(entries []SessionEntry, index int) bool {
 	return false
 }
 
+// 模型标识归一化（子进程 wire 上模型
+// 形态不一）：provider 可为字符串或
+// {id} 对象；modelId 缺省则拆 "pro
+// vider/model" 复合 id——provider 已
+// 给则只取 model 段，没给则两段都
+// 收。输出永远规范成 "provider/model"
+// 或裸 model（provider 缺失）。
 func subprocessModelSpec(model map[string]any) string {
 	providerID := ""
 	switch p := model["provider"].(type) {
