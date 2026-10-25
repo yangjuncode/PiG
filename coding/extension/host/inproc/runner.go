@@ -949,6 +949,11 @@ func (r *Runner) ActiveCommands() int {
 }
 
 // WaitForCommands blocks until no command handler is running or ctx ends. A handler that awaits a Session replacement is still running while the replacement retires this Runner, so callers wait from a goroutine they own.
+// 等空双保险：Wait 在 cond 上睡，ctx 取消
+// 时 AfterFunc 触发 Broadcast 把睡着的唤
+// 醒（cond.Wait 自己不看 ctx，必须外部
+// 踢）；醒后先查 ctx.Err 再回睡——取消
+// 与计数归零的竞态下取消优先。
 func (r *Runner) WaitForCommands(ctx context.Context) error {
 	stop := context.AfterFunc(ctx, func() {
 		r.activeCommandsMu.Lock()
@@ -1431,6 +1436,16 @@ func extensionPath(ext extension.Extension) string {
 // context's own cancellation, or the transport marks it
 // [extension.ErrHandlerStopped] because the host stopped the extension.
 // Failures whose diagnostic the subprocess lifecycle handler owns are not reported either.
+// 错误上报三级过滤：
+//  1. 正常路径不报——nil、handler 主动停
+//     （ErrHandlerStopped）、ctx 已取消且
+//     错误就是取消本身（取消不是失败）；
+//  2. LifecycleError 不报——连接死已经是
+//     一条生命周期诊断，再为每个被打断的
+//     handler 各报一遍是噪声放大（D56）；
+//  3. command 事件不带堆栈（上游 _try
+//     ExecuteExtensionCommand 同样省略——
+//     命令错误给用户看消息不是给调试器）。
 func (r *Runner) recordHandlerError(ctx context.Context, extPath, eventType string, err error) {
 	if err == nil || errors.Is(err, extension.ErrHandlerStopped) || (ctx.Err() != nil && errors.Is(err, ctx.Err())) {
 		return
