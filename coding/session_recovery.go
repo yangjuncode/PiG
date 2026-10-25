@@ -180,6 +180,9 @@ var errUnresolvedRecoveryTarget = errors.New("Cannot persist recovery omission b
 // attempt comes from the current run or a resumed session (Pi #11227): an
 // unpaired result fails the next request.
 func (s *Session) omitRecoveryAttempt(message *agent.AssistantMessage) error {
+	// 先收集这次失败尝试发出的全部 toolCall ID——它的工具
+	// 结果必须跟它一起抠掉，否则孤儿 result 会破坏下一次
+	// 请求的 tool_call/tool_result 配对校验。
 	toolCallIDs := make(map[string]struct{})
 	for _, block := range message.Content {
 		if call, ok := block.(ai.ToolCall); ok {
@@ -187,6 +190,8 @@ func (s *Session) omitRecoveryAttempt(message *agent.AssistantMessage) error {
 		}
 	}
 	// A context edit replaces the projected copy, so match it by source entry as well.
+	// 定位 assistant 消息在转录中的位置：指针优先，context edit
+	// 换过投影副本时按同一 source entry 兜底匹配。
 	entryID, entryFound := s.findPersistedMessageEntryID(agent.AgentMessage{Assistant: message})
 	messages := s.agent.Messages()
 	index := slices.IndexFunc(messages, func(m agent.AgentMessage) bool {
@@ -205,6 +210,8 @@ func (s *Session) omitRecoveryAttempt(message *agent.AssistantMessage) error {
 		s.entryIDsMu.Unlock()
 		return found && id == entryID
 	})
+	// 从定位点向后收配对 tool result：遇到下一条 assistant
+	// 消息即停——之后的 result 属于别的尝试。
 	targets := []agent.AgentMessage{{Assistant: message}}
 	if index >= 0 {
 		for _, m := range messages[index+1:] {
@@ -414,6 +421,9 @@ type assistantEndNote struct {
 // can commit another retry.
 func (s *Session) noteAssistantMessageEnd(message *agent.AssistantMessage) assistantEndNote {
 	note := assistantEndNote{willRetry: s.willRetryAfterAgentEnd(message)}
+	// 两个簿记在 agent goroutine 上、跑后裁决之前完成：
+	// 非 error/length 的成功回复重置溢出恢复防重入标记；
+	// 非 error 回复终止当前重试序列（计数换出留作事件用）。
 	if message.StopReason != ai.StopReasonError && message.StopReason != ai.StopReasonLength {
 		s.overflowRecoveryAttempted.Store(false)
 	}
