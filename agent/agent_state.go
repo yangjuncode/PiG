@@ -1,3 +1,7 @@
+// agent_state.go 实现上游 `agent.state` 的活视图：AgentState 是零拷贝
+// 句柄，读方法直读 agent 当前值，Set* 方法透传到 agent 的写路径——
+// 对应 Pi 里 `state.model = ...` 这类直接赋值语义。
+
 package agent
 
 import (

@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: MIT
 
+// mutation_window.go 实现"文件变更队列"的两个能力标记：扩展工具在
+// 自己的同步前缀里登记队列（MayTakeFileMutationQueue），文件写入类
+// 工具在 prepare 阶段登记（RegistersInFileMutationQueue）——两者让
+// 并行批次里的 edit/write 与扩展文件操作按上游 registrationQueue
+// 的顺序互斥。
+
 package agent
 
 import (

@@ -1,3 +1,8 @@
+// message_shape.go 定义"成员值要长成什么样，解码进字段后才能编码回
+// 同样的字节"的形状判定表（shapeKind）：字符串/非空字符串/整数/任意
+// 数字/布尔/常量 true/usage/cost/各消息 content 形态/参数对象等——
+// keepSource 的相等性判定靠它决定哪些字段必须参与比较。
+
 package agent
 
 import "bytes"

@@ -1,3 +1,7 @@
+// formats.go 移植 TypeBox 的 format 注册表：Value.Check 断言 "format"
+// 关键字用的正则集合——JS 正则字面量原样移植（RE2 兼容），i 标志按
+// ASCII 语义；hostname/idn-*/regex 复用 jsonschema 库的检查。
+
 package typebox
 
 // Ports typebox 1.3.27 build/format/*.mjs: the format registry that Value.Check asserts for the "format" keyword. The expressions are the sources of the JavaScript literals, which RE2 accepts. A JavaScript expression with the

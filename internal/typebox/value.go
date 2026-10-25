@@ -1,3 +1,8 @@
+// value.go 移植 TypeBox Value 的五个入口：Check/Errors/Clean/Default/
+// Clone。schema 即 JSON Schema 数据；Go 侧没有 TypeBox 的 ~kind 标记，
+// 所以按关键字形态推类型（Object/Record/Array/Tuple/Union/Intersect/Ref）。
+// 值域为严格 JSON 类型（含 chordjson.Object）。
+
 package typebox
 
 // Ports typebox 1.3.27 build/value: check (Check), errors (Errors with the en_US locale phrasing), clean (Clean),

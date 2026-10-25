@@ -1,3 +1,8 @@
+// message_lax.go 是 decode 的宽容兜底：严格解码失败（成员类型对不上
+// 字段）时按 JSON.parse 语义尽量保留——类型不符的成员按"没写"读，
+// role 非已知值整条进 Custom；null 仍拒绝（上游 getSessionContextSettings
+// 读 message.role 会崩）。消息原文保留供原样回写。
+
 package agent
 
 import (

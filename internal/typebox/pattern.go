@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 
+// pattern.go 是 pattern 关键字的编译缓存：正则按 schema 缓存复用，
+// 满 512 条即清空重来（防长会话无界增长）。
+
 package typebox
 
 import (

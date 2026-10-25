@@ -1,3 +1,8 @@
+// agent_prompt.go 是上游 agent.prompt / agent.continue 的入口方法：
+// Prompt（文本+图片）、PromptMessages（成品消息批）、Continue（续跑）。
+// 与 Send/SendMessages 的区别在返回值：上游这几个方法 resolve 为空，
+// 所以这里也只报 error，产出的消息由 Send 变体返回。
+
 package agent
 
 import (

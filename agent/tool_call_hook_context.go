@@ -1,3 +1,7 @@
+// tool_call_hook_context.go 定义传给工具调用钩子的上下文载荷：
+// 发起调用的 assistant 消息 + 当时的 agent 上下文（消息与工具表），
+// 经 context.Context 透传给 before/after 钩子。
+
 package agent
 
 import (

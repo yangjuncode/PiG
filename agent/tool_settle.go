@@ -1,3 +1,7 @@
+// tool_settle.go 是并行工具批次的"落地顺序"记账：toolSettle 记录某次
+// 调用在其批次里的落地位次（slot），after-tool-call 钩子按落地位次
+// 启动，保证与上游 Promise.all 的 settle 顺序一致。
+
 package agent
 
 import (

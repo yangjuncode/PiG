@@ -1,3 +1,8 @@
+// message_decoded_form.go 实现 DecodedForm：不真做编码解码，直接推出
+// "本消息编码后再解码会得到什么"——能证明往返一致就返回该形态，
+// 证不了（含 source 原文/流式视图/非标量 details 等）返回 false 让
+// 调用方走真解码（D112 附加，供持久化比较用）。
+
 package agent
 
 import (

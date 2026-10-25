@@ -1,3 +1,7 @@
+// errors.go 移植 TypeBox Value.Errors 的错误遍历：按引擎关键字顺序
+// 逐条收集（上限 maxErrors=8），anyOf/allOf/oneOf/$ref 先报分支内错误
+// 再报关键字本身；成员顺序按声明序（Go map 按 JS own-key 序）。
+
 package typebox
 
 // Ports typebox 1.3.27 build/schema/errors.mjs, the Error* functions of build/schema/engine/*.mjs and

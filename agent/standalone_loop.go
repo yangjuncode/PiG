@@ -1,3 +1,8 @@
+// standalone_loop.go 是脱离 Agent 也能跑的"裸循环"实现：AgentContext
+// （转录+工具）+ AgentLoopConfig（冻结配置）即可开跑，事件经
+// AgentEventSink 同步投递——对应上游 agent-loop.ts 的可独立调用形态，
+// Agent 自身的 runLoop 也复用这套骨架。
+
 package agent
 
 // Ports packages/agent/src/agent-loop.ts

@@ -1,3 +1,8 @@
+// system_replay_error.go 复刻上游 getCurrentSystemMessage 重放时的
+// TypeError：会话文件不做校验，system 消息的 content/toolsAdded/
+// toolsRemoved 可能是重放读不了的 JSON 类型——按上游顺序先查全部
+// content 错误再查工具列表，错误文本对齐 V8。
+
 package agent
 
 import (

@@ -1,3 +1,7 @@
+// tool_call_hook_funcs.go 定义 before/after 工具调用钩子的参数与
+// 结果类型：Before 拿到调用块+已校验参数+上下文，可拦截/改写参数/
+// 终止运行；After 拿到执行结果，可改写结果或标错误。
+
 package agent
 
 import (
