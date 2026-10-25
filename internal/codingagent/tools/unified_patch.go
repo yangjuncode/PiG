@@ -62,6 +62,8 @@ func hunkLine(lines []string, prefix byte, token string) []string {
 func diffLinesResultToPatch(d *jsdiff.LineDiff, context int) []patchHunk {
 	runs := d.Runs
 	// jsdiff appends an empty sentinel part to make hunk close-out uniform; index len(runs) is it.
+	// 末尾空哨兵 run 让"最后一个 hunk 的关闭"走与中间 hunk
+	// 相同的路径，不用特判结尾。
 	partCount := len(runs) + 1
 
 	var hunks []patchHunk
@@ -76,6 +78,9 @@ func diffLinesResultToPatch(d *jsdiff.LineDiff, context int) []patchHunk {
 		}
 		if current.Added || current.Removed {
 			if oldRangeStart == 0 {
+				// 新 hunk 起点：记录两侧行号并把前一段未变 run 的
+				// 尾部 context 行作为前导上下文补进来（同时把
+				// rangeStart 前移）。
 				oldRangeStart = oldLine
 				newRangeStart = newLine
 				curRange = nil
@@ -104,6 +109,9 @@ func diffLinesResultToPatch(d *jsdiff.LineDiff, context int) []patchHunk {
 			continue
 		}
 		if oldRangeStart != 0 {
+			// 未变 run：要么并入当前 hunk（作为行间上下文），
+			// 要么关闭 hunk。关闭条件与 jsdiff 一致：未变段
+			// 超过 2×context（中间留不下全部上下文）或已接近末尾。
 			shown := current.Count
 			closes := current.Count > context*2 || i >= partCount-2
 			if closes {
@@ -142,6 +150,8 @@ func formatPatch(path string, hunks []patchHunk) string {
 	for _, h := range hunks {
 		oldStart, newStart := h.oldStart, h.newStart
 		// Unified-diff quirk: a zero-length side starts one lower.
+		// 单边零行的 hunk 起始行减一（unified diff 格式惯例：
+		// 纯插入/纯删除时指向插入点之前一行）。
 		if h.oldLines == 0 {
 			oldStart--
 		}

@@ -104,7 +104,10 @@ func (c *argumentEncodingCache) find(arguments JsonObject, order schemaObjectOrd
 	c.recency.MoveToFront(element)
 	entry := element.Value.(*argumentEncoding)
 	c.mu.Unlock()
-	// The entry is never modified after it is kept, so it is read outside the lock.
+	// 两道相等判定都在锁外做（entry 一旦 keep 就不再修改）：
+	// order 是指针相等——同一个 sidecar 对象才算同一记录；
+	// snapshot 逐成员比对当前树与编码时的拷贝，防"map 被释放
+	// 后新对象复用同地址"的误命中。
 	if !sameOrder(entry.order, order) || !sameArgumentTree(map[string]any(arguments), entry.snapshot) {
 		return nil
 	}
@@ -123,12 +126,18 @@ func (c *argumentEncodingCache) keep(arguments JsonObject, order schemaObjectOrd
 	c.kept++
 	entry.seq = c.kept
 	// The entry holds a copy of the arguments' tree, never the arguments' own map, so it does not keep that map reachable.
+	// runtime.Cleanup 让缓存条目生命周期跟随 arguments 对象：
+	// arguments 不可达时自动释放编码，缓存只持有仍活着的会话
+	// 历史的编码。seq 区分同一 key 上的新旧条目，防止新条目的
+	// cleanup 误删旧条目（反之亦然）。
 	entry.release = runtime.AddCleanup(argumentsObject(arguments), c.release, argumentEncodingName{key: entry.key, seq: entry.seq})
 	if previous, ok := c.entries[entry.key]; ok {
 		c.forget(previous)
 	}
 	c.entries[entry.key] = c.recency.PushFront(entry)
 	c.held += entry.size()
+	// LRU 逐出：超限就从尾部淘汰，但永远保住最新一条
+	// （recency.Len() > 1 防止把自己也逐掉）。
 	for c.held > c.limit && c.recency.Len() > 1 {
 		c.forget(c.recency.Back())
 	}
@@ -383,6 +392,9 @@ func (content *ToolCall) setParsedArguments(arguments JsonObject, order schemaOb
 // deferArguments records text, the call's streamed argument text so far, in place of its parse: Arguments keeps its
 // earlier value until a reader of a published copy settles the call (assistantMessageCell.settleLocked), which parses text as
 // setParsedArguments would have stored it, or until a later parse replaces it. text must not be empty.
+// 惰性解析的关键：流式 delta 到达时只记录原始文本而不立即解析——
+// 解析推迟到"已发布副本的读者结算时"才做一次（settleLocked），
+// 避免每个 delta 都全量 parse。
 func (content *ToolCall) deferArguments(text string) {
 	content.deferredArguments = text
 }

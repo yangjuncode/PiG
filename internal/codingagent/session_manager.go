@@ -259,6 +259,9 @@ func (sm *SessionManager) Clone(source *Session, leafID string) (*Session, error
 	if err != nil {
 		return nil, err
 	}
+	// 源会话在内存（无 path）→ 克隆也留在内存；有 path 才给
+	// 克隆分配文件，且仅当克隆链上已有对话内容时立即落盘——
+	// 空克隆与 Create 一样把首次写盘推迟到第一条消息。
 	if source.path != "" {
 		if err := MkdirSessionDir(sm.sessionDir); err != nil {
 			return nil, err
@@ -315,6 +318,8 @@ func (sm *SessionManager) ForkFromFile(sourcePath string, idOption ...string) (*
 	newPath := filepath.Join(sm.sessionDir, fileTimestamp(header.Timestamp)+"_"+header.ID+".jsonl")
 
 	// Pi writes the header with writeFileSync(newSessionFile, ..., { flag: "wx" }) (session-manager.ts forkFrom), so a file that already holds this timestamp and id is an EEXIST error and is left as it is.
+	// O_EXCL 对应 "wx"：同时间戳+同 id 的文件已存在 → EEXIST
+	// 报错且原文件保留，不覆盖。
 	f, err := os.OpenFile(newPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		return nil, sessionPersistenceError(err, "open", newPath)
@@ -329,6 +334,9 @@ func (sm *SessionManager) ForkFromFile(sourcePath string, idOption ...string) (*
 	// forkFrom (session-manager.ts) writes every non-header entry with JSON.stringify of the parsed record, so the copy is
 	// normalized (escapes decoded, numbers reformatted, duplicate keys merged, integer keys first), not verbatim. Canonicalize of the record
 	// as read is that text: encoding it again first would only respell it (encoding/json escapes <, > and &).
+	// 复制时逐条 Canonicalize（等价上游 JSON.stringify 再写）：
+	// 规范化而非逐字节拷贝，且跳过源文件里所有 type=session
+	// 行——fork 的 header 只有一个，就是上面新写的。
 	for _, record := range records[1:] {
 		line, err := jsonstringify.Canonicalize(record.Raw())
 		if err != nil {
