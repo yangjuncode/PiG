@@ -23,6 +23,10 @@ type loopTurn struct {
 }
 
 // forward numbers a turn of sender's for targets and returns the number and the NotifyLoopTurned frame that carries it. A target whose read loop ended is no recipient, and a turn with no recipient is taken at once.
+// 判定"要不要等"：接收方全已关闭（pending 空）或发送方
+// 自己也关了 → 不需要等待，立即回执 taken（发送方 handler
+// 当场恢复）；否则登记 turn 让 settle/closed 收齐所有
+// 接收方的取用回执再放行。
 func (l *loopTurns) forward(sender *Conn, turn uint64, targets []*Conn) (uint64, encodedEnvelope) {
 	l.mu.Lock()
 	l.last++
@@ -75,6 +79,10 @@ func (l *loopTurns) settle(conn *Conn, id uint64) {
 }
 
 // closed records that conn's read loop ended: it takes no turn, and as a sender it waits for none.
+// 双向清扫：conn 作为 sender 的未决 turn 直接删（它不会
+// 再等回执）；作为接收方的 pending 名额核销，空 pending
+// 的 turn 收齐即放行 sender。持锁外再发 taken，防在锁内
+// 发帧阻塞。
 func (l *loopTurns) closed(conn *Conn) {
 	var taken []*loopTurn
 	l.mu.Lock()

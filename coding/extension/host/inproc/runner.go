@@ -1602,10 +1602,15 @@ func (r *Runner) EmitToolCall(ctx context.Context, event extension.ToolCallEvent
 			}
 			result = typed
 			if typed.Block {
+				// block 短路：首个阻断结果立即返回，剩余
+				// handler 不再跑（上游 emitToolCall 的
+				// first-blocker-wins 语义）。
 				return typed, nil
 			}
 		}
 	}
+	// 无 block 时返回最后一个返回值——上游 sameMessages 之后
+	// 的"最后写入者胜出"语义：结果链向后覆盖。
 	return result, nil
 }
 
