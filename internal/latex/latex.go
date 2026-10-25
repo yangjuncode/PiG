@@ -209,6 +209,15 @@ func padLayoutLine(line string, width int, centered bool) string {
 	return strings.Repeat(" ", left) + line + strings.Repeat(" ", padding-left)
 }
 
+// 水平拼接布局（多个等高盒子并排放）：
+// 先算公共基线——全体 baseline 最大值
+// 为上探高度、全体 (行数-baseline-1)
+// 最大值为下探高度，总高=上+下+1。
+// 逐行拼：每个盒子把"自己的第几行映
+// 到公共基线"（sourceRow=row-baseline+
+// l.baseline——对齐基线而非顶边）；映
+// 不到的行补满宽度空格，保证右侧盒子
+// 不错位。
 func joinLayouts(layouts []layout) layout {
 	if len(layouts) == 0 {
 		return layout{lines: []string{""}, width: 0, baseline: 0}
@@ -478,6 +487,21 @@ func (p *parser) parseSequence(end rune) string {
 	return result
 }
 
+// 上下标解析与渲染路径选择：
+//  1. 收首个标记（^ 上标/_ 下标），跳
+//     空白看是否紧跟异种标记——x^2_i
+//     这类双标一次收齐；
+//  2. 渲染两路：内联 unicode 上下标字
+//     符（x²）优先——不换行不占多行；
+//     不能 unicode 化或嵌套太深→display
+//     模式下降级为 layoutNode 上下对齐
+//     绘制（真·上下两行）。
+//
+// canUseLayout 排除三类：值含 "/"（分
+// 数文本会和 layout 分隔符混淆）、值
+// 已含 layoutMarker（嵌套布局不能再
+// 包）、多字符且非白名单（unicode 上
+// 下标集覆盖不了的串）。
 func (p *parser) parseScripts(initialMarker rune) string {
 	scripts := make(map[string]string)
 	var order []string
