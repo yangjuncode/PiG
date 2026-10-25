@@ -342,6 +342,10 @@ func isExposure(value string) bool {
 
 // toolPatternRegExp is upstream's `new RegExp("^" + parts.join(".*") + "$")`.
 // A JavaScript `.` matches anything but a line terminator.
+// 通配编译：按 * 切分，字面值 QuoteMeta 转
+// 义；* 展开成"任意非行终结符"——JS `.`
+// 不匹配 \n \r U+2028 U+2029，RE2
+// `.` 行为不同所以显式否定字符类。
 func toolPatternRegExp(pattern string) *regexp.Regexp {
 	parts := strings.Split(pattern, "*")
 	for i, part := range parts {
@@ -352,6 +356,10 @@ func toolPatternRegExp(pattern string) *regexp.Regexp {
 
 // GetMcpToolExposure is the exposure of one tool of a server: its
 // `toolExposure` entry, else the server's `exposure`.
+// 曝光三级回退：toolExposure 精确名 →
+// toolExposure 通配模式（按声明序首个命中，
+// 保序 map 让"越具体越先写"的直觉成立）→
+// 服务器级 exposure → 默认 codemode。
 func GetMcpToolExposure(config McpServerConfig, toolName string) McpExposure {
 	if exact, ok := config.ToolExposure.Get(toolName); ok {
 		return exact
