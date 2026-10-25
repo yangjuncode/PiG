@@ -161,6 +161,9 @@ func DiffLineRuns(oldStr, newStr string) *LineDiff {
 	suffixChars := commonSuffixLength(oldStr, newStr, min(len(oldStr), len(newStr))-prefixEnd)
 	oldTail, newTail := len(oldStr)-suffixChars, len(newStr)-suffixChars
 	suffixLength := suffixChars
+	// 后缀起点落在行中间（任一侧前一字符非 '\n'）时，
+	// 行级 token 无法对齐行内起算的公共尾——改为取下一
+	// '\n' 之后的行级公共尾，取不到就没有公共后缀行。
 	if (oldTail != 0 && oldStr[oldTail-1] != '\n') || (newTail != 0 && newStr[newTail-1] != '\n') {
 		// The suffix starts mid-line in one text: its lines start after the next "\n", at the same distance from the end in both texts.
 		suffixLength = 0

@@ -202,6 +202,10 @@ func myers(oldTokens, newTokens []string, equals func(a, b string) bool, join fu
 	const unbounded = int(^uint(0) >> 1)
 	minDiagonal, maxDiagonal := -unbounded, unbounded
 	for editLength <= maxEditLength {
+		// 编辑图按对角线遍历（diagonal=old-new 差，步进 2
+		// 保奇偶）：每个格点从"删"（d-1 来）或"加"（d+1
+		// 来）两条入边选路——都可走时选 oldPos 更靠后的，
+		// 上游借此让删除排在插入前。
 		for diagonal := max(minDiagonal, -editLength); diagonal <= min(maxDiagonal, editLength); diagonal += 2 {
 			removePath, addPath := bestPath[diagonal-1], bestPath[diagonal+1]
 			if removePath != nil {
@@ -223,11 +227,14 @@ func myers(oldTokens, newTokens []string, equals func(a, b string) bool, join fu
 			} else {
 				base = addToPath(removePath, false, true, 1)
 			}
+			// 白送的公共后缀不耗编辑数，沿对角线滑完再判终止。
 			newPos = extractCommon(base, newTokens, oldTokens, diagonal, equals)
 			if base.oldPos+1 >= oldLen && newPos+1 >= newLen {
 				return buildValues(base.last, newTokens, oldTokens, join)
 			}
 			bestPath[diagonal] = base
+			// 边界收紧：old 侧吃完的对角线封顶 maxDiagonal、
+			// new 侧吃完的抬 minDiagonal，后续轮次不再扫描。
 			if base.oldPos+1 >= oldLen {
 				maxDiagonal = min(maxDiagonal, diagonal-1)
 			}
