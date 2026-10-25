@@ -28,6 +28,11 @@ const (
 )
 
 // jsValueKey is the key of the JavaScript value JSON.parse makes of raw, a member that is not a string; nil raw is an absent member (undefined).
+// 键的三类形态对齐 JS Map 语义：undefined → 单键；
+// 数字 → 按 JS 数值规范化（SameValueZero：-0 与 0、
+// NaN 与 NaN 同键）；对象/数组按身份比较 → 相同 JSON
+// 文本的不同解析结果必须不同键，规范文本后追加全局
+// 序号破坏值相等性。
 func jsValueKey(raw json.RawMessage) string {
 	raw = bytes.TrimSpace(raw)
 	switch {
@@ -106,6 +111,11 @@ func lenientBase(raw json.RawMessage) (base SessionEntryBase, data json.RawMessa
 	if json.Unmarshal(raw, &members) != nil || members == nil {
 		return base, nil
 	}
+	// 逐成员提取并从 map 摘除（剩下的交给具体条目类型解
+	// 码）：字符串成员原样取值；非字符串成员走 jsValueKey
+	// 拿 JS 值的替代键；不存在即 undefined。type/timestamp
+	// 只在拿到真字符串时才有意义——JS 值键进不了上游任何
+	// 匹配，保持空。
 	member := func(name string) string {
 		value, present := members[name]
 		delete(members, name)
