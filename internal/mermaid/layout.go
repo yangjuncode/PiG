@@ -88,6 +88,12 @@ type routePlan struct {
 
 // computeRanks does longest-path ranking over the graph's DAG; back edges are
 // excluded by a DFS colouring pass.
+// 分层最长路径（有环图先断环）：DFS 时灰
+// 色回边不进 dag——等价于反向这些边把图
+// 变成 DAG；然后按后序逆序扫（保证父在
+// 子前），rank[v]=max(rank[u]+1) 即最长
+// 路径分层。入度 0 节点优先做根，其余
+// 补做根保证连通不到的节点也分层。
 func computeRanks(g *graph) []int {
 	n := len(g.nodes)
 	children := make([][]int, n)
@@ -159,6 +165,14 @@ func dfsDag(start int, children [][]int, color []byte, dag [][]int, order *[]int
 
 // orderRanks reorders nodes within each rank to minimise edge crossings via
 // barycenter sweeps.
+// 层内排序重心扫描（Sugiyama 式）：
+// 偶数轮自上而下——每层按"父节点位
+// 置均值"排；奇数轮自下而上——按子
+// 节点均值排，交替方向让顺序收敛。
+// 每轮重数交叉，只保留历史最优；
+// 交叉归 0 提前收工。最多 8 轮——
+// 重心法不保证单调，固定轮次防偶
+// 尔震荡。
 func orderRanks(byRank [][]int, edges []edge, ranks []int) {
 	n := len(ranks)
 	if len(byRank) < 2 || n < 3 {
