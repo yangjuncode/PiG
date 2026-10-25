@@ -125,6 +125,10 @@ func (m *InteractiveMode) inputLoopUntil(ctx context.Context, source io.Reader, 
 			userInput = m.getUserInput()
 		}
 		// Pi resumes the resolved getUserInput promise after this read's synchronous sequences, before another terminal-read event.
+		// 优先级次序（从上到下）：userInput 就绪先走 → 终端输入
+		// 再插队于事件/渲染之前 → 最后才是大 select（ctx 取消、
+		// 扩展错误、agent 事件、普通 readCh）。这是为保"按键即时
+		// 响应"不被流式输出和渲染工作饿死。
 		select {
 		case text := <-userInput:
 			userInput = nil
@@ -426,6 +430,9 @@ func (r *terminalInputRouter) fail(err error) {
 	r.finish()
 	// Ports packages/tui/src/terminal.ts: process.stdin gets a "data" listener and no "end" listener, so a terminal
 	// whose input ends while it lives leaves the session running without input.
+	// 终端 EOF 不是致命错误：上游 stdin 只有 data 监听没有 end
+	// 监听——输入结束但会话照样跑（等 IPC/其他来源），只记日志
+	// 不上报 errCh。
 	if r.terminal && errors.Is(err, io.EOF) {
 		debugLog("terminal input ended (EOF); the session keeps running without input")
 		return
@@ -446,6 +453,9 @@ func (r *terminalInputRouter) end() {
 
 // settle waits for the listeners of the chunk routed last and reports whether input continues. Cancellation discards
 // the decoder's rest.
+// settle 是背压闸门：上一次路由的 chunk 若还没被主循环消费完
+// （waiting），先等它的 settled token——保证上游"监听器同步
+// 应答、后续输入不得越过"的顺序。取消时清掉解码器残余直接退出。
 func (r *terminalInputRouter) settle() bool {
 	if r.waiting {
 		select {
@@ -488,6 +498,11 @@ func (r *terminalInputRouter) routeHeld() {
 
 // finish routes the rest of a decoder step: its last chunk without waiting for the listeners, or, when the read ended in
 // protocol input after a chunk that announced more, the read's end.
+// 一个解码步的收尾：held 队列逐条路由，非末条标 more=true
+// （提示主循环"本 read 还有后续"）；末条不等待直接放行——
+// 主循环消费它时读线程已在等下一次读，天然重叠。
+// split 标记：本次 read 曾声明 more 但解码后没有可路由序列，
+// 需补一个 readEnd 显式收尾，否则主循环不知道这次读结束。
 func (r *terminalInputRouter) finish() {
 	last := len(r.held) - 1
 	for i, sequence := range r.held {
