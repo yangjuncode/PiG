@@ -104,6 +104,14 @@ type inFlightRead struct {
 // readRange reads length bytes from offset as consecutive reads of at most chunk bytes, several in flight. It ends
 // early at the end of the file. A short read continues from where it ended, as sequential reads would. aborted is
 // checked after each read; ok is false when it was.
+// 流水线读窗（readDepth 个在飞请求）：按
+// chunk 切片连续发 pread 不等待——吞吐
+// 靠重叠网络往返；收回复按发出序取头部。
+// 短读纠偏：返回的字节少于请求说明文件
+// 实际比预期短（或到 EOF），在飞的后续
+// 请求都按"读满"假设排了偏移，全部作废
+// 从实际末尾重排——不重排会把空洞/重叠
+// 拼进结果。
 func readRange(read func(offset, length int) *Call, offset, length, chunk int, aborted func() bool) (chunks [][]byte, total int, ok bool, err error) {
 	var inFlight []inFlightRead
 	next := offset
@@ -458,6 +466,13 @@ func (e *RemoteExecutionEnv) SetCwd(cwd string) {
 }
 
 // fileOp resolves path, checks for an abort, and runs run; with checkAfter, an abort during run also fails.
+// 文件操作模板三段：1) resolvePath 归一
+// 化远端路径；2) checkAfter=false 只查
+// 前置 abort（操作前文件已没了直接拒，
+// 省一次往返）；checkAfter=true 操作完
+// 再查一次——"读完的文件随后被删"这种
+// 语义上游也报成功，只在明确要求后验
+// 的操作上查。
 func fileOp[T any](ctx context.Context, e *RemoteExecutionEnv, path string, checkAfter bool, run func(resolved string) (T, error)) (T, error) {
 	var zero T
 	resolved, err := e.resolvePath(ctx, path)
