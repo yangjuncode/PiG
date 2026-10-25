@@ -52,6 +52,11 @@ func (c *llmMemo) convert(msgs []AgentMessage) []ai.Message {
 		c.out, c.ends = nil, nil
 		return ConvertToLLM(msgs)
 	}
+	// 第一遍——前缀复核：逐条确认"记忆里的转换对当前消息仍成立"。
+	// custom 消息是 map，字面对比不可靠，故重转一遍只校验产出的
+	// 消息数不变再原位刷写；其他消息按逐字比较（sameWords）。
+	// 遇流式视图消息（转换依赖仍在变的流状态）或首个不一致项
+	// 即停——prefix 就是本次可复用的最长前缀。
 	prefix, outLen := 0, 0
 	for prefix < len(msgs) && prefix < len(c.ends) && convertsStably(msgs[prefix]) {
 		start := 0
@@ -73,13 +78,18 @@ func (c *llmMemo) convert(msgs []AgentMessage) []ai.Message {
 		prefix++
 		outLen = end
 	}
+	// 前缀之后全部作废：清尾防悬挂引用，out/ends 截到复用点。
 	clear(c.out[outLen:])
 	c.out, c.ends = c.out[:outLen], c.ends[:prefix]
+	// 第二遍——续记：从 prefix 起把稳定消息的新转换追加进记忆，
+	// 遇流式视图即停（它不可备忘，但也到此为止）。
 	next := prefix
 	for ; next < len(msgs) && convertsStably(msgs[next]); next++ {
 		c.out = appendLLM(c.out, msgs[next])
 		c.ends = append(c.ends, len(c.out))
 	}
+	// 拼装返回：记忆段拷贝（调用方独占，可以改动），不稳定
+	// 尾部逐条现转不记账。
 	result := make([]ai.Message, len(c.out), len(msgs))
 	copy(result, c.out)
 	for ; next < len(msgs); next++ {
