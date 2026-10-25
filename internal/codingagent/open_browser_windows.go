@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：internal/codingagent 的 open_browser_windows 实现。
 package codingagent
 
 import (

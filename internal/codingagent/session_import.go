@@ -1,3 +1,4 @@
+// 中文导读：会话管理相关。
 package codingagent
 
 // SessionImportFileNotFoundError reports a session import source that does

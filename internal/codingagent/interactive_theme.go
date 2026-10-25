@@ -1,3 +1,4 @@
+// 中文导读：交互模式主题控制（theme-controller.ts）。对应上游 packages/coding-agent/src/modes/interactive/theme/theme-controller.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/theme/theme-controller.ts

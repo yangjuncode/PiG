@@ -1,3 +1,4 @@
+// 中文导读：扩展包警告（LoadExtensionsResult.warnings）。对应上游 .upstream/current/packages/coding-agent/src/core/resource-loader.ts:53-64。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：内置工具渲染器（tools/renderers/index.ts）。对应上游 packages/coding-agent/src/core/tools/renderers/index.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/tools/renderers/index.ts

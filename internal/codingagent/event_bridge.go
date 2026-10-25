@@ -5,6 +5,7 @@
 // below mirror that function 1:1, and DispatchAgentLoopEvent composes them
 // into the single per-event switch the session drives (see below).
 
+// 中文导读：事件桥（agent-session.ts）。
 package codingagent
 
 import (

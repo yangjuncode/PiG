@@ -1,3 +1,4 @@
+// 中文导读：交互模式单轮处理（用户输入→agent 轮次）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 import (

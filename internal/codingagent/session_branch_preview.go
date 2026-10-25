@@ -1,3 +1,4 @@
+// 中文导读：会话管理相关。
 package codingagent
 
 // NewBranchSession returns an in-memory session that holds header's identity and the entries of branch, root first, as they are: each entry keeps its id and parent link, and the session shares the entry values with the session they came from instead of encoding and decoding each record again, as agent-session.ts _createBoundaryPreviewManager hands SessionManager.inMemory the branch's own objects.

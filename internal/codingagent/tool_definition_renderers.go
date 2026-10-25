@@ -1,3 +1,4 @@
+// 中文导读：工具定义渲染器（getRegisteredToolDefinition）。
 package codingagent
 
 import (

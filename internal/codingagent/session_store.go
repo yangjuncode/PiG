@@ -1,3 +1,4 @@
+// 中文导读：会话存储：条目落盘与惰性读取（D112：冷部分分块存储，读法不变）。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：扩展侧会话读取（session-manager.ts）。对应上游 packages/coding-agent/src/core/session-manager.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/session-manager.ts

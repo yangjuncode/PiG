@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 default_models 实现，对应上游 packages/coding-agent/src/core/model-resolver.ts (.upstream/v1.0.1/packages/coding-agent/src/core/model-resolver.ts:19-59)。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-resolver.ts (.upstream/v1.0.1/packages/coding-agent/src/core/model-resolver.ts:19-59).

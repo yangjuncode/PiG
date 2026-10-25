@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 任务（runAvailabilityRefresh 等）。对应上游 packages/coding-agent/src/core/model-runtime.ts:runAvailabilityRefresh,refreshProviderAvailability,registerNativeProvider。
 package codingagent
 
 import (

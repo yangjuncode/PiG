@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 project_trust_warning 实现，对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts:renderProjectTrustWarningIfNeeded。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/tui"

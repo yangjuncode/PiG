@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 prompt_images 实现。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式 /bug 命令处理。
 package codingagent
 
 import (

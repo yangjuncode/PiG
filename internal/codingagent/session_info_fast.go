@@ -1,3 +1,4 @@
+// 中文导读：会话元信息快速读取。
 package codingagent
 
 import (

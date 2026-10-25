@@ -1,3 +1,4 @@
+// 中文导读：模型输入限制。
 package codingagent
 
 import (

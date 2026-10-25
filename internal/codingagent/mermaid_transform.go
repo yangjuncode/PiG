@@ -1,5 +1,6 @@
 //go:build !pig_strip_mermaid
 
+// 中文导读：mermaid 转换（mermaid.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/mermaid.ts。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式的扩展会话/扩展交互。
 package codingagent
 
 import (

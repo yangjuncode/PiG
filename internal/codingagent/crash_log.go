@@ -1,3 +1,4 @@
+// 中文导读：崩溃日志（crash-log.ts）。
 package codingagent
 
 // crash_log.go ports upstream core/crash-log.ts: crash persistence plus loaded

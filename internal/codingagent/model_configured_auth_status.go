@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/provider-composer.ts
+// 中文导读：模型相关。对应上游 packages/coding-agent/src/core/provider-composer.ts。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/ai"

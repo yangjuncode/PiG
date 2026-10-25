@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 Mario Zechner
 // SPDX-License-Identifier: MIT
 
+// 中文导读：会话管理相关。对应上游 packages/coding-agent/src/core/session-cwd.ts。
 package codingagent
 
 import (

@@ -13,6 +13,7 @@
 // upstream derives `available` from checkAuth() over the whole provider
 // catalog, so pig derives both sets from the catalog rather than a
 // hand-maintained provider list.
+// 中文导读：认证过滤（model-runtime.ts availability filter）。对应上游 upstream pi-coding-agent's model-runtime.ts availability filter:。
 package codingagent
 
 import (

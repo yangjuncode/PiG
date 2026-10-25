@@ -1,3 +1,4 @@
+// 中文导读：扩展诊断（getBuiltInCommandConflictDiagnostics/showLoadedResources）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (getBuiltInCommandConflictDiagnostics and showLoadedResources)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts (getBuiltInCommandConflictDiagnostics and showLoadedResources).

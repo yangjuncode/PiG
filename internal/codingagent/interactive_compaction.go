@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 Mario Zechner
 // SPDX-License-Identifier: MIT
 
+// 中文导读：交互模式 TUI 实现。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (addCompactionCostNotice and compaction_end rendering)。
 package codingagent
 
 import (

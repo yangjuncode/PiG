@@ -1,5 +1,6 @@
 //go:build !windows
 
+// 中文导读：外部编辑器（openExternalEditor）。
 package codingagent
 
 import (

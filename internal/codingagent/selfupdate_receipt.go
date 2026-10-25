@@ -1,3 +1,4 @@
+// 中文导读：自更新回执/版本（InstalledPigVersion）。
 package codingagent
 
 import (

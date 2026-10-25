@@ -1,3 +1,4 @@
+// 中文导读：Radius 模型（D92：strip 后目录处理）。
 package codingagent
 
 // Radius provider composition and dynamic catalog refresh for one

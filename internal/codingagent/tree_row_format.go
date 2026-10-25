@@ -17,6 +17,7 @@
 // Assistant aborted/error states render explicitly. Unknown message roles use
 // upstream's `[<role>]` fallback.
 
+// 中文导读：树行格式（tree-selector.ts）。对应上游 upstream tree-selector.ts:。
 package codingagent
 
 import (

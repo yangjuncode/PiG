@@ -1,3 +1,4 @@
+// 中文导读：armin 组件（armin.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/armin.ts。
 package codingagent
 
 import (

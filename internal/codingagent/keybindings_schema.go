@@ -1,3 +1,4 @@
+// 中文导读：键绑定（KeybindingConflict 等）。对应上游 packages/coding-agent/src/core/key-id-schema.ts and keybindings-schema.ts. The artifact lives here because it enumerates the keybinding。
 package codingagent
 
 import (

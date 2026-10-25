@@ -2,6 +2,7 @@
 //
 // Ports packages/coding-agent/src/migrations.ts.
 
+// 中文导读：数据迁移（migrations.ts）。对应上游 packages/coding-agent/src/migrations.ts。
 package codingagent
 
 import (

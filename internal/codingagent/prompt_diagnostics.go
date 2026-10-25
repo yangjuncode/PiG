@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 prompt_diagnostics 实现，对应上游 packages/coding-agent/src/core/prompt-templates.ts。
 package codingagent
 
 import (

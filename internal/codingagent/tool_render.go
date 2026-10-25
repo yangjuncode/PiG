@@ -1,3 +1,4 @@
+// 中文导读：工具结果渲染。对应上游 packages/coding-agent/src/core/tools/render-utils.ts (replaceTabs)。
 package codingagent
 
 import (

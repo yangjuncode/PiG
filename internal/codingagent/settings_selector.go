@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/components/settings-selector.ts
+// 中文导读：设置管理器（settings-manager.ts）相关。对应上游 packages/coding-agent/src/modes/interactive/components/settings-selector.ts。
 package codingagent
 
 import (

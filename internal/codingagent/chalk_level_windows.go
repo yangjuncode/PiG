@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：chalk 样式级别（chalk 6.0.0 applyStyle）。
 package codingagent
 
 import "golang.org/x/sys/windows"

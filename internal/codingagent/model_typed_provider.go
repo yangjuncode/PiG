@@ -1,3 +1,4 @@
+// 中文导读：模型运行时 typed 面（内置 provider 列表与组合 provider）。对应上游 the typed model surface of packages/coding-agent/src/core/model-runtime.ts: the built-in provider list with its image models, and the composed provider each typed accessor reads。
 package codingagent
 
 // Ports the typed model surface of packages/coding-agent/src/core/model-runtime.ts: the built-in provider list with its image models, and the composed provider each typed accessor reads.

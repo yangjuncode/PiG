@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/cli/file-processor.ts.
+// 中文导读：CLI 文件处理（file-processor.ts）。对应上游 packages/coding-agent/src/cli/file-processor.ts。
 package codingagent
 
 import (

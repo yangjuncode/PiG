@@ -1,3 +1,4 @@
+// 中文导读：信任选择器组件。对应上游 packages/coding-agent/src/modes/interactive/components/trust-selector.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/trust-selector.ts.

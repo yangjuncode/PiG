@@ -1,3 +1,4 @@
+// 中文导读：native provider 组合（provider-composer.ts）。对应上游 packages/coding-agent/src/core/provider-composer.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/provider-composer.ts.

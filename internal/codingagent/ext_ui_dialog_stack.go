@@ -1,3 +1,4 @@
+// 中文导读：扩展 UI 对话框栈。
 package codingagent
 
 import (

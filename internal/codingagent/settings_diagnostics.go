@@ -1,3 +1,4 @@
+// 中文导读：设置管理器（settings-manager.ts）相关。对应上游 upstream collectSettingsDiagnostics。
 package codingagent
 
 // settings_diagnostics.go ports upstream core/settings-diagnostics.ts: settings

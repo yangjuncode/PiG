@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts
+// 中文导读：模型 scope 解析（model-resolver.ts）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 import (

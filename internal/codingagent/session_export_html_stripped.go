@@ -1,5 +1,6 @@
 //go:build pig_strip_export_html
 
+// 中文导读：会话导出 HTML（getToolRenderers）。
 package codingagent
 
 import (

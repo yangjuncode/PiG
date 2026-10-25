@@ -1,3 +1,4 @@
+// 中文导读：扩展 UI 阶段（agent-session-runtime.ts emitBeforeSwitch）。对应上游 upstream agent-session-runtime.ts emitBeforeSwitch。
 package codingagent
 
 import (

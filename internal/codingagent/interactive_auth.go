@@ -1,3 +1,4 @@
+// 中文导读：交互模式认证/登录流程。对应上游 upstream openai-codex.ts login(), which first presents a method。
 package codingagent
 
 import (

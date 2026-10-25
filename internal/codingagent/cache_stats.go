@@ -1,3 +1,4 @@
+// 中文导读：缓存统计（cache-stats.ts）。对应上游 packages/coding-agent/src/core/cache-stats.ts。
 package codingagent
 
 import (

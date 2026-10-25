@@ -1,3 +1,4 @@
+// 中文导读：列表工具渲染（formatGrepResult/formatFindResult/formatLsResult）。对应上游 formatGrepResult, formatFindResult, and formatLsResult from upstream。
 package codingagent
 
 // tool_render_list.go: result-side presentation for grep, find, and ls.

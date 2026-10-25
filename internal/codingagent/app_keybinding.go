@@ -1,3 +1,4 @@
+// 中文导读：应用键绑定表（AppKeybinding，keybindings.ts）。
 package codingagent
 
 // AppKeybinding is upstream AppKeybinding (core/keybindings.ts:60), keyof AppKeybindings: the closed set of the coding agent's own keybinding ids.

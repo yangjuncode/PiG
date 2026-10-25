@@ -1,3 +1,4 @@
+// 中文导读：扩展模型注册表（model-registry.ts）。对应上游 packages/coding-agent/src/core/model-registry.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-registry.ts

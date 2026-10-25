@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 custom_message_route 实现。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

@@ -1,3 +1,4 @@
+// 中文导读：交互模式 thinking 级别处理。对应上游 upstream interactive-mode.ts:3292-3301。
 package codingagent
 
 import (

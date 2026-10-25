@@ -1,3 +1,4 @@
+// 中文导读：native provider 注册（model-runtime.ts）。对应上游 packages/coding-agent/src/core/provider-composer.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/provider-composer.ts.

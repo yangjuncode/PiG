@@ -1,3 +1,4 @@
+// 中文导读：自定义 overlay（pig 特有，无上游对应）。
 package codingagent
 
 import (

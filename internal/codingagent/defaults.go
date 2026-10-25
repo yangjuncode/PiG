@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 defaults 实现。
 package codingagent
 
 // DefaultThinkingLevel mirrors upstream's defaults.ts:

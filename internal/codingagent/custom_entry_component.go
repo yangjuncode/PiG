@@ -1,3 +1,4 @@
+// 中文导读：自定义条目组件（custom-entry.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/custom-entry.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/custom-entry.ts

@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：Windows 自更新（getPackageDir）。
 package codingagent
 
 import (

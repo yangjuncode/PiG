@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+// 中文导读：会话统计扫描。
 package codingagent
 
 import (

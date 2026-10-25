@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/components/session-selector.ts (deleteSessionFile).
+// 中文导读：会话选择器的删除（deleteSessionFile）。对应上游 packages/coding-agent/src/modes/interactive/components/session-selector.ts (deleteSessionFile)。
 package codingagent
 
 import (

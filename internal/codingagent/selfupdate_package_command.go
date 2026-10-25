@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/config.ts
+// 中文导读：自更新（update manifest）。对应上游 packages/coding-agent/src/config.ts。
 package codingagent
 
 import "fmt"

@@ -1,3 +1,4 @@
+// 中文导读：ModelRuntime 成员（model-runtime.ts getProviders 等）。对应上游 packages/coding-agent/src/core/model-runtime.ts (getProviders, getCompatibilityRequestConfig, setRuntimeApiKey, removeRuntimeApiKey) over this registry。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-runtime.ts (getProviders, getCompatibilityRequestConfig, setRuntimeApiKey, removeRuntimeApiKey) over this registry.

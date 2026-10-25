@@ -1,3 +1,4 @@
+// 中文导读：会话树索引（D174：按运行时默认宽度渲染）。
 package codingagent
 
 import (

@@ -4,6 +4,8 @@
 //   - ExtensionContext (shared mutable state for the agent loop)
 //   - SlashCommand type (used by slash_commands.go)
 //   - TUIUIContext (interactive mode UI)
+//
+// 中文导读：扩展相关。对应上游 upstream `user_bash` event emitted by。
 package codingagent
 
 import (

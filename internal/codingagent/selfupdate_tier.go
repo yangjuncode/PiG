@@ -1,3 +1,4 @@
+// 中文导读：自更新层级选择（D39：SelfUpdateTier 变更前先选定 owner）。
 package codingagent
 
 import (

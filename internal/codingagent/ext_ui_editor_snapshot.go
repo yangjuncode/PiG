@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 ext_ui_editor_snapshot 实现。
 package codingagent
 
 // pig additive (D19): synchronous SDK getters read immutable editor text published by the owner, not the editor's mutable lines from an IPC worker.

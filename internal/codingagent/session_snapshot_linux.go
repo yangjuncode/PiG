@@ -1,3 +1,4 @@
+// 中文导读：会话快照（D112：条目记录留在盘上而非全内存）。
 package codingagent
 
 import (

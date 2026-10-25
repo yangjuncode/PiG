@@ -1,3 +1,4 @@
+// 中文导读：git 监视（footer-data-provider.ts）。对应上游 packages/coding-agent/src/core/footer-data-provider.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/footer-data-provider.ts

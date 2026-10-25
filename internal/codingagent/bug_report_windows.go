@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：bug 报告（BugReportCustomEntryType）。
 package codingagent
 
 import (

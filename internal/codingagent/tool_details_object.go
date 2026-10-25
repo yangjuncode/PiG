@@ -1,3 +1,4 @@
+// 中文导读：工具相关。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/internal/orderedjson"

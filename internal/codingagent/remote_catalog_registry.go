@@ -1,3 +1,4 @@
+// 中文导读：远端目录覆盖到 ModelRegistry 内置 provider 的接线。
 package codingagent
 
 // Wires the remote catalog overlay into the built-in providers of one ModelRegistry.

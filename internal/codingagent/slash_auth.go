@@ -1,3 +1,4 @@
+// 中文导读：斜杠命令的认证处理。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：parity 测试 harness。
 package codingagent
 
 import (

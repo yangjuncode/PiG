@@ -1,3 +1,4 @@
+// 中文导读：自动补全来源标记（getAutocompleteSourceTag）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts getAutocompleteSourceTag and。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts getAutocompleteSourceTag and

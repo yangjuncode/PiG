@@ -1,3 +1,4 @@
+// 中文导读：交互模式布局组件。
 package codingagent
 
 import (

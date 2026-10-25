@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：剪贴板（clipboard.ts/clipboard-image.ts）。
 package codingagent
 
 import (

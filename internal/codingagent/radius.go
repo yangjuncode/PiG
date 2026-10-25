@@ -1,3 +1,4 @@
+// 中文导读：Radius 网关相关。对应上游 upstream .upstream/current/packages/coding-agent/src/core/radius.ts。
 package codingagent
 
 // Mirrors upstream .upstream/current/packages/coding-agent/src/core/radius.ts.

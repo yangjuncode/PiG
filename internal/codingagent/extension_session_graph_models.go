@@ -1,4 +1,5 @@
 // pig-specific: conversions the host-owned ModelRuntime of the session graph (coding/session_graph_model_runtime.go) needs from this package's extension wire code.
+// 中文导读：session graph 的 ModelRuntime 线形转换。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式编辑器组件。
 package codingagent
 
 import (

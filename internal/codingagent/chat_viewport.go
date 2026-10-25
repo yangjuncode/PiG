@@ -1,3 +1,4 @@
+// 中文导读：聊天视口（全屏布局根与转录滚动视图）。对应上游 upstream ChatViewport。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/tui"

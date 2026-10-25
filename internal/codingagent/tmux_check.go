@@ -1,3 +1,4 @@
+// 中文导读：tmux 检测（runTmuxShow，2s 超时）。
 package codingagent
 
 import (

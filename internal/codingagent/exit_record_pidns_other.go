@@ -1,5 +1,6 @@
 //go:build !linux
 
+// 中文导读：退出记录（D102：exit.log 与 crash-output/）。
 package codingagent
 
 // pidNamespace is empty off Linux, which has no PID namespaces to tell apart; the host name alone identifies the machine.

@@ -1,5 +1,6 @@
 //go:build !unix
 
+// 中文导读：git 监视（footer-data-provider.ts）。
 package codingagent
 
 import "os"

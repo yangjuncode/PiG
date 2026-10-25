@@ -1,3 +1,4 @@
+// 中文导读：模型选择器组件。
 package codingagent
 
 import (

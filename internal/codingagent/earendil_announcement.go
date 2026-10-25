@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 earendil_announcement 实现，对应上游 packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts。
 package codingagent
 
 import (

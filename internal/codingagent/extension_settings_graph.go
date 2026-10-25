@@ -1,3 +1,4 @@
+// 中文导读：扩展设置图（settings-manager.ts）。对应上游 packages/coding-agent/src/core/settings-manager.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/settings-manager.ts

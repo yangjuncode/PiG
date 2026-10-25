@@ -1,3 +1,4 @@
+// 中文导读：启动会话选择（cli/session-picker.ts selectSession）。对应上游 packages/tui/src/tui.ts (terminal color reply consumption)。
 package codingagent
 
 import (

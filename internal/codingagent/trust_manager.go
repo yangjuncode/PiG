@@ -4,6 +4,7 @@
 // project paths, inherit from the nearest ancestor, and are serialized through
 // a per-store sidecar lock.
 
+// 中文导读：项目信任存储（最近 cwd 的信任决定）。
 package codingagent
 
 import (

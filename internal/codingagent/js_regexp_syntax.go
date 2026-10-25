@@ -1,3 +1,4 @@
+// 中文导读：JS 正则语法（无 u 标志时 UTF-16 code unit 语义）。
 package codingagent
 
 import (

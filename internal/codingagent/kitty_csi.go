@@ -13,6 +13,7 @@
 //
 // Upstream reference: packages/tui/src/keys.ts (1400 LOC).
 
+// 中文导读：kitty 终端 CSI 协议。
 package codingagent
 
 import (

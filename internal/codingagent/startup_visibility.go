@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts
+// 中文导读：internal/codingagent 的 startup_visibility 实现，对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 // shouldShowStartupHeader reports whether the startup header (logo, version, key hints) is shown. Only quietStartup true hides it, and verbose overrides it (interactive-mode.ts:1409-1412).

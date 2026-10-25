@@ -1,3 +1,4 @@
+// 中文导读：安装遥测（D64：PiG 报到自己的 pi-in-go.dev）。
 package codingagent
 
 // install_telemetry.go ports upstream reportInstallTelemetry and its two call

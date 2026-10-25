@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/model-runtime.ts
 // Ports packages/coding-agent/src/core/provider-composer.ts
+// 中文导读：provider 注册命名空间（model-runtime.ts）。对应上游 packages/coding-agent/src/core/model-runtime.ts。
 package codingagent
 
 import (

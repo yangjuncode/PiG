@@ -1,3 +1,4 @@
+// 中文导读：键处理。
 package codingagent
 
 import (

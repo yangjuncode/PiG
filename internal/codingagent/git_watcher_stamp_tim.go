@@ -1,5 +1,6 @@
 //go:build unix && !darwin && !freebsd && !netbsd
 
+// 中文导读：git 监视（footer-data-provider.ts）。
 package codingagent
 
 import "syscall"

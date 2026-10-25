@@ -1,3 +1,4 @@
+// 中文导读：模型目录数据（model-runtime.ts）。对应上游 packages/coding-agent/src/core/model-runtime.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-runtime.ts.

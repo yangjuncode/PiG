@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/model-runtime.ts
+// 中文导读：模型可用性（model-runtime.ts）。对应上游 packages/coding-agent/src/core/model-runtime.ts。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式的模型选择与刷新。
 package codingagent
 
 import (

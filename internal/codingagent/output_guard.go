@@ -1,3 +1,4 @@
+// 中文导读：输出接管（output-guard.ts takeOverStdout）。对应上游 upstream `core/output-guard.ts:takeOverStdout` /。
 package codingagent
 
 import (

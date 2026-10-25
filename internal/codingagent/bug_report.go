@@ -1,3 +1,4 @@
+// 中文导读：bug 报告（BugReportCustomEntryType）。对应上游 upstream redactJsonValue。
 package codingagent
 
 // bug_report.go ports the export side of upstream core/bug-report.ts: the

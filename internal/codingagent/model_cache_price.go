@@ -1,3 +1,4 @@
+// 中文导读：模型相关。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/ai"

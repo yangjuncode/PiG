@@ -1,3 +1,4 @@
+// 中文导读：会话条目 id 索引（D112）。
 package codingagent
 
 import "hash/maphash"

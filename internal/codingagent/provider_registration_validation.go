@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 provider_registration_validation 实现，对应上游 packages/coding-agent/src/core/model-runtime.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-runtime.ts

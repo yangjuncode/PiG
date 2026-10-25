@@ -1,3 +1,4 @@
+// 中文导读：环境变量查找（平台实现）。
 package codingagent
 
 import (

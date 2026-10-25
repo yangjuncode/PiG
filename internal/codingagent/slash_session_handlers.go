@@ -9,6 +9,7 @@
 // When modal selector callbacks are absent, /resume lists sessions,
 // /fork requires an explicit entry ID, and /tree prints the tree.
 
+// 中文导读：斜杠命令的会话处理（handleNameCommand 等）。对应上游 upstream showStatus("Forked to new session")。
 package codingagent
 
 import (

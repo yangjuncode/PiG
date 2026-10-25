@@ -1,3 +1,4 @@
+// 中文导读：prompt 模板（.md 加载）。
 package codingagent
 
 import (

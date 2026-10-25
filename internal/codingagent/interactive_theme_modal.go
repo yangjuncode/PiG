@@ -1,3 +1,4 @@
+// 中文导读：交互模式主题选择模态框。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (shutdown remains independent of selector focus)。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/tui"

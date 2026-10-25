@@ -1,5 +1,6 @@
 //go:build unix
 
+// 中文导读：bug 报告（BugReportCustomEntryType）。
 package codingagent
 
 import "golang.org/x/sys/unix"

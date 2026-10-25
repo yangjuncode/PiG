@@ -1,3 +1,4 @@
+// 中文导读：认证引导（PigDocsFile 文档包路径）。
 package codingagent
 
 import (

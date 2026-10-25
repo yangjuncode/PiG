@@ -1,3 +1,4 @@
+// 中文导读：首次运行设置（first-time-setup.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/first-time-setup.ts。
 package codingagent
 
 import (

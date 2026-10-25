@@ -22,6 +22,7 @@
 // responsibility. Single-responsibility split keeps this helper trivial
 // to unit-test with a fake editor binary.
 
+// 中文导读：外部编辑器（openExternalEditor）。对应上游 upstream openExternalEditor() in。
 package codingagent
 
 import (

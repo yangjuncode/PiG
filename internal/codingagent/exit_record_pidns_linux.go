@@ -1,3 +1,4 @@
+// 中文导读：退出记录（D102：exit.log 与 crash-output/）。
 package codingagent
 
 import "os"

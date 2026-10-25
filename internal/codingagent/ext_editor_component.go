@@ -1,3 +1,4 @@
+// 中文导读：扩展编辑器组件（setCustomEditorComponent/getEditorTheme）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts setCustomEditorComponent and theme.ts getEditorTheme。
 package codingagent
 
 import (

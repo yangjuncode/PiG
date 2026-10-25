@@ -1,3 +1,4 @@
+// 中文导读：路径规范化（paths.ts canonicalizePath）。
 package codingagent
 
 import (

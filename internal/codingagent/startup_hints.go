@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 startup_hints 实现。
 package codingagent
 
 import (

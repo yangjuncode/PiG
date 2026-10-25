@@ -1,3 +1,4 @@
+// 中文导读：pig logo 3D 播放（easter-egg-3d.lazy.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts (playPiLogo3d, playArmin3d)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts (playPiLogo3d, playArmin3d)

@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/tui-renderer.ts.
+// 中文导读：TUI 呈现（tui-renderer.ts）。对应上游 packages/coding-agent/src/modes/interactive/tui-renderer.ts。
 package codingagent
 
 import (

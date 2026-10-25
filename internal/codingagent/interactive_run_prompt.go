@@ -1,3 +1,4 @@
+// 中文导读：交互模式的 prompt 运行流程。
 package codingagent
 
 import (

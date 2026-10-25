@@ -1,3 +1,4 @@
+// 中文导读：交互模式事件处理（interactive-mode.ts:3985-4025）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts:3985-4025。
 package codingagent
 
 import (

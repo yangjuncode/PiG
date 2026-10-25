@@ -1,3 +1,4 @@
+// 中文导读：provider-composer.ts 的模型数据。对应上游 packages/coding-agent/src/core/provider-composer.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/provider-composer.ts.

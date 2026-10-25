@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 opentui
 // SPDX-License-Identifier: MIT
 
+// 中文导读：internal/codingagent 的 stdin_buffer 实现。
 package codingagent
 
 import (

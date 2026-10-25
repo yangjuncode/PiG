@@ -1,3 +1,4 @@
+// 中文导读：native 会话的选择器（D91：前端会话复用 codingagent 选择器）。
 package codingagent
 
 // pig additive (D91): a frontend session draws the codingagent selectors that

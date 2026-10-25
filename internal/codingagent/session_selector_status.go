@@ -1,3 +1,4 @@
+// 中文导读：会话选择器组件（session-selector.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/session-selector.ts (SessionSelectorHeader.setStatusMessage)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/session-selector.ts (SessionSelectorHeader.setStatusMessage).

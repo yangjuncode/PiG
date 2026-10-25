@@ -1,5 +1,6 @@
 //go:build !pig_strip_mermaid
 
+// 中文导读：internal/codingagent 的 mermaid_definition_parser 实现，对应上游 packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked definition ownership)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked definition ownership).

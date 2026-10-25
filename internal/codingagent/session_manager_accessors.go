@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/core/session-manager.ts.
 
+// 中文导读：SessionManager 访问器（session-manager.ts）。对应上游 packages/coding-agent/src/core/session-manager.ts。
 package codingagent
 
 import (

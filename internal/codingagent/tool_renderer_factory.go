@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/tools/renderers/index.ts.
+// 中文导读：工具结果渲染。对应上游 packages/coding-agent/src/core/tools/renderers/index.ts。
 package codingagent
 
 import (

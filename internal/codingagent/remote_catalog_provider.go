@@ -1,3 +1,4 @@
+// 中文导读：远端目录 provider（remote-catalog-provider.ts）。对应上游 packages/coding-agent/src/core/remote-catalog-provider.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/remote-catalog-provider.ts

@@ -1,3 +1,4 @@
+// 中文导读：交互模式 TUI 实现。对应上游 upstream InteractiveMode.mainScreenRenderState。
 package codingagent
 
 import (

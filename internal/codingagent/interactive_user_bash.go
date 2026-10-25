@@ -1,3 +1,4 @@
+// 中文导读：交互模式用户 bash（!前缀）执行。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 import (

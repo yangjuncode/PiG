@@ -9,6 +9,7 @@
 // pig needs a separate type because the UIContext interface lives in
 // coding/extension/ and the TUI lives in internal/.
 
+// 中文导读：extension.UIContext 到真实 TUI 的桥接。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：ctx.modelRegistry 到 host 的 typed 操作（getAvailableOfType/classify/generateImages）。对应上游 the typed operations of ctx.modelRegistry that reach the host (packages/coding-agent/src/core/model-registry.ts:140-148 getAvailableOfType, :175-179 classify and :181-188 generateImages, through model-runtime.ts:783-815 generateImages and classify)。
 package codingagent
 
 // Ports the typed operations of ctx.modelRegistry that reach the host (packages/coding-agent/src/core/model-registry.ts:140-148 getAvailableOfType, :175-179 classify and :181-188 generateImages, through model-runtime.ts:783-815 generateImages and classify).

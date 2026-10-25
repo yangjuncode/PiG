@@ -1,3 +1,4 @@
+// 中文导读：子进程 API 模型。
 package codingagent
 
 import (

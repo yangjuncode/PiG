@@ -1,3 +1,4 @@
+// 中文导读：扩展会话图（session-manager.ts 服务对象）。对应上游 packages/coding-agent/src/core/session-manager.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/session-manager.ts

@@ -1,3 +1,4 @@
+// 中文导读：会话条目的惰性加载（D112）。
 package codingagent
 
 import (

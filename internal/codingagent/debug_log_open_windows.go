@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：调试日志打开（平台实现）。
 package codingagent
 
 import "os"

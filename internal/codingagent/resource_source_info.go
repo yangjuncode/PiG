@@ -1,3 +1,4 @@
+// 中文导读：资源来源信息（PathMetadata/SourceInfo）。对应上游 upstream PathMetadata / SourceInfo flow used by resource-loader.ts。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：before_agent_start 事件运行（共享 options 语义）。
 package codingagent
 
 import (

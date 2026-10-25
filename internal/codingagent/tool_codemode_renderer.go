@@ -1,3 +1,4 @@
+// 中文导读：codemode 工具渲染器（codemode/renderer.ts）。对应上游 packages/coding-agent/src/extensions/codemode/renderer.ts (codemodeRenderers)。
 package codingagent
 
 // Ports packages/coding-agent/src/extensions/codemode/renderer.ts (codemodeRenderers).

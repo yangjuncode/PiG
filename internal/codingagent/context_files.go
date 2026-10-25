@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/resource-loader.ts
+// 中文导读：上下文文件加载（resource-loader.ts）。对应上游 packages/coding-agent/src/core/resource-loader.ts。
 package codingagent
 
 import (

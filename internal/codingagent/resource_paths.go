@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/package-manager.ts (addAutoDiscoveredResources, collectAncestorAgentsSkillDirs, getHomeDir) and the ambient resource ordering of packages/coding-agent/src/core/resource-loader.ts reload.
+// 中文导读：资源路径收集（package-manager.ts 自动发现 + resource-loader.ts ambient 顺序）。对应上游 packages/coding-agent/src/core/package-manager.ts (addAutoDiscoveredResources, collectAncestorAgentsSkillDirs, getHomeDir) and the ambient resource ordering of packages/coding-agent/src/core/resource-loader.ts reload。
 package codingagent
 
 import (

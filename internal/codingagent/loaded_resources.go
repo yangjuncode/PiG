@@ -1,3 +1,4 @@
+// 中文导读：已加载资源呈现。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts

@@ -1,3 +1,4 @@
+// 中文导读：模型注册表实现（注册表模型的 type 等成员）。对应上游 upstream model-registry.ts。
 package codingagent
 
 import (

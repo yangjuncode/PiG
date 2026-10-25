@@ -1,5 +1,6 @@
 //go:build !pig_strip_mcp
 
+// 中文导读：交互模式 Radius/MCP 相关。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (offerRadiusMcpServer)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts (offerRadiusMcpServer).

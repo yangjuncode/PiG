@@ -1,3 +1,4 @@
+// 中文导读：路径常量（AppName 等）。对应上游 upstream ENV_AGENT_DIR export。
 package codingagent
 
 import (

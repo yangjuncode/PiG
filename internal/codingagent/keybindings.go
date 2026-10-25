@@ -1,3 +1,4 @@
+// 中文导读：键绑定（KeybindingConflict 等）。
 package codingagent
 
 import (

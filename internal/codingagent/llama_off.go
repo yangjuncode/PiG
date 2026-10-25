@@ -1,5 +1,6 @@
 //go:build pig_strip_llama_cpp
 
+// 中文导读：internal/codingagent 的 llama_off 实现。
 package codingagent
 
 import (

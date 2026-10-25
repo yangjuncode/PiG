@@ -1,3 +1,4 @@
+// 中文导读：剪贴板（clipboard.ts/clipboard-image.ts）。对应上游 utils/clipboard.ts copyToClipboard and。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：工具结果内容处理（agent-session.ts structuredContent 链）。
 package codingagent
 
 import (

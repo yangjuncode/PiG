@@ -1,3 +1,4 @@
+// 中文导读：缓存预热（CacheWarmingAction）。
 package codingagent
 
 import (

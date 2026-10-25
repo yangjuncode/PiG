@@ -1,3 +1,4 @@
+// 中文导读：认证警告。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式会话树视图。
 package codingagent
 
 import (

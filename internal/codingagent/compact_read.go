@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 compact_read 实现。
 package codingagent
 
 import (

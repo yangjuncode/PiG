@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 stored_credential 实现，对应上游 packages/coding-agent/src/core/auth-storage.ts (readStoredCredential)。
 package codingagent
 
 import (

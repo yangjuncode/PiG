@@ -1,3 +1,4 @@
+// 中文导读：changelog 链接归一化（normalizeChangelogLinks）。对应上游 packages/coding-agent/src/utils/changelog.ts (normalizeChangelogLinks and its helpers)。
 package codingagent
 
 // Ports packages/coding-agent/src/utils/changelog.ts (normalizeChangelogLinks and its helpers).

@@ -1,3 +1,4 @@
+// 中文导读：交互模式 TUI 实现。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

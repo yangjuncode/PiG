@@ -1,3 +1,4 @@
+// 中文导读：scoped 模型选择（interactive-mode.ts）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts.

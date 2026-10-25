@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 uncaught_goroutine 实现。
 package codingagent
 
 // uncaught_goroutine.go gives a goroutine that no caller awaits the fate Pi gives an unawaited promise that rejects: the

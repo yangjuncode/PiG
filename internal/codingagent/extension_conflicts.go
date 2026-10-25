@@ -1,3 +1,4 @@
+// 中文导读：扩展注册冲突（后注册的工具/flag 撞名）。
 package codingagent
 
 import (

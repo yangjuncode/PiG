@@ -1,3 +1,4 @@
+// 中文导读：自动补全包装。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 install_change 实现，对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts formatResumeCommand(this.sessionManager)。
 package codingagent
 
 import (

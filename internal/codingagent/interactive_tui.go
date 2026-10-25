@@ -1,3 +1,4 @@
+// 中文导读：交互模式 TUI 样式（滚动条等）。对应上游 upstream interactive-mode.ts scrollbarTrackStyle/scrollbarThumbStyle:。
 package codingagent
 
 import (

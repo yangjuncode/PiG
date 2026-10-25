@@ -1,3 +1,4 @@
+// 中文导读：Radius 登录选择器组件。对应上游 packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts

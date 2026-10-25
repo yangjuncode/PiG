@@ -1,3 +1,4 @@
+// 中文导读：交互模式状态呈现。
 package codingagent
 
 import (

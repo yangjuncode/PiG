@@ -1,3 +1,4 @@
+// 中文导读：shell 工具渲染器（renderers/bash.ts）。对应上游 upstream packages/coding-agent/src/core/tools/renderers/bash.ts。
 package codingagent
 
 // tool_render_shell.go: result-side presentation for the built-in shell tools.

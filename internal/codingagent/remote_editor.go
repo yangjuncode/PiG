@@ -1,3 +1,4 @@
+// 中文导读：远端编辑器（interactive-mode.ts）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts。
 package codingagent
 
 import (

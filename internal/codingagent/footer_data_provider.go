@@ -1,3 +1,4 @@
+// 中文导读：footer 数据提供（footer-data-provider.ts）。
 package codingagent
 
 import (

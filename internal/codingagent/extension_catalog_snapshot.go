@@ -1,3 +1,4 @@
+// 中文导读：扩展目录快照。
 package codingagent
 
 import (

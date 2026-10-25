@@ -1,3 +1,4 @@
+// 中文导读：状态栏/footer 组件。对应上游 upstream footer.ts:165-170。
 package codingagent
 
 import (

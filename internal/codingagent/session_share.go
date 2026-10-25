@@ -1,3 +1,4 @@
+// 中文导读：会话分享（pi.share 条目）。
 package codingagent
 
 // session_share.go ports upstream modes/interactive/session-share.ts. It

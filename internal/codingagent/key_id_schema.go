@@ -1,3 +1,4 @@
+// 中文导读：键 id schema（key-id-schema.ts）。
 package codingagent
 
 import (

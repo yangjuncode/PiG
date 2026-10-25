@@ -1,5 +1,6 @@
 //go:build pig_strip_mcp
 
+// 中文导读：交互模式 Radius/MCP 相关。
 package codingagent
 
 // offerRadiusMcpServer offers nothing in a build without built-in MCP: no MCP extension reads mcp.json, so a Radius sign-in

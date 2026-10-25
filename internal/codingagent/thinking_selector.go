@@ -1,3 +1,4 @@
+// 中文导读：thinking 级别选择器。
 package codingagent
 
 import (

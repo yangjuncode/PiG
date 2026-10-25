@@ -1,3 +1,4 @@
+// 中文导读：3D 彩蛋模型（easter-egg-3d.ts Model/createModel/arminModel 等）。对应上游 packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts (Model, createModel, arminModel, shuffleSteps, blockOffsets)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts (Model, createModel, arminModel, shuffleSteps, blockOffsets)

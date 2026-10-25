@@ -1,3 +1,4 @@
+// 中文导读：扩展相关。
 package codingagent
 
 import (

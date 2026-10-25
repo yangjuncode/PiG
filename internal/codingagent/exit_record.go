@@ -1,3 +1,4 @@
+// 中文导读：退出记录（D102：exit.log 与 crash-output/）。
 package codingagent
 
 // exit_record.go records why an interactive process ended when no user action asked it to. Pi leaves a trace only for

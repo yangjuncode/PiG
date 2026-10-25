@@ -1,3 +1,4 @@
+// 中文导读：交互模式输入处理（含 emergencyTerminalExit）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (emergencyTerminalExit)。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：自定义编辑器组件（custom-editor.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/custom-editor.ts。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/tui"

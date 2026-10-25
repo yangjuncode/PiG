@@ -1,3 +1,4 @@
+// 中文导读：native 凭证操作（model-runtime.ts）。对应上游 packages/coding-agent/src/core/model-runtime.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-runtime.ts.

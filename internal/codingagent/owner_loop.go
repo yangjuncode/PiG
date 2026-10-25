@@ -1,3 +1,4 @@
+// 中文导读：owner loop（TUI 主循环所有权）。
 package codingagent
 
 import (

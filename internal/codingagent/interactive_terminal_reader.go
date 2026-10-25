@@ -1,3 +1,4 @@
+// 中文导读：交互模式终端读取。
 package codingagent
 
 import (

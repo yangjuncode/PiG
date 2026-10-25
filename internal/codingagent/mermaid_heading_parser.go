@@ -1,5 +1,6 @@
 //go:build !pig_strip_mermaid
 
+// 中文导读：mermaid Marked 标题归属解析。对应上游 packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked heading ownership before top-level code-token selection)。
 package codingagent
 
 import (

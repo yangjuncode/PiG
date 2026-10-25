@@ -1,3 +1,4 @@
+// 中文导读：交互模式辅助函数。
 package codingagent
 
 import (

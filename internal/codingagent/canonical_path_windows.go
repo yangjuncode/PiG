@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：路径规范化（paths.ts canonicalizePath）。对应上游 packages/coding-agent/src/utils/paths.ts:canonicalizePath。
 package codingagent
 
 import (

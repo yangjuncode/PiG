@@ -5,6 +5,7 @@
 //
 // Image decoding and EXIF orientation live in internal/imageprocessing.
 
+// 中文导读：图像转换（loadPngTranscoder：方向校正后重编码 PNG）。
 package codingagent
 
 import (

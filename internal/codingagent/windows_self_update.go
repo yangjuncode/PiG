@@ -1,3 +1,4 @@
+// 中文导读：Windows 自更新（getPackageDir）。
 package codingagent
 
 import (

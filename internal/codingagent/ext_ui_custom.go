@@ -1,3 +1,4 @@
+// 中文导读：扩展自定义 UI（showExtensionCustom）。对应上游 InteractiveMode.showExtensionCustom (packages/coding-agent/src/modes/interactive/interactive-mode.ts:2863-2935)。
 package codingagent
 
 // Ports InteractiveMode.showExtensionCustom (packages/coding-agent/src/modes/interactive/interactive-mode.ts:2863-2935)

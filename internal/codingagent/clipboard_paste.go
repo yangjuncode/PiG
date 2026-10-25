@@ -6,6 +6,7 @@
 // to a temp file whose path is inserted; otherwise clipboard text is inserted.
 // A failed read or write is reported as an error line and inserts nothing.
 
+// 中文导读：剪贴板（clipboard.ts/clipboard-image.ts）。
 package codingagent
 
 import (

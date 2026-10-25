@@ -1,3 +1,4 @@
+// 中文导读：自定义 overlay 焦点控制（tui.Focusable）。
 package codingagent
 
 import (

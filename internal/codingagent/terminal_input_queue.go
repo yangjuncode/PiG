@@ -1,3 +1,4 @@
+// 中文导读：终端输入队列（D105：driver 持有终端 reader）。
 package codingagent
 
 import (

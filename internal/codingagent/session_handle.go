@@ -1,3 +1,4 @@
+// 中文导读：会话句柄与压缩结果（agent-session.ts compact()）。对应上游 upstream AgentSession.abortCompaction()。
 package codingagent
 
 import (

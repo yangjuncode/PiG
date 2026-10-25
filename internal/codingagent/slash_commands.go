@@ -1,3 +1,4 @@
+// 中文导读：内置斜杠命令表（slash-commands.ts）。对应上游 upstream pi's `core/slash-commands.ts` built-in command list。
 package codingagent
 
 import (

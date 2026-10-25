@@ -1,3 +1,4 @@
+// 中文导读：注册表请求认证（model-runtime.ts/provider-composer.ts）。对应上游 packages/coding-agent/src/core/model-runtime.ts and packages/coding-agent/src/core/provider-composer.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-runtime.ts and packages/coding-agent/src/core/provider-composer.ts.

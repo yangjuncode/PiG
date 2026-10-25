@@ -1,3 +1,4 @@
+// 中文导读：交互模式输入派发前的预检（在 owner loop 上解析派发目标）。
 package codingagent
 
 import (

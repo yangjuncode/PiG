@@ -1,3 +1,4 @@
+// 中文导读：内置聊天目录。
 package codingagent
 
 import (

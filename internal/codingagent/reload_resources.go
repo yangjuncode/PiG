@@ -1,3 +1,4 @@
+// 中文导读：/reload 的资源快照重算。
 package codingagent
 
 import (

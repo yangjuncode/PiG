@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/core/skills.ts.
+// 中文导读：skills 加载（core/skills.ts）。对应上游 packages/coding-agent/src/core/skills.ts。
 package codingagent
 
 import (

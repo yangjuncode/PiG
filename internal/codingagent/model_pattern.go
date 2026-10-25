@@ -1,3 +1,4 @@
+// 中文导读：模型引用模式解析（resolveModelReference）。对应上游 packages/coding-agent/src/core/model-resolver.ts (resolveModelReference and its helpers)。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-resolver.ts (resolveModelReference and its helpers).

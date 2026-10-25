@@ -1,3 +1,4 @@
+// 中文导读：交互模式命令与自动补全（createBaseAutocompleteProvider）。对应上游 createBaseAutocompleteProvider (interactive-mode.ts:747-776)。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：pig logo 3D 动画（easter-egg-3d.ts，D87）。对应上游 packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts (the Pi-logo kind, as Pi 1.0.0 pi-logo-animation.ts drew it; D87)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts (the Pi-logo kind, as Pi 1.0.0 pi-logo-animation.ts drew it; D87).

@@ -1,3 +1,4 @@
+// 中文导读：Ctrl-Z 挂起（handleCtrlZ）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts: handleCtrlZ。
 package codingagent
 
 import (

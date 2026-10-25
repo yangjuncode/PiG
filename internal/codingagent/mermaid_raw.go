@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 mermaid_raw 实现。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/coding/extension"

@@ -1,3 +1,4 @@
+// 中文导读：交互模式转录渲染（renderInitialMessages 等）。对应上游 upstream renderInitialMessages (interactive-mode.ts:3097) for。
 package codingagent
 
 import (

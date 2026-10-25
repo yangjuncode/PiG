@@ -1,3 +1,4 @@
+// 中文导读：skills 解析（SkillFrontmatter）。对应上游 packages/coding-agent/src/core/skills.ts。
 package codingagent
 
 import (

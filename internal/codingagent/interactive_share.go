@@ -1,3 +1,4 @@
+// 中文导读：交互模式分享功能。
 package codingagent
 
 import (

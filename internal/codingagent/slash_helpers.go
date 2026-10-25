@@ -1,3 +1,4 @@
+// 中文导读：斜杠命令相关。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：自更新（update manifest）。对应上游 packages/coding-agent/src/utils/version-check.ts (comparePackageVersions)。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：changelog 处理（utils/changelog.ts）。对应上游 upstream `utils/changelog.ts` (v0.69.0) line-for-line:。
 package codingagent
 
 import (

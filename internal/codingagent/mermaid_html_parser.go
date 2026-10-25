@@ -1,5 +1,6 @@
 //go:build !pig_strip_mermaid
 
+// 中文导读：mermaid Marked HTML 块解析。对应上游 packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked HTML block ownership)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked HTML block ownership).

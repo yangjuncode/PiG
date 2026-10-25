@@ -1,5 +1,6 @@
 //go:build windows
 
+// 中文导读：交互模式信号处理。
 package codingagent
 
 import (

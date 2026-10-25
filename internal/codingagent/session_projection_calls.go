@@ -1,3 +1,4 @@
+// 中文导读：会话管理相关。
 package codingagent
 
 // BuildSessionProjectionCalls returns how many times BuildSessionProjection ran, the count upstream's test reads with vi.spyOn(sessionManager, "buildSessionProjection").

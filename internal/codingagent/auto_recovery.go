@@ -1,3 +1,4 @@
+// 中文导读：internal/codingagent 的 auto_recovery 实现。
 package codingagent
 
 // Auto-recovery classifiers for agent messages. They apply pi-ai's

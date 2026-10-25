@@ -1,3 +1,4 @@
+// 中文导读：扩展会话替换。
 package codingagent
 
 import (

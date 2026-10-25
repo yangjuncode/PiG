@@ -1,3 +1,4 @@
+// 中文导读：扩展宿主信息（source-info.ts SourceInfo）。对应上游 .upstream/v0.99.1/packages/coding-agent/src/extensions/index.ts:8 and core/resource-loader.ts:706-735。
 package codingagent
 
 import (

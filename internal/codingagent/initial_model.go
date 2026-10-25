@@ -1,3 +1,4 @@
+// 中文导读：初始模型解析（model-resolver.ts）。对应上游 packages/coding-agent/src/core/model-resolver.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/model-resolver.ts.

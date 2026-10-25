@@ -1,3 +1,4 @@
+// 中文导读：程序状态报告器（program-status-reporter.ts）。对应上游 packages/coding-agent/src/modes/interactive/program-status-reporter.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/program-status-reporter.ts.

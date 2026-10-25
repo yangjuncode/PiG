@@ -1,5 +1,6 @@
 //go:build pig_strip_mermaid
 
+// 中文导读：internal/codingagent 的 mermaid_off 实现。
 package codingagent
 
 import (

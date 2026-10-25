@@ -1,3 +1,4 @@
+// 中文导读：请求认证运行时（模型固有目录头等）。
 package codingagent
 
 // Request-auth resolution surface of upstream ModelRuntime

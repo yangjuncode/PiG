@@ -1,3 +1,4 @@
+// 中文导读：自更新锁。
 package codingagent
 
 import (

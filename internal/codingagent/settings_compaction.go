@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2025 Mario Zechner
 // SPDX-License-Identifier: MIT
 
+// 中文导读：设置管理器（settings-manager.ts）相关。对应上游 packages/coding-agent/src/core/settings-manager.ts (getCompactionTokenSetting)。
 package codingagent
 
 import (

@@ -1,3 +1,4 @@
+// 中文导读：交互模式 TUI 实现。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (handleArminSaysHi and handleDementedDelves)。
 package codingagent
 
 import "github.com/MichaelKinsy/PiG/tui"

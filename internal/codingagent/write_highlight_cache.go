@@ -1,3 +1,4 @@
+// 中文导读：write 工具的高亮缓存（renderers/write.ts）。对应上游 packages/coding-agent/src/core/tools/renderers/write.ts。
 package codingagent
 
 // Ports packages/coding-agent/src/core/tools/renderers/write.ts

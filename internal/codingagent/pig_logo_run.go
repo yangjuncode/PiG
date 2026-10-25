@@ -1,3 +1,4 @@
+// 中文导读：pig logo 动画运行（D87：滑动拼图换成侧视 pig）。
 package codingagent
 
 import (

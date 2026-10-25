@@ -1,3 +1,4 @@
+// 中文导读：Piglet 前端 member 的交互界面接入（D91）。
 package codingagent
 
 import (

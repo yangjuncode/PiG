@@ -1,4 +1,5 @@
 // Ports packages/coding-agent/src/modes/interactive/components/session-selector.ts.
+// 中文导读：会话选择器组件（session-selector.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/session-selector.ts。
 package codingagent
 
 import (

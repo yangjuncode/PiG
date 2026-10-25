@@ -9,6 +9,7 @@
 // Two flavours: FilterableList (returns int index) and TreeSelectorComponent
 // (returns string id).
 
+// 中文导读：会话选择器相关（agent-session-runtime.ts fork 等）。对应上游 packages/coding-agent/src/core/agent-session-runtime.ts (fork)。
 package codingagent
 
 import (

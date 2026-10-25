@@ -1,5 +1,6 @@
 //go:build !pig_strip_mermaid
 
+// 中文导读：mermaid Marked 围栏代码边界解析。对应上游 packages/coding-agent/src/modes/interactive/components/mermaid.ts (Marked fenced-code token boundaries)。
 package codingagent
 
 import (

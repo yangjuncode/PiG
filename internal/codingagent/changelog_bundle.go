@@ -1,5 +1,6 @@
 //go:build !pig_strip_changelog
 
+// 中文导读：changelog 处理（utils/changelog.ts）。
 package codingagent
 
 // changelog_bundle.go and its import of the root package (the embedded

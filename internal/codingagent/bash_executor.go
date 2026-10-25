@@ -4,6 +4,7 @@
 // (upstream core/bash-executor.ts executeBashWithOperations). This file
 // re-exports its types so interactive code can call it without qualifying
 // the tools sub-package.
+// 中文导读：internal/codingagent 的 bash_executor 实现。
 package codingagent
 
 import (

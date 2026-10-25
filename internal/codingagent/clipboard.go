@@ -1,5 +1,6 @@
 // Ports packages/coding-agent/src/utils/clipboard-image.ts.
 
+// 中文导读：剪贴板（clipboard.ts/clipboard-image.ts）。对应上游 packages/coding-agent/src/utils/clipboard-image.ts。
 package codingagent
 
 import (

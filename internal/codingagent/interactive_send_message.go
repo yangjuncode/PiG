@@ -1,3 +1,4 @@
+// 中文导读：交互模式消息发送。
 package codingagent
 
 import (

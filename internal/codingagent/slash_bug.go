@@ -1,3 +1,4 @@
+// 中文导读：/bug 命令（BugReportSessionEntryData）。对应上游 upstream BugReportSessionEntryData; delivery is always "zip"。
 package codingagent
 
 // slash_bug.go ports upstream modes/interactive/bug-report.ts: consent, an

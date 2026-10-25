@@ -1,3 +1,4 @@
+// 中文导读：交互模式聊天渲染（markdown-transform.ts）。对应上游 packages/coding-agent/src/modes/interactive/components/markdown-transform.ts。
 package codingagent
 
 import (

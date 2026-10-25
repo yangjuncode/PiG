@@ -1,3 +1,4 @@
+// 中文导读：扩展目录编码。
 package codingagent
 
 import (

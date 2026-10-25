@@ -1,3 +1,4 @@
+// 中文导读：交互模式快捷键命令（handleHotkeysCommand）。对应上游 packages/coding-agent/src/modes/interactive/interactive-mode.ts (handleHotkeysCommand)。
 package codingagent
 
 // Ports packages/coding-agent/src/modes/interactive/interactive-mode.ts (handleHotkeysCommand).

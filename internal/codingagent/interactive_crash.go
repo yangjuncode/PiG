@@ -1,3 +1,4 @@
+// 中文导读：交互模式崩溃捕获（D102：Go 进程崩溃也留 crash 记录）。
 package codingagent
 
 // interactive_crash.go wires the crash log (crash_log.go) into interactive
