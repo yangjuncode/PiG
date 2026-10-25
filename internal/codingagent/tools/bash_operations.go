@@ -195,6 +195,10 @@ func (o *LocalShellOperations) Exec(ctx context.Context, command, cwd string, op
 		timer, stopTimer = newTimeoutTimer(timeout)
 		defer stopTimer()
 	}
+	// 监工 goroutine：唯一负责 kill 的竞争仲裁者。ctx 取消
+	// 与超时都能触发 kill（killOnce 去重）；进程正常结束
+	// 路径走 stopWatch 关闸门退出，不留泄漏的 select。
+	// timedOut 只能从这里写、由主路径在 watchDone 之后读。
 	stopWatch := make(chan struct{})
 	watchDone := make(chan struct{})
 	go func() {
@@ -211,12 +215,18 @@ func (o *LocalShellOperations) Exec(ctx context.Context, command, cwd string, op
 		}
 	}()
 
+	// childwait 消费输出管：OnData 回调直挂上游 onData 语义；
+	// shell 退出后后台孙进程可能仍握写端，Wait 的 grace 判据
+	// 交给 processGroupMayHoldOutput。
 	pipes := childwait.Start([]*os.File{pr}, func(_ int, chunk []byte) {
 		if opts.OnData != nil {
 			opts.OnData(chunk)
 		}
 	}, childwait.Hooks{BeforeRead: testHookBeforeStdioRead, GraceExpired: testHookStdioGraceExpired})
 
+	// 回收顺序：cmd.Wait（主进程退出）→ input（stdin 拷贝
+	// 协程）→ pipes.Wait（输出排空+grace）→ 关监工，保证
+	// timedOut/kill 决策已落定再往下分类错误。
 	waitErr := cmd.Wait()
 	input.Wait()
 	pipes.Wait(func() bool { return processGroupMayHoldOutput(cmd.Process) })

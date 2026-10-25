@@ -207,6 +207,9 @@ func executeShellTool(ctx context.Context, cwd string, cfg shellToolConfig, rawP
 		Env:     env,
 	})
 	if err != nil {
+		// 失败路径也要先收尾输出（finishOutput 关流+发终态更新
+		// +拍快照），再按错误形态出文案：abort/timeout 把已收
+		// 到的部分输出一起附上，spawn 类错误直接透传。
 		snapshot := finishOutput()
 		text, _ := formatShellOutput(snapshot, output.LastLineBytes(), "")
 		switch msg := err.Error(); {
@@ -220,6 +223,8 @@ func executeShellTool(ctx context.Context, cwd string, cfg shellToolConfig, rawP
 	}
 	snapshot := finishOutput()
 	text, details := formatShellOutput(snapshot, output.LastLineBytes(), "(no output)")
+	// ExitCode 为 nil = 进程被杀（信号/cancel）而非正常退出，
+	// 上游单独报错"terminated without an exit code"。
 	if result.ExitCode == nil {
 		return shellToolError(appendShellStatus(text, "Command terminated without an exit code")), nil
 	}

@@ -91,6 +91,11 @@ func (h *headJoin) Result() TruncationResult {
 	if totalLines > 0 && h.firstLineBytes > maxBytes {
 		return TruncationResult{Truncated: true, TruncatedBy: "bytes", TotalLines: totalLines, TotalBytes: h.totalBytes, FirstLineExceedsLimit: true, MaxLines: maxLines, MaxBytes: maxBytes}
 	}
+	// 行数预算内的逐行装入：maxLines 与 maxBytes 双重约束，
+	// 从 prefix 逐行取，行总长 + 分隔 \n（collected>0 起每
+	// 行 +1）计入 outputBytes。prefix 被截断的行或越过
+	// maxBytes 的行都算"装不下"，截断归因记 "bytes"；预算
+	// 行数先装满才记 "lines"。
 	collected, outputBytes, truncatedBy := 0, 0, "lines"
 	rest := prefix
 	for collected < maxLines && collected < totalLines {
