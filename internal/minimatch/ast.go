@@ -285,6 +285,9 @@ func parseAST(str string, ast *node, pos int, opt astOptions, extDepth int) int 
 			acc.WriteByte(c)
 			continue
 		}
+		// 嵌套 extglob 两档：深度 ≤2 无条件嵌套；超深只有
+		// 父节点能"收养"该类型（如 @ 套单元素）才不占深度
+		// ——上游防灾难性回溯的限额。
 		if isExtglobType(c) && i < len(str) && str[i] == '(' && (extDepth <= maxDepth || ast.canAdoptType(string(c), adoptionAnyMap)) {
 			depthAdd := 1
 			if ast.canAdoptType(string(c), adoptionAnyMap) {
@@ -314,6 +317,8 @@ func parseAST(str string, ast *node, pos int, opt astOptions, extDepth int) int 
 		acc.WriteByte(c)
 	}
 	// An unfinished extglob is not an extglob: the rest is literal text.
+	// 到串尾都没见 ')'：上游把整段降级回字面量——"a@(b"
+	// 匹配的是文件名 "a@(b" 本身。
 	ast.typ = ""
 	ast.hasMagic = nil
 	ast.parts = []any{str[pos-1:]}
@@ -360,6 +365,10 @@ func (n *node) adopt(child *node, index int) {
 	n.toStringVal = nil
 }
 
+// usurp 条件：父子都只剩单一 extglob 包装（n 单件、
+// child 单件、孙节点有类型），且 usurpMap 允许父类型
+// 吞并子类型（如 *(*(a)) 折成 *(a)）——折叠让生成的
+// 正则与上游逐字节一致。
 func (n *node) canUsurp(child any) bool {
 	c, ok := child.(*node)
 	if !ok || c.typ != "" || len(c.parts) != 1 || n.typ == "" || len(n.parts) != 1 {
