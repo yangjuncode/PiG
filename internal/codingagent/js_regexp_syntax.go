@@ -246,6 +246,16 @@ var (
 	canonicalClassOf = map[rune]int{}
 )
 
+// i 标志等价类建表（Unicode canonical
+// 化）：按 JS toUppercase 归组——每个
+// rune 的"代表元"是它的单字符大写形
+// （条件：非代理区、大写是单 rune、且
+// 非 ASCII 源的大写必须也非 ASCII——
+// 复刻 JS 简单大小写映射的边界）；同
+// 代表元的 rune 归一类，多成员类才入
+// 表（单成员查表也是它自己，省下表
+// 项）。建表一次跑完 0x10000，之后查
+// 表 O(1)。
 func buildCanonicalClasses() {
 	groups := map[rune][]rune{}
 	for r := range rune(0x10000) {

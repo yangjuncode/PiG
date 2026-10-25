@@ -355,6 +355,13 @@ func appActionStripped(action string) bool {
 // legacyKeybindingName is upstream isLegacyKeybindingName and its KEYBINDING_NAME_MIGRATIONS[key] lookup (keybindings.ts:302,328). `key in` also finds
 // the names Object.prototype inherits, and the lookup then yields the inherited value, so such a key migrates to that value's string (a function's
 // source text, or "[object Object]" for __proto__) as node prints it.
+// 遗留名迁移（含 JS `key in map` 原型链
+// 怪癖）：上游用 `key in MIGRATIONS` 查表，
+// `in` 还会命中 Object.prototype 继承的名
+// 字——__proto__/constructor/toString 等
+// 用户配置里的这些键在上游会被"迁移"成
+// 继承值的字符串形态。Go map 不继承，所
+// 以手写等价的原型链命中表复刻该行为。
 func legacyKeybindingName(key string) (string, bool) {
 	if next, ok := legacyKeybindingNameMigrations()[key]; ok {
 		return next, true
@@ -374,6 +381,11 @@ func legacyKeybindingName(key string) (string, bool) {
 var objectPrototypeFunctionNames = []string{"hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "toLocaleString", "toString", "valueOf",
 	"__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__"}
 
+// 迁移冲突裁决：旧名要改成的新名在配置
+// 里已存在→丢弃旧条目（新名显式配置优
+// 先，老条目被它覆盖）；否则改名搬运。
+// migrated 只表示"发生过迁移尝试"，供
+// 上层决定是否回写文件。
 func migrateKeybindingsConfig(raw map[string]any) (map[string]any, bool) {
 	out := map[string]any{}
 	migrated := false
