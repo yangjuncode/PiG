@@ -142,6 +142,9 @@ func (s *remoteServer) stopChannel() {
 	}
 }
 
+// 攒批取包：buffered 里的消息一次取走；hosted>0
+// 说明输出超上限被截断过——整批换成一条
+// hostedOutput 摘要帧（带截断 id）替掉原文。
 func (s *remoteServer) takeBuffer() []RemoteMessage {
 	batch := s.buffered
 	s.buffered = nil
@@ -178,6 +181,9 @@ func (s *remoteServer) end(terminal *RemoteMessage) {
 }
 
 // reply handles the client's answer to an exchange.
+// 回执分两类：MessageStop 是客户端下令终止（直接
+// 走 end 收尾）；其余是 host 对 worker 上一次
+// host-call 的答复，转回 channel 喂给 VM。
 //
 // Ports packages/codemode/src/runtime/remote.ts (serveCodemodeRemote: reply).
 func (s *remoteServer) reply(reply *RemoteReply) {

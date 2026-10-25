@@ -89,6 +89,10 @@ type inlineChannel struct {
 // shouldInterrupt is what QuickJS and the job drain poll.
 //
 // Ports packages/codemode/src/runtime/inline.ts (shouldInterrupt).
+// 中断判定三路：stopped/settled/exhausted 任一为真
+// 立即中断（settled 后还在跑的 VM 无意义）；polls
+// 计数器超 budget 才置 exhausted 后返回 true——
+// 每次 poll 花一格配额，跑满即停。
 func (c *inlineChannel) shouldInterrupt() bool {
 	if c.stopped.Load() || c.settled.Load() || c.exhausted.Load() {
 		return true
@@ -184,6 +188,10 @@ func (c *inlineChannel) deliverQueued() {
 
 // report delivers one message to the host. The interrupt surfaces as a crash or a failed done; the host is told what caused
 // it instead.
+// 上报改写：stopped 的消息一律丢；exhausted 后收
+// 到的终止消息（done/crash）改报 Timeout——VM
+// 是被打断才"崩"的，真实原因是配额耗尽而非
+// 脚本错误。
 func (c *inlineChannel) report(message vmMessage) {
 	if c.stopped.Load() {
 		return
