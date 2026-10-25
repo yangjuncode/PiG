@@ -62,6 +62,9 @@ type GenerateBugReportSummaryOptions struct {
 
 // selectBugReportMessages keeps the newest messages that fit tokenBudget,
 // always keeping at least the last one, in original order.
+// 从尾向前收：最后一条无条件保留（`start < len(messages)` 守卫
+// 保证哪怕单条超预算也收下——报告总不能一条不带），之后每
+// 加一条先验预算，超了即截断。
 func selectBugReportMessages(messages []agent.AgentMessage, tokenBudget int) []agent.AgentMessage {
 	start := len(messages)
 	tokens := 0
@@ -87,6 +90,9 @@ func GenerateBugReportSummary(ctx context.Context, opts GenerateBugReportSummary
 	if contextWindow <= 0 {
 		contextWindow = bugSummaryDefaultContextWindow
 	}
+	// 预算取窗口的 60%：剩下 40% 留给系统提示、指令文本和
+	// maxTokens 输出，避免报告请求自己溢出。被截断时在提示
+	// 里如实声明"只展示后 N/M 条"——模型据此知道前文有缺失。
 	selected := selectBugReportMessages(opts.Messages, contextWindow*6/10)
 	var parts []string
 	if len(selected) < len(opts.Messages) {
