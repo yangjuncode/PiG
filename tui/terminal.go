@@ -581,6 +581,13 @@ func (t *ProcessTerminal) forwardInputFrom(ctx context.Context, source io.Reader
 		onInput([]byte(normalizeTerminalInput(sequence)))
 	})
 	defer input.Close()
+	// 输入循环：deadline 驱动的读——转义序列
+	// 消歧定时器（ESC 后等下一个字节判 Alt vs
+	// 单独 ESC）给出 nextDeadline，超时前读到
+	// 数据继续组序列，超时（read 返回 nil 无
+	// 数据）就 Flush 把待定序列按当前状态冲
+	// 掉；读出错先 FlushPending 救回已收字节
+	// 再报错退出。
 	for {
 		if ctx.Err() != nil {
 			return
@@ -673,6 +680,11 @@ func (t *ProcessTerminal) DrainInput(maxWait, idleWait time.Duration) error {
 	lastData := time.Now()
 	buf := make([]byte, 256)
 
+	// 排空双限：maxWait 是总预算兜底，idleWait
+	// 是"静默即排完"早退——按键释放序列会
+	// 一段段来，只有静默间隔才说明真的没
+	// 有了。poll 每次等 min(剩余静默,剩余
+	// 总预算)，EINTR 重读不计为失败。
 	for {
 		now := time.Now()
 		if !now.Before(end) || now.Sub(lastData) >= idleWait {
