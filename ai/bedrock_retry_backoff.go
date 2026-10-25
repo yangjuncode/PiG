@@ -64,6 +64,10 @@ func newBedrockRetryer(mode aws.RetryMode) aws.Retryer {
 }
 
 // BackoffDelay receives the 1-based number of the attempt that failed; the JavaScript retry count of the next attempt's token is one less.
+// 退避公式（JS SDK StandardRetryStrategy 移植）：
+// floor(random() * min(base * 2^(attempt-1), 20000ms))——节流错误
+// base=500ms，其他 100ms；retry-after 服务器提示把延迟抬到提示
+// 值，但最多只比算出的延迟多 5000ms slack（防服务器要求过长）。
 func (b bedrockSDKBackoff) BackoffDelay(attempt int, err error) (time.Duration, error) {
 	base := float64(bedrockSDKRetryDelayBase)
 	if bedrockSDKThrottlingError(err) {
@@ -95,6 +99,10 @@ var (
 )
 
 // bedrockSDKRetryAfterHint is parseRetryAfterHeader for the retry-after and x-amz-retry-after headers. Node keeps the wire order of the headers and the first of the two wins; Go's header map has no order, so retry-after is read first.
+// 头解析顺序：retry-after 优先于 x-amz-retry-after（Go 的
+// header map 不保留到达顺序，故固定先查前者）。retry-after
+// 值四种格式依序尝试：GMT 日期、"GMT, 秒数"、纯秒数、
+// 其他可 ParseTime 的非过去日期。
 func bedrockSDKRetryAfterHint(header http.Header, now time.Time) (time.Time, bool) {
 	if values, ok := header[http.CanonicalHeaderKey("retry-after")]; ok && len(values) > 0 {
 		value := values[0]
