@@ -601,6 +601,9 @@ func (c *Connection) start() (RemoteInfo, *session, error) {
 	return parseInfo(reply.JSON), s, nil
 }
 
+// 心跳循环：每 tick 先看最近收包时间——超
+// silenceLimit 即拆会话（不管写不写得出去，
+// 对端静默就是死了）；活着才发 ping。
 func (c *Connection) pingLoop(s *session) {
 	ticker := time.NewTicker(pingInterval)
 	defer ticker.Stop()
@@ -642,6 +645,9 @@ func (c *Connection) teardown(s *session, err error) {
 	close(s.stopPing)
 	_ = s.stdin.Close()
 	// child.kill() is Node's SIGTERM (connection.ts:316).
+	// 清理三路：停心跳→关 stdin→SIGTERM；最后锁外
+	// 按序结算全部 pending 调用（调用方拿到的错误
+	// 是 teardown 原因）。
 	_ = terminateProcess(s.cmd.Process)
 	for _, call := range pending {
 		call.call.finish(Reply{}, err)

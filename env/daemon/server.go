@@ -606,6 +606,10 @@ func (s *server) respond(id uint32, request *Frame, ctl *control) {
 	delete(s.controls, id)
 	s.mu.Unlock()
 	// A command's result follows its output; large payloads do not hold up pings and small replies.
+	// 回包分通道：exec/pty 或载荷超 controlPayload
+	// 走 bulk 队列（排在数据流后、不挤控制帧）；
+	// 小回执走 control 快车道（ping/响应不被大块
+	// 文件数据拖住）。
 	if isExec || len(reply.Payload) > controlPayload {
 		s.out.sendBulk(reply, nil)
 	} else {
@@ -656,6 +660,10 @@ func (q *jobQueue) next() (func(), bool) {
 }
 
 // runInOrder queues job behind the handle's earlier chunk writes; one pool job drains the queue.
+// 同句柄串行门：每文件句柄一个 jobs 队列，running
+// 标记让"已有工人在排空"时新任务只入队不再占
+// 线程——同一文件的写/读按提交序执行，且池线程
+// 不会被 N 个并发文件各烧一个。
 func runInOrder(queue *jobQueue, handle *fileHandle, job func()) {
 	handle.mu.Lock()
 	handle.jobs = append(handle.jobs, job)
