@@ -117,15 +117,21 @@ func (promise *jsPromise[T]) newResolvers() *jsResolvers[T] {
 var errJSChainingCycle = errors.New("Chaining cycle detected for promise #<Promise>")
 
 func (resolvers *jsResolvers[T]) resolve(operand jsOperand[T]) {
+	// alreadyResolved：spec 的 [[AlreadyResolved]]——每对
+	// resolving functions 只有第一个调用生效。
 	if resolvers.already {
 		return
 	}
 	resolvers.already = true
 	promise := resolvers.promise
+	// 用自身 resolve 是 TypeError（链式环检测）。
 	if operand.promise == promise {
 		promise.settleRejected(errJSChainingCycle)
 		return
 	}
+	// 普通值：直接 fulfill；thenable（含原生 promise）：不能同步
+	// 收养，必须排一个 PromiseResolveThenableJob 微任务——这正
+	// 是 await 一个 thenable 花 3 个 reaction 的原因。
 	if operand.thenable == nil {
 		promise.settleFulfilled(operand.value)
 		return
@@ -148,6 +154,9 @@ func (resolvers *jsResolvers[T]) reject(reason error) {
 }
 
 func (promise *jsPromise[T]) settleFulfilled(value T) {
+	// TriggerPromiseReactions：先按注册顺序取出 reactions 并清空
+	// （settle 是一次性的），再逐条 post 到微任务队列——反应永远
+	// 异步执行，哪怕 promise 已 settle。
 	reactions := promise.reactions
 	promise.reactions = nil
 	promise.state = jsStateFulfilled
@@ -168,6 +177,8 @@ func (promise *jsPromise[T]) settleRejected(reason error) {
 }
 
 // react is PerformPromiseThen without a derived promise: it registers a reaction, or queues its job at once when the promise has settled.
+// pending 时登记（settle 时统一 trigger）；已 settle 时也走 post
+// 而非内联——保持"回调总在微任务时机执行"的 JS 保证。
 func (promise *jsPromise[T]) react(fulfilled func(T), rejected func(error)) {
 	switch promise.state {
 	case jsStatePending:
@@ -233,11 +244,17 @@ type jsAwaiter interface {
 func jsAwait[T any](awaiter jsAwaiter, operand jsOperand[T]) (T, error) {
 	if turn, ok := awaiter.(*continuationTurn); ok {
 		// The awaits the turn deferred come before the operand's promise is resolved and its reaction registered.
+		// 先结算本 turn 推迟的 await，保证它们的反应先于
+		// 本次 operand 的反应入队（顺序即微任务顺序）。
 		turn.settleDeferred()
 	}
+	// Await 第一步永远是 PromiseResolve：原生 promise 原样，
+	// 其他值包装（thenable 会额外排收养 job）。
 	promise := jsPromiseResolve(awaiter.jsExecutor(), operand)
 	var value T
 	var err error
+	// jsSuspend 分两步：register 把"恢复执行"挂到 promise 的反应
+	// 上（在 awaiter 停手前完成），然后 turn/协程真正让出执行。
 	awaiter.jsSuspend(func(resume func()) {
 		promise.react(func(fulfilled T) {
 			value = fulfilled
@@ -283,6 +300,11 @@ type jsCoroutine struct {
 
 func newJSCoroutine(executor *continuationExecutor, body func(*jsCoroutine), finish func()) *jsCoroutine {
 	co := &jsCoroutine{executor: executor, finish: finish}
+	// 用 iter.Pull 把"直线 Go 代码"变成可挂起协程：body 跑在
+	// pull 的 goroutine 上，每次挂起 yield 出一个 step 给驱动方；
+	// 驱动方在合适的微任务时机跑 step 决定立即续跑还是等待反应。
+	// jsCoroutineStopped 是 dispose 时的受控 panic：让被遗弃的
+	// body 从挂起点正常退出（defer 照常跑）。
 	co.next, co.stop = iter.Pull(func(yield func(func() bool) bool) {
 		co.yield = yield
 		defer func() {
@@ -340,10 +362,14 @@ func (co *jsCoroutine) dispose() {
 
 // runJSAsync is calling an async function: body runs synchronously up to its first await, and the returned promise resolves with the body's return operand. Returning a promise or thenable resolves the async function's promise with it, which costs the adoption reactions of resolve(promise). A returned error rejects.
 func runJSAsync[T any](executor *continuationExecutor, body func(*jsCoroutine) (jsOperand[T], error)) *jsPromise[T] {
+	// AsyncFunctionStart：async 函数体同步执行到第一个 await 才挂起。
 	executor.assertJSRunning()
 	promise := newJSPromise[T](executor)
 	var result jsOperand[T]
 	var failure error
+	// body 返回时经 finish 回调 settle 返回的 promise：返回 error
+	// → reject；返回 promise/thenable → resolve 收养（再花收养
+	// 所需的 reaction 数）。
 	co := newJSCoroutine(executor, func(co *jsCoroutine) { result, failure = body(co) }, func() {
 		if failure != nil {
 			promise.reject(failure)

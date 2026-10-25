@@ -56,6 +56,9 @@ func writeFileString(path, content string) error {
 
 // unreadString is a string member decoded for its type only. It fails exactly where decoding into a string fails (any JSON value but a
 // string or null) without unquoting the text, so a reservation that needs only the path does not copy the content.
+// 优化要点：占位解码——只校验"是字符串或 null"而不解出内容。
+// ReserveMutationOrder 只需要 path，content 可能上百 KB，不解引
+// 用文本就避免了为该次排队复制整个内容。
 type unreadString struct{}
 
 func (*unreadString) UnmarshalJSON(raw []byte) error {
@@ -140,6 +143,10 @@ func (t *WriteTool) Execute(ctx context.Context, _ string, rawParams json.RawMes
 
 	ops := t.operations()
 	var failure string
+	// 队列回调内部不返回错误而是记 failure：排队本身（取号等待）
+	// 不该失败；真正的 mkdir/write 失败也走"结果级错误"
+	// （IsError 的 tool result），与上游把可预期的工具失败返回
+	// 给模型而非抛出一致。每个步骤间检查 abort。
 	if err := runQueued(ctx, t.Queue, path, func() error {
 		if ctx.Err() != nil {
 			failure = "Operation aborted"
@@ -167,6 +174,8 @@ func (t *WriteTool) Execute(ctx context.Context, _ string, rawParams json.RawMes
 		// written, so this must not be reported as a success. Mirrors
 		// upstream write.ts awaiting withFileMutationQueue and propagating
 		// its rejection instead of assuming the write happened.
+		// 排队机制本身的失败（如 canonicalKey 拒绝符号链接环）：
+		// 回调根本没跑、什么都没写，必须报错而非成功。
 		return agent.AgentToolResult{Content: []ai.ToolResultMessageContent{ai.TextContent{Text: err.Error()}}, Details: map[string]any{}, IsError: true, Thrown: true}, nil
 	}
 	if failure != "" {

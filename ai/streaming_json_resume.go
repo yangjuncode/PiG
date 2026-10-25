@@ -50,6 +50,8 @@ const (
 
 // parse is parseStreamingJsonArguments(input). input is normally the text of the previous call with more bytes appended; any other text restarts the parser.
 func (parser *streamingArgumentsParser) parse(input string) (JsonObject, schemaObjectOrder, json.RawMessage) {
+	// 输入必须是"在旧文本末尾追加"才能复用状态；否则（如 provider
+	// 重发完整文本却不同前缀）整个解析器清零重来。
 	if !growsFrom(parser.input, input) {
 		*parser = streamingArgumentsParser{}
 	}
@@ -60,6 +62,8 @@ func (parser *streamingArgumentsParser) parse(input string) (JsonObject, schemaO
 	if parser.mode == streamingArgumentsResumable {
 		parser.scan()
 	}
+	// 对象已闭合或形态需要全文判断 → 回落完整解析器（返回值与
+	// 其一致是本结构的契约）。
 	if parser.mode != streamingArgumentsResumable {
 		return parseStreamingJsonValue(input)
 	}
@@ -96,6 +100,7 @@ func (parser *streamingArgumentsParser) start() {
 func (parser *streamingArgumentsParser) scan() {
 	for ; parser.scanned < len(parser.input); parser.scanned++ {
 		char := parser.input[parser.scanned]
+		// 字符串内只跟踪转义：引号内的括号不计入深度。
 		if parser.inString {
 			switch {
 			case parser.escaped:
@@ -114,6 +119,8 @@ func (parser *streamingArgumentsParser) scan() {
 			parser.depth++
 		case '}', ']':
 			parser.depth--
+			// 顶层对象闭合（或括号失配导致 depth 归零）后增量
+			// 状态失效：剩下的交给全文解析器判断尾随和错误。
 			if parser.depth <= 0 {
 				parser.mode = streamingArgumentsWhole
 				return
@@ -124,6 +131,9 @@ func (parser *streamingArgumentsParser) scan() {
 
 // resume parses the top-level object from the last committed member, as parseStreamingJsonArguments does for a text that is still an open object: partialParse of the JS-trimmed text.
 func (parser *streamingArgumentsParser) resume() (JsonObject, schemaObjectOrder) {
+	// 增量复用的核心：partial 解析器从上一个被 ',' 提交的成员之后
+	// 继续，而不是从 '{' 重新扫。已提交成员复制进新 object/keys；
+	// commit 回调把完成位点推前（resumeAt），让下次调用又省一段。
 	partial := partialJSONParser{input: jsstring.Trim(parser.input), index: parser.resumeAt, order: maps.Clone(parser.order), strings: &parser.strings}
 	if !parser.entered {
 		// parseObj skips the blanks after the opening brace once, before its first member.
@@ -205,6 +215,8 @@ scan:
 			}
 		}
 	}
+	// boundary 只推进到"解码语义已定型"的边界：转义序列、多字节
+	// UTF-8 的完整单元之后。safeEnd 前的字节下次绝不再读。
 	if boundary > str.safeEnd {
 		if _, ok := str.finish(input[str.safeEnd:boundary], false); !ok {
 			return str.poison(parser, start)
@@ -281,6 +293,9 @@ func escapeWidth(text string) (int, escapeStatus) {
 		if status != escapeComplete {
 			return 0, status
 		}
+		// 高代理项（\uD800-\uDBFF）必须等后面的低代理项一起构成
+		// 一个 UTF-16 代理对才算"完整单元"：流式增量边界不能切在
+		// 代理对中间，否则同一个字符会被解码成两个错误结果。
 		if code < 0xD800 || code > 0xDBFF {
 			return 6, escapeComplete
 		}
@@ -301,6 +316,7 @@ func escapeWidth(text string) (int, escapeStatus) {
 		case status == escapeIncomplete:
 			return 0, escapeIncomplete
 		case status == escapeComplete && low >= 0xDC00 && low <= 0xDFFF:
+			// 代理对合起来 12 字节（\uXXXX\uXXXX）。
 			return 12, escapeComplete
 		}
 		return 6, escapeComplete

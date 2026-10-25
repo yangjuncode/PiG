@@ -198,6 +198,9 @@ func anthropicConsumeLine(text string, final bool) (line, rest string, ok bool) 
 		return "", "", false
 	}
 	next := index + 1
+	// D121 的关键判断：buffer 以 \r 结尾且流未结束时先不切行——
+	// \r 可能是 CRLF 的前半；若提前按 lone CR 断行，下一个 chunk
+	// 里的 \n 会被当成空行而提前 flush 掉当前 SSE 记录。
 	if !final && text[index] == '\r' && next == len(text) {
 		return "", "", false
 	}
@@ -215,6 +218,9 @@ func (reader *anthropicSSEReader) drainLines(final bool) {
 		// anthropicConsumeLine does not take a carriage return that ends the buffer before the stream ends (D121).
 		search = buffer[:len(buffer)-1]
 	}
+	// 性能要点：从最后一个已知行尾倒推（LastIndexAny），把"确定
+	// 完整"的前缀合成一个 segment——跨多 chunk 的长行只被复制一次，
+	// scanned 让已扫过的字节不再重扫。
 	if last := bytes.LastIndexAny(search[reader.scanned:], "\r\n"); last >= 0 {
 		consumed := reader.scanned + last + 1
 		segment := string(buffer[:consumed])
@@ -224,6 +230,8 @@ func (reader *anthropicSSEReader) drainLines(final bool) {
 			reader.buffer = nil
 		}
 		// Every line end in segment is decided: the byte after a carriage return inside it is known.
+		// segment 内所有行尾都是完整的（最后一个 \r 后面有字节可知），
+		// 逐行切出并喂给 SSE 解码状态机，空行触发 flush 出事件。
 		for line, rest, ok := anthropicConsumeLine(segment, true); ok; line, rest, ok = anthropicConsumeLine(rest, true) {
 			if event, ok := reader.state.decode(line); ok {
 				reader.queue = append(reader.queue, event)
@@ -264,6 +272,8 @@ func (reader *anthropicSSEReader) next() (serverSentEvent, bool, error) {
 			reader.closed = true
 			return serverSentEvent{}, false, nil
 		}
+		// 取消检查放在读前：ctx 已结束即按上游抛
+		// "Request was aborted"（anthropic-messages.ts:422-424）。
 		if reader.ctx.Err() != nil {
 			reader.closed = true
 			return serverSentEvent{}, false, errAnthropicRequestAborted // anthropic-messages.ts:422-424
@@ -275,6 +285,8 @@ func (reader *anthropicSSEReader) next() (serverSentEvent, bool, error) {
 		} else {
 			data, err = reader.source.ReadChunk() // anthropic-messages.ts:426 `await reader.read()`
 		}
+		// Read 同时返回数据和错误（Go 允许）：先消费数据，错误
+		// 挂起到下次调用再判——数据绝不丢弃。
 		if len(data) > 0 && err != nil {
 			reader.readErr = err
 			err = nil
@@ -361,9 +373,13 @@ func (reader *anthropicEventReader) generate() (anthropicStreamEvent, bool, erro
 			break
 		}
 		if sse.Event == "error" {
+			// error 事件：其 data 原样作为错误文本抛出（上游行为），
+			// 先关内层 SSE 迭代器。
 			reader.closeSSE()
 			return anthropicStreamEvent{}, false, errors.New(sse.Data)
 		}
+		// 事件白名单：只有 message_* / content_block_* 进入解析，
+		// ping、其他类型直接丢弃。
 		if !anthropicMessageEvents[sse.Event] {
 			continue
 		}
@@ -377,6 +393,9 @@ func (reader *anthropicEventReader) generate() (anthropicStreamEvent, bool, erro
 			return anthropicStreamEvent{}, false, &anthropicSSEParseError{sse: sse, cause: err}
 		}
 		// The SSE event name only admits the record; the parsed value's type decides what it is (anthropic-messages.ts:552-556).
+		// 注意判断顺序：SSE 事件名只是粗筛，真正的事件类型由
+		// JSON 载荷的 type 成员决定；同时记录 message_start/stop
+		// 用于循环结束时的完整性校验（有 start 无 stop → 报错）。
 		switch eventType {
 		case "message_start":
 			reader.sawMessageStart = true
@@ -430,6 +449,9 @@ func (err *anthropicSSEParseError) Unwrap() error { return err.cause }
 
 // anthropicParseJSON is parseJsonWithRepair (packages/ai/src/utils/json-parse.ts:85-95): it returns the text that parses, repaired when the original does not, or V8's JSON.parse message for the text that was last tried. valid reports that encoding/json also accepts the returned text (json.Valid); JSON.parse accepts text it rejects, such as nesting deeper than its limit.
 func anthropicParseJSON(data string) (text string, valid bool, err error) {
+	// 三级判定：encoding/json 接受 → valid；jsonparse 接受（JS
+	// JSON.parse 口径，如超深嵌套）→ 非 valid 但可用；都不行 →
+	// repairJSON 修复后再走同一套判定。修复未改文本时直接报错。
 	if json.Valid([]byte(data)) {
 		return data, true, nil
 	}
