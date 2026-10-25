@@ -620,6 +620,23 @@ func (connection *Connection) send(frame Frame) {
 }
 
 // sendState sends a state frame, or keeps it waiting (see the type comment).
+// 状态帧窗口合并（反压核心）：发送窗满时
+// 不丢帧而是按流合并——
+//   - 非 ops 帧（reset/全量）：直接顶替该
+//     流的等待基线并清掉积压 ops——新基线
+//     使旧增量全部过期；
+//   - ops 增量帧：追加进该流的积压队列，
+//     flush 时合并发送；
+//   - 字节超窗→makeRoom 从最老的积压流开
+//     始降级（积压 ops 换成 lazy reset——
+//     丢增量换全量，正确性靠重发基线保
+//     证）；
+//   - lazy 槽（已有待重发）不再累积 ops——
+//     reset 已覆盖；
+//   - unit 槽（hold 级单元）独占，状态帧
+//     跳过。
+//
+// 保证"窗口有界 + 每个流最终一致"。
 func (connection *Connection) sendState(frame StateFrame, fallback overflow) {
 	key := stateKey(frame.Hold, frame.M)
 	waiting, ok := connection.pending.Get(key)
@@ -677,6 +694,9 @@ func saturatingMul(a, b int) int {
 }
 
 // makeRoom replaces the oldest waiting streams by resets until size more bytes fit; current last, if needed.
+// 降级牺牲序：先丢别人的积压（保
+// current——刚到的帧优先级最高），丢完
+// 还不够才丢 current 自己。
 func (connection *Connection) makeRoom(size int, current *slot) {
 	for _, waiting := range connection.pending.Values() {
 		if saturatingAdd(connection.pendingBytes, size) <= connection.pendingCap {
@@ -692,6 +712,11 @@ func (connection *Connection) makeRoom(size int, current *slot) {
 }
 
 // drop drops what waits for a stream: a lazy reset replaces it (provider), or the relay asks downstream for one.
+// 积压丢弃两路：能重发基线的（provider
+// 侧）降级为 lazy reset——标记后 flush
+// 时重建全量；不能重发的（relay 侧）
+// 直接删槽并 resync 让下游主动要一
+// 份全量。
 func (connection *Connection) drop(waiting *slot) {
 	connection.pendingBytes -= waiting.size
 	waiting.base, waiting.hasBase = StateFrame{}, false
